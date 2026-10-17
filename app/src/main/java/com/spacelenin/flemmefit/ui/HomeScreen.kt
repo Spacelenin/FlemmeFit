@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.ui.theme.programColor
+import com.spacelenin.flemmefit.reminders.ReminderScheduler
 import com.spacelenin.flemmefit.update.AppUpdater
 import java.time.LocalDate
 
@@ -67,9 +68,11 @@ fun HomeScreen(
     onStats: () -> Unit,
     importActions: ImportActions,
     updater: AppUpdater,
+    reminders: ReminderScheduler,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
     var moreOpen by remember { mutableStateOf(false) }
+    var showReminders by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -81,6 +84,10 @@ fun HomeScreen(
                     Box {
                         IconButton(onClick = { moreOpen = true }) { Icon(Icons.Default.MoreVert, "Plus d'options") }
                         DropdownMenu(expanded = moreOpen, onDismissRequest = { moreOpen = false }) {
+                            DropdownMenuItem(
+                                text = { Text("Rappels") },
+                                onClick = { moreOpen = false; showReminders = true },
+                            )
                             DropdownMenuItem(
                                 text = { Text("Vérifier les mises à jour") },
                                 onClick = { moreOpen = false; updater.check() },
@@ -117,6 +124,8 @@ fun HomeScreen(
             HomeContent(programs, onOpen, importActions, Modifier.weight(1f))
         }
     }
+
+    if (showReminders) RemindersDialog(reminders, programs, onDismiss = { showReminders = false })
 }
 
 @Composable
