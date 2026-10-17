@@ -3,6 +3,7 @@ package com.spacelenin.flemmefit.data
 import android.util.AtomicFile
 import android.util.Log
 import com.spacelenin.flemmefit.model.AppState
+import com.spacelenin.flemmefit.model.ExerciseLog
 import com.spacelenin.flemmefit.model.Plan
 import com.spacelenin.flemmefit.model.PlanParser
 import com.spacelenin.flemmefit.model.StoredProgram
@@ -86,6 +87,9 @@ class ProgramRepository(dir: File) {
 
     fun setSessionDone(id: String, dayIndex: Int, exerciseCount: Int, done: Boolean) =
         updateProgram(id) { it.setSessionDone(dayIndex, exerciseCount, done) }
+
+    fun saveLog(id: String, dayIndex: Int, exerciseIndex: Int, log: ExerciseLog, complete: Boolean) =
+        updateProgram(id) { it.saveLog(dayIndex, exerciseIndex, log, complete) }
 
     fun postpone(id: String, dayIndex: Int) = updateProgram(id) { it.postpone(dayIndex) }
 

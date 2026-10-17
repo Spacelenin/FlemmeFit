@@ -96,6 +96,31 @@ class PlanParserTest {
     }
 
     @Test
+    fun `repeat forever and progression are accepted`() {
+        val plan = ok(
+            """{"version":1,"name":"X","repeat":"forever","deloadEvery":0,"boss":false,"weeks":[{"days":[{"day":1,"exercises":[
+              {"name":"Pompes","id":" pompes-lentes ","sets":3,"reps":8,"progression":{"reps":1,"maxReps":12,"addSets":1,"maxSets":5}},
+              {"name":"Gainage","sets":2,"duration":"30s","progression":{"duration":"5s","maxDuration":"1min30","basis":"week"}}]}]}]}""",
+        )
+        assertTrue(plan.isForever)
+        assertEquals("pompes-lentes", plan.weeks[0].days[0].exercises[0].key)
+        assertEquals(0, plan.effectiveDeloadEvery)
+    }
+
+    @Test
+    fun `invalid repeat and progression are reported`() {
+        assertTrue(fail("""{"version":1,"name":"X","repeat":"souvent","weeks":[{"days":[{"day":1,"exercises":[{"name":"A"}]}]}]}""")
+            .single().contains("forever"))
+        val errors = fail(
+            """{"version":1,"name":"X","weeks":[{"days":[{"day":1,"exercises":[
+              {"name":"A","reps":"max","progression":{"reps":1}},
+              {"name":"B","duration":"30s","progression":{"duration":"vite","basis":"jamais","every":0}},
+              {"name":"C","progression":{}}]}]}]}""",
+        )
+        assertEquals(errors.toString(), 5, errors.size)
+    }
+
+    @Test
     fun `plan round trips through storage`() {
         val plan = ok("""{"version":1,"name":"X","weeks":[{"days":[{"day":1,"exercises":[{"name":"A","sets":3}]}]}]}""")
         val encoded = PlanParser.json.encodeToString(Plan.serializer(), plan)

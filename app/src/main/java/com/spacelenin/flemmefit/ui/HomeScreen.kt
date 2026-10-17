@@ -33,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -57,10 +58,24 @@ class ImportActions(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(programs: List<StoredProgram>, onOpen: (String) -> Unit, importActions: ImportActions) {
+fun HomeScreen(
+    programs: List<StoredProgram>,
+    onOpen: (String) -> Unit,
+    onStats: () -> Unit,
+    importActions: ImportActions,
+) {
     var menuOpen by remember { mutableStateOf(false) }
     Scaffold(
-        topBar = { TopAppBar(title = { Text("FlemmeFit") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("FlemmeFit") },
+                actions = {
+                    if (programs.isNotEmpty()) {
+                        TextButton(onClick = onStats) { Text("📊 Stats") }
+                    }
+                },
+            )
+        },
         floatingActionButton = {
             if (programs.isNotEmpty()) {
                 Box {
@@ -100,8 +115,8 @@ fun HomeScreen(programs: List<StoredProgram>, onOpen: (String) -> Unit, importAc
 
 @Composable
 private fun ProgramCard(program: StoredProgram, today: LocalDate, onClick: () -> Unit) {
-    val schedule = remember(program) { ProgramSchedule(program) }
-    val progress = schedule.progress(today)
+    val schedule = remember(program, today) { ProgramSchedule(program, today) }
+    val progress = schedule.progress()
     val color = programColor(program.colorIndex)
 
     Card(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
@@ -122,7 +137,7 @@ private fun ProgramCard(program: StoredProgram, today: LocalDate, onClick: () ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     LinearProgressIndicator(progress = { progress.ratio }, color = color, modifier = Modifier.weight(1f))
                     Spacer(Modifier.width(12.dp))
-                    Text("${(progress.ratio * 100).toInt()} %", style = MaterialTheme.typography.labelLarge)
+                    Text("${progress.doneExercises}/${progress.totalExercises} exos", style = MaterialTheme.typography.labelLarge)
                 }
                 Spacer(Modifier.height(8.dp))
                 val next = progress.nextSession
@@ -130,6 +145,8 @@ private fun ProgramCard(program: StoredProgram, today: LocalDate, onClick: () ->
                     when {
                         next == null && progress.doneSessions == progress.totalSessions -> "Programme terminé 🎉"
                         next == null -> "Plus de séance à venir"
+                        next.isBoss && next.date == today -> "Aujourd'hui : Boss 💀 ${next.title()}"
+                        next.isBoss -> "Demain : Boss 💀 ${next.title()}"
                         next.date == today -> "Aujourd'hui : ${next.title()}"
                         else -> "Prochaine : ${next.date.shortLabel()} — ${next.title()}"
                     },

@@ -113,7 +113,7 @@ private fun DayCell(
     onSelect: (LocalDate) -> Unit,
 ) {
     val session = schedule.sessionOn(date)
-    val status = session?.let { schedule.status(it, today) }
+    val status = session?.let { schedule.status(it) }
     val scheme = MaterialTheme.colorScheme
     val (background, content) = when (status) {
         SessionStatus.DONE -> color to Color.White
@@ -131,6 +131,7 @@ private fun DayCell(
             SessionStatus.PENDING -> append(", séance prévue")
             null -> {}
         }
+        if (session?.isBoss == true) append(", jour Boss")
     }
 
     Box(
@@ -152,7 +153,9 @@ private fun DayCell(
                 fontWeight = if (date == today) FontWeight.ExtraBold else FontWeight.Normal,
                 style = MaterialTheme.typography.bodyMedium,
             )
-            if (date == today) {
+            if (session?.isBoss == true) {
+                Text("💀", style = MaterialTheme.typography.labelSmall)
+            } else if (date == today) {
                 Spacer(Modifier.size(4.dp).clip(CircleShape).background(content))
             }
         }
