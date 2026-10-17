@@ -14,6 +14,8 @@ et une progression.
 - **Repousser** une séance d'un jour : tout le reste du programme est décalé (annulable).
 - **Stats** par programme et globales : reps, séries, temps, records, évolution par exercice, volume par semaine,
   Boss vaincus, historique.
+- **Rappels** (⋮ → Rappels), ton terriblement taquin : rappel du jour (18 h par défaut) les jours de séance,
+  relance du soir désactivable (21 h) si la séance n'est pas finie, annonce du Boss la veille, bouton « Plus tard ».
 - **Plusieurs programmes**, chacun séparé sur l'accueil avec sa couleur.
 - **Pliables** (Galaxy Z Fold 5 et suivants) : écran extérieur = une colonne ; écran intérieur déplié =
   calendrier à gauche, détail du jour à droite, et accueil en grille. Le pliage/dépliage garde l'état.

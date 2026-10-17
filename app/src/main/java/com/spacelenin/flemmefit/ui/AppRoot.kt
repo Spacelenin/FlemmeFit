@@ -18,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spacelenin.flemmefit.data.ProgramRepository
 import com.spacelenin.flemmefit.model.ParseResult
 import com.spacelenin.flemmefit.model.PlanParser
+import com.spacelenin.flemmefit.reminders.ReminderScheduler
 import com.spacelenin.flemmefit.update.AppUpdater
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,8 +35,11 @@ const val EXAMPLE_ASSET = "exemple-full-body.json"
 fun AppRoot(
     repository: ProgramRepository,
     updater: AppUpdater,
+    reminders: ReminderScheduler,
     incoming: ImportSource?,
     onIncomingConsumed: () -> Unit,
+    openRequest: String?,
+    onOpenRequestConsumed: () -> Unit,
 ) {
     val state by repository.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -62,6 +66,16 @@ fun AppRoot(
             } catch (e: Exception) {
                 readError = "Lecture du fichier impossible : ${e.message.orEmpty()}"
             }
+        }
+    }
+
+    LaunchedEffect(openRequest) {
+        openRequest?.let { id ->
+            if (state.programs.any { it.id == id }) {
+                showStats = false
+                openId = id
+            }
+            onOpenRequestConsumed()
         }
     }
 
@@ -105,6 +119,7 @@ fun AppRoot(
             onStats = { showStats = true },
             importActions = importActions,
             updater = updater,
+            reminders = reminders,
         )
     }
 
