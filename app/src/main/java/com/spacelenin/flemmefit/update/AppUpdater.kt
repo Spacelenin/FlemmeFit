@@ -45,6 +45,8 @@ class AppUpdater(private val context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val prefs = context.getSharedPreferences("updates", Context.MODE_PRIVATE)
     private var job: Job? = null
+    /** Version en cours d'installation, pour « Réessayer ». */
+    private var installing: ReleaseInfo? = null
 
     private val _state = MutableStateFlow<State>(State.Idle)
     val state: StateFlow<State> = _state.asStateFlow()
@@ -66,15 +68,21 @@ class AppUpdater(private val context: Context) {
         if (job?.isActive == true) return
         job = scope.launch {
             if (!silent) _state.value = State.Checking
+            // Noté avant la requête : hors ligne, on ne réessaie pas à chaque retour sur l'accueil.
+            prefs.edit().putLong(KEY_LAST_CHECK, System.currentTimeMillis()).apply()
             _state.value = try {
                 val release = Releases.parseLatest(httpGet(LATEST_URL))
-                prefs.edit().putLong(KEY_LAST_CHECK, System.currentTimeMillis()).apply()
                 when {
                     release == null -> if (silent) State.Idle else State.Failed("Aucune version publiée trouvée.")
-                    release.versionCode > currentVersion -> State.Available(release)
+                    release.versionCode > currentVersion -> {
+                        // Une vérification demandée à la main réaffiche une version mise de côté avec « Plus tard ».
+                        if (!silent) undismiss()
+                        State.Available(release)
+                    }
                     else -> if (silent) State.Idle else State.UpToDate
                 }
-            } catch (e: IOException) {
+            } catch (e: Exception) {
+                // Une erreur non attrapée dans ce scope ferait planter l'app : tout est rattrapé ici.
                 Log.w(TAG, "Vérification impossible", e)
                 if (silent) State.Idle else State.Failed("Pas de connexion à GitHub (${e.message.orEmpty()}).")
             }
@@ -84,6 +92,11 @@ class AppUpdater(private val context: Context) {
     fun clearMessage() {
         val s = _state.value
         if (s == State.UpToDate || (s is State.Failed && s.release == null)) _state.value = State.Idle
+    }
+
+    private fun undismiss() {
+        prefs.edit().remove(KEY_DISMISSED).apply()
+        _dismissed.value = 0
     }
 
     fun dismiss(release: ReleaseInfo) {
@@ -99,6 +112,7 @@ class AppUpdater(private val context: Context) {
 
     fun install(release: ReleaseInfo) {
         if (job?.isActive == true) return
+        installing = release
         job = scope.launch {
             try {
                 _state.value = State.Downloading(release, 0f)
@@ -107,6 +121,7 @@ class AppUpdater(private val context: Context) {
                 commit(apk)
             } catch (e: Exception) {
                 Log.e(TAG, "Mise à jour impossible", e)
+                File(context.cacheDir, APK_FILE).delete()
                 _state.value = State.Failed("Téléchargement impossible : ${e.message.orEmpty()}", release)
             }
         }
@@ -114,11 +129,13 @@ class AppUpdater(private val context: Context) {
 
     /** Appelé par [InstallResultReceiver] quand l'installeur a fini (ou a été annulé). */
     internal fun onInstallResult(success: Boolean, message: String?) {
-        _state.value = if (success) State.Idle else State.Failed(message ?: "Installation annulée.", (_state.value as? State.Failed)?.release)
+        File(context.cacheDir, APK_FILE).delete()
+        // On garde la version pour proposer « Réessayer » après une annulation.
+        _state.value = if (success) State.Idle else State.Failed(message ?: "Installation annulée.", installing)
     }
 
     private fun download(release: ReleaseInfo): File {
-        val target = File(context.cacheDir, "update.apk")
+        val target = File(context.cacheDir, APK_FILE)
         val connection = open(release.apkUrl)
         try {
             val total = connection.contentLengthLong.takeIf { it > 0 } ?: release.apkSize
@@ -197,6 +214,7 @@ class AppUpdater(private val context: Context) {
         private const val TAG = "AppUpdater"
         const val REPOSITORY = "Spacelenin/FlemmeFit"
         private const val LATEST_URL = "https://api.github.com/repos/$REPOSITORY/releases/latest"
+        private const val APK_FILE = "update.apk"
         private const val KEY_LAST_CHECK = "lastCheck"
         private const val KEY_DISMISSED = "dismissedVersion"
         private const val AUTO_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000L
