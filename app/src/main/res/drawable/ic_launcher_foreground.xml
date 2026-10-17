@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Haltère blanc, dans la zone sûre 66dp des icônes adaptatives. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,51H74V57H34Z M28,38H34V70H28Z M22,44H28V64H22Z M74,38H80V70H74Z M80,44H86V64H80Z" />
+</vector>
