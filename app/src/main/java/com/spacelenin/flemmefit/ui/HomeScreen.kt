@@ -66,6 +66,7 @@ fun HomeScreen(
     programs: List<StoredProgram>,
     onOpen: (String) -> Unit,
     onStats: () -> Unit,
+    onSocial: () -> Unit,
     importActions: ImportActions,
     updater: AppUpdater,
     reminders: ReminderScheduler,
@@ -78,6 +79,7 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text("FlemmeFit") },
                 actions = {
+                    TextButton(onClick = onSocial) { Text("👥 Potes") }
                     if (programs.isNotEmpty()) {
                         TextButton(onClick = onStats) { Text("📊 Stats") }
                     }

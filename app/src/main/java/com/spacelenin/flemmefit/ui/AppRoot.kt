@@ -19,6 +19,7 @@ import com.spacelenin.flemmefit.data.ProgramRepository
 import com.spacelenin.flemmefit.model.ParseResult
 import com.spacelenin.flemmefit.model.PlanParser
 import com.spacelenin.flemmefit.reminders.ReminderScheduler
+import com.spacelenin.flemmefit.social.SocialSync
 import com.spacelenin.flemmefit.update.AppUpdater
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,6 +37,7 @@ fun AppRoot(
     repository: ProgramRepository,
     updater: AppUpdater,
     reminders: ReminderScheduler,
+    social: SocialSync,
     incoming: ImportSource?,
     onIncomingConsumed: () -> Unit,
     openRequest: String?,
@@ -47,6 +49,7 @@ fun AppRoot(
 
     var openId by rememberSaveable { mutableStateOf<String?>(null) }
     var showStats by rememberSaveable { mutableStateOf(false) }
+    var showSocial by rememberSaveable { mutableStateOf(false) }
     var pasting by rememberSaveable { mutableStateOf(false) }
     // Texte brut sauvegardé (et non le résultat) pour que l'import en cours survive au pliage / dépliage.
     var pendingText by rememberSaveable { mutableStateOf<String?>(null) }
@@ -73,6 +76,7 @@ fun AppRoot(
         openRequest?.let { id ->
             if (state.programs.any { it.id == id }) {
                 showStats = false
+                showSocial = false
                 openId = id
             }
             onOpenRequestConsumed()
@@ -109,6 +113,10 @@ fun AppRoot(
             BackHandler { openId = null }
             ProgramScreen(program = program, repository = repository, onBack = { openId = null })
         }
+        showSocial -> {
+            BackHandler { showSocial = false }
+            SocialScreen(social = social, repository = repository, onBack = { showSocial = false })
+        }
         showStats -> {
             BackHandler { showStats = false }
             GlobalStatsScreen(programs = state.programs, onBack = { showStats = false })
@@ -117,6 +125,7 @@ fun AppRoot(
             programs = state.programs,
             onOpen = { openId = it },
             onStats = { showStats = true },
+            onSocial = { showSocial = true },
             importActions = importActions,
             updater = updater,
             reminders = reminders,

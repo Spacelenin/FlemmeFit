@@ -37,6 +37,7 @@ class MainActivity : ComponentActivity() {
                     repository = app.repository,
                     updater = app.updater,
                     reminders = app.reminders,
+                    social = app.social,
                     incoming = incoming,
                     onIncomingConsumed = { incoming = null },
                     openRequest = openRequest,
