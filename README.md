@@ -25,6 +25,11 @@ Chaque push sur `main` construit l'APK via GitHub Actions et le publie dans les
 **[Releases](../../releases)** : ouvre la dernière release depuis le téléphone, télécharge
 `FlemmeFit-N.apk` et installe-le (autoriser « sources inconnues » la première fois).
 
+**Mises à jour dans l'app** : une fois FlemmeFit installé, plus besoin de revenir sur GitHub. L'app vérifie
+les Releases au lancement (toutes les 6 h au plus, ou via *⋮ → Vérifier les mises à jour*), affiche un bandeau
+« Nouvelle version disponible », télécharge l'APK (empreinte SHA-256 vérifiée) et lance l'installeur Android.
+La première fois, Android demande d'autoriser FlemmeFit à installer des applications.
+
 Les builds sont tous signés avec la même clé (`app/debug.keystore`) et ont un numéro de version croissant :
 une nouvelle version s'installe **par-dessus** l'ancienne sans perdre la progression.
 

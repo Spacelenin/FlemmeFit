@@ -18,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spacelenin.flemmefit.data.ProgramRepository
 import com.spacelenin.flemmefit.model.ParseResult
 import com.spacelenin.flemmefit.model.PlanParser
+import com.spacelenin.flemmefit.update.AppUpdater
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,7 +31,12 @@ sealed interface ImportSource {
 const val EXAMPLE_ASSET = "exemple-full-body.json"
 
 @Composable
-fun AppRoot(repository: ProgramRepository, incoming: ImportSource?, onIncomingConsumed: () -> Unit) {
+fun AppRoot(
+    repository: ProgramRepository,
+    updater: AppUpdater,
+    incoming: ImportSource?,
+    onIncomingConsumed: () -> Unit,
+) {
     val state by repository.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -98,6 +104,7 @@ fun AppRoot(repository: ProgramRepository, incoming: ImportSource?, onIncomingCo
             onOpen = { openId = it },
             onStats = { showStats = true },
             importActions = importActions,
+            updater = updater,
         )
     }
 
