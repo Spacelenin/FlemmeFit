@@ -1,0 +1,75 @@
+{
+  "format": "flemmefit",
+  "version": 1,
+  "name": "Full body débutant",
+  "description": "3 séances par semaine, alternance A / B. Échauffement 5 min avant chaque séance.",
+  "repeat": 4,
+  "weeks": [
+    {
+      "label": "Semaine A/B/A",
+      "days": [
+        {
+          "day": 1,
+          "title": "Full body A",
+          "exercises": [
+            { "name": "Squat au poids du corps", "sets": 3, "reps": "15", "rest": "60s", "description": "Pieds largeur d'épaules, dos droit, descendre sous les genoux si possible." },
+            { "name": "Pompes", "sets": 3, "reps": "max", "rest": "60s", "description": "Sur les genoux si besoin. Gainage serré, coudes à 45°." },
+            { "name": "Gainage planche", "sets": 3, "duration": "30s", "rest": "45s" }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Full body B",
+          "exercises": [
+            { "name": "Fentes alternées", "sets": 3, "reps": "10 par jambe", "rest": "60s" },
+            { "name": "Rowing haltère", "sets": 3, "reps": "12", "load": "8 kg", "rest": "60s", "description": "Un genou sur le banc, tirer le coude vers la hanche." },
+            { "name": "Crunchs", "sets": 3, "reps": "20" }
+          ]
+        },
+        {
+          "day": 5,
+          "title": "Full body A",
+          "exercises": [
+            { "name": "Squat au poids du corps", "sets": 3, "reps": "15", "rest": "60s" },
+            { "name": "Pompes", "sets": 3, "reps": "max", "rest": "60s" },
+            { "name": "Gainage planche", "sets": 3, "duration": "30s", "rest": "45s" }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Semaine B/A/B",
+      "days": [
+        {
+          "day": 1,
+          "title": "Full body B",
+          "exercises": [
+            { "name": "Fentes alternées", "sets": 3, "reps": "10 par jambe", "rest": "60s" },
+            { "name": "Rowing haltère", "sets": 3, "reps": "12", "load": "8 kg", "rest": "60s" },
+            { "name": "Crunchs", "sets": 3, "reps": "20" }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Full body A",
+          "exercises": [
+            { "name": "Squat au poids du corps", "sets": 4, "reps": "15", "rest": "60s" },
+            { "name": "Pompes", "sets": 4, "reps": "max", "rest": "60s" },
+            { "name": "Gainage planche", "sets": 3, "duration": "40s", "rest": "45s" }
+          ]
+        },
+        {
+          "day": 5,
+          "title": "Full body B",
+          "notes": "Dernière séance du cycle : on note ses sensations.",
+          "exercises": [
+            { "name": "Fentes alternées", "sets": 4, "reps": "10 par jambe", "rest": "60s" },
+            { "name": "Rowing haltère", "sets": 4, "reps": "12", "load": "8 kg", "rest": "60s" },
+            { "name": "Crunchs", "sets": 3, "reps": "25" },
+            { "name": "Étirements", "duration": "10min", "description": "Ischios, quadriceps, pectoraux, dos." }
+          ]
+        }
+      ]
+    }
+  ]
+}
