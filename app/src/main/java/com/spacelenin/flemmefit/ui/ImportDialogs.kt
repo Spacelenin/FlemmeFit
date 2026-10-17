@@ -76,8 +76,7 @@ fun ImportConfirmDialog(plan: Plan, onDismiss: () -> Unit, onConfirm: (LocalDate
     val start = LocalDate.ofEpochDay(startEpoch)
 
     val sessionsPerCycle = plan.weeks.sumOf { it.days.size }
-    val totalWeeks = plan.weeks.size * plan.repeat
-    val end = start.plusDays(totalWeeks * DAYS_PER_WEEK - 1L)
+    val end = if (plan.isForever) null else start.plusDays(plan.weeks.size * plan.repeat * DAYS_PER_WEEK - 1L)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -88,14 +87,26 @@ fun ImportConfirmDialog(plan: Plan, onDismiss: () -> Unit, onConfirm: (LocalDate
                     Text(it, style = MaterialTheme.typography.bodyMedium)
                     Spacer(Modifier.height(12.dp))
                 }
-                val cycle = if (plan.repeat > 1) " × ${plan.repeat} répétitions" else ""
+                val cycle = when {
+                    plan.isForever -> ", répétées sans fin"
+                    plan.repeat > 1 -> " × ${plan.repeat} répétitions"
+                    else -> ""
+                }
                 Text("${plan.weeks.size} semaine(s)$cycle")
-                Text("${sessionsPerCycle * plan.repeat} séances au total")
+                Text(
+                    if (plan.isForever) "$sessionsPerCycle séances par cycle"
+                    else "${sessionsPerCycle * plan.repeat} séances au total",
+                )
+                val extras = listOfNotNull(
+                    "jours Boss 💀".takeIf { plan.boss },
+                    "décharge 1 semaine sur ${plan.effectiveDeloadEvery}".takeIf { plan.effectiveDeloadEvery > 0 },
+                )
+                if (extras.isNotEmpty()) Text("Avec " + extras.joinToString(" et "))
                 Spacer(Modifier.height(16.dp))
                 Text("Date de début (jour 1)", style = MaterialTheme.typography.labelLarge)
                 OutlinedButton(onClick = { picking = true }) { Text(start.longLabel()) }
                 Text(
-                    "Fin prévue : ${end.shortLabel()} (hors reports)",
+                    end?.let { "Fin prévue : ${it.shortLabel()} (hors reports)" } ?: "Sans date de fin",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

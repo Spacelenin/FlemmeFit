@@ -36,6 +36,7 @@ fun AppRoot(repository: ProgramRepository, incoming: ImportSource?, onIncomingCo
     val scope = rememberCoroutineScope()
 
     var openId by rememberSaveable { mutableStateOf<String?>(null) }
+    var showStats by rememberSaveable { mutableStateOf(false) }
     var pasting by rememberSaveable { mutableStateOf(false) }
     // Texte brut sauvegardé (et non le résultat) pour que l'import en cours survive au pliage / dépliage.
     var pendingText by rememberSaveable { mutableStateOf<String?>(null) }
@@ -83,11 +84,21 @@ fun AppRoot(repository: ProgramRepository, incoming: ImportSource?, onIncomingCo
     )
 
     val program = state.programs.find { it.id == openId }
-    if (program != null) {
-        BackHandler { openId = null }
-        ProgramScreen(program = program, repository = repository, onBack = { openId = null })
-    } else {
-        HomeScreen(programs = state.programs, onOpen = { openId = it }, importActions = importActions)
+    when {
+        program != null -> {
+            BackHandler { openId = null }
+            ProgramScreen(program = program, repository = repository, onBack = { openId = null })
+        }
+        showStats -> {
+            BackHandler { showStats = false }
+            GlobalStatsScreen(programs = state.programs, onBack = { showStats = false })
+        }
+        else -> HomeScreen(
+            programs = state.programs,
+            onOpen = { openId = it },
+            onStats = { showStats = true },
+            importActions = importActions,
+        )
     }
 
     if (pasting) {

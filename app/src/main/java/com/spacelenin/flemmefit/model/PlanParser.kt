@@ -70,10 +70,17 @@ object PlanParser {
 
     fun validate(plan: Plan): List<String> = buildList {
         if (plan.name.isBlank()) add("\"name\" ne doit pas être vide.")
-        if (plan.repeat !in 1..MAX_REPEAT) add("\"repeat\" doit être entre 1 et $MAX_REPEAT (reçu ${plan.repeat}).")
+        if (!plan.isForever && plan.repeat !in 1..MAX_REPEAT) {
+            add("\"repeat\" doit être entre 1 et $MAX_REPEAT, ou \"forever\" (reçu ${plan.repeat}).")
+        }
         if (plan.weeks.isEmpty()) add("\"weeks\" doit contenir au moins une semaine.")
-        if (plan.weeks.size.toLong() * plan.repeat > MAX_TOTAL_WEEKS) {
+        if (plan.weeks.size > MAX_TOTAL_WEEKS ||
+            (!plan.isForever && plan.weeks.size.toLong() * plan.repeat > MAX_TOTAL_WEEKS)
+        ) {
             add("Programme trop long : semaines × repeat doit rester ≤ $MAX_TOTAL_WEEKS.")
+        }
+        plan.deloadEvery?.let {
+            if (it != 0 && it !in 2..52) add("\"deloadEvery\" doit valoir 0 (jamais) ou être entre 2 et 52 (reçu $it).")
         }
 
         plan.weeks.forEachIndexed { w, week ->
@@ -88,12 +95,45 @@ object PlanParser {
                     if (ex.sets != null && ex.sets !in 1..MAX_SETS) {
                         add("$at.exercises[$e].sets doit être entre 1 et $MAX_SETS (reçu ${ex.sets}).")
                     }
+                    if (ex.id != null && ex.id.isBlank()) add("$at.exercises[$e].id ne doit pas être vide.")
+                    ex.progression?.let { addAll(validateProgression(ex, it, "$at.exercises[$e].progression")) }
                 }
             }
         }
         if (plan.weeks.isNotEmpty() && plan.weeks.all { it.days.isEmpty() }) {
             add("Le programme ne contient aucune séance.")
         }
+    }
+
+    private fun validateProgression(ex: Exercise, p: Progression, at: String): List<String> = buildList {
+        if (p.basis != Progression.BASIS_DONE && p.basis != Progression.BASIS_WEEK) {
+            add("$at.basis doit valoir \"done\" ou \"week\" (reçu \"${p.basis}\").")
+        }
+        if (p.every !in 1..52) add("$at.every doit être entre 1 et 52 (reçu ${p.every}).")
+        if (p.reps == null && p.duration == null && p.load == null) {
+            add("$at doit indiquer au moins un pas : reps, duration ou load.")
+        }
+        val baseReps = Measures.reps(ex.reps)
+        if (p.reps != null) {
+            if (p.reps !in 1..50) add("$at.reps doit être entre 1 et 50 (reçu ${p.reps}).")
+            if (baseReps == null) add("$at.reps : l'exercice doit avoir \"reps\" chiffré (reçu \"${ex.reps}\").")
+        }
+        if (p.maxReps != null && baseReps != null && p.maxReps < baseReps) {
+            add("$at.maxReps (${p.maxReps}) est inférieur aux reps de départ ($baseReps).")
+        }
+        val baseSeconds = Measures.seconds(ex.duration)
+        if (p.duration != null) {
+            if (Measures.seconds(p.duration).let { it == null || it <= 0 }) add("$at.duration illisible : \"${p.duration}\" (ex. \"5s\").")
+            if (baseSeconds == null) add("$at.duration : l'exercice doit avoir \"duration\" chiffrée (reçu \"${ex.duration}\").")
+        }
+        if (p.maxDuration != null && Measures.seconds(p.maxDuration) == null) add("$at.maxDuration illisible : \"${p.maxDuration}\".")
+        if (p.load != null) {
+            if (Measures.load(p.load) == null) add("$at.load illisible : \"${p.load}\" (ex. \"1kg\").")
+            if (Measures.load(ex.load) == null) add("$at.load : l'exercice doit avoir \"load\" chiffrée (reçu \"${ex.load}\").")
+        }
+        if (p.maxLoad != null && Measures.load(p.maxLoad) == null) add("$at.maxLoad illisible : \"${p.maxLoad}\".")
+        if (p.addSets !in 0..5) add("$at.addSets doit être entre 0 et 5 (reçu ${p.addSets}).")
+        if (p.maxSets != null && p.maxSets !in 1..MAX_SETS) add("$at.maxSets doit être entre 1 et $MAX_SETS.")
     }
 
     /** Nettoie les textes et trie les jours : la suite du code peut compter sur cet ordre. */
@@ -111,6 +151,7 @@ object PlanParser {
                         exercises = day.exercises.map { ex ->
                             ex.copy(
                                 name = ex.name.trim(),
+                                id = ex.id.clean(),
                                 description = ex.description.clean(),
                                 reps = ex.reps.clean(),
                                 duration = ex.duration.clean(),

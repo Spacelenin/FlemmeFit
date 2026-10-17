@@ -33,7 +33,7 @@ dans l'app : *Importer → Programme d'exemple*).
 - Les jours **absents** d'une semaine sont des jours de **repos**.
 - Les semaines s'enchaînent dans l'ordre du tableau `weeks`.
 - `repeat` répète **l'ensemble** des semaines : avec 2 semaines et `"repeat": 4`, le programme dure 8 semaines
-  (S1, S2, S1, S2, S1, S2, S1, S2).
+  (S1, S2, S1, S2, S1, S2, S1, S2). Avec `"repeat": "forever"`, il tourne **sans fin**.
 - **Repousser** une séance (bouton dans l'app) la décale d'un jour **ainsi que tout le reste du programme**.
   Ce n'est pas stocké dans le fichier d'import.
 
@@ -47,7 +47,9 @@ dans l'app : *Importer → Programme d'exemple*).
 | `version`     | entier  | **oui**     | Toujours `1` pour ce format. |
 | `name`        | texte   | **oui**     | Nom du programme (affiché sur l'accueil). |
 | `description` | texte   | non         | Résumé, consignes générales. |
-| `repeat`      | entier  | non (défaut `1`) | Nombre de fois où la liste `weeks` est jouée. 1 à 100. |
+| `repeat`      | entier ou `"forever"` | non (défaut `1`) | Nombre de fois où la liste `weeks` est jouée (1 à 100), ou `"forever"` pour un programme illimité. |
+| `deloadEvery` | entier  | non         | Une semaine de **décharge** toutes les N semaines (2 à 52), `0` = jamais. Par défaut : `4` si au moins un exercice a une `progression`, sinon `0`. |
+| `boss`        | booléen | non (défaut `true`) | Jours **Boss** aléatoires. `false` pour les désactiver. |
 | `weeks`       | tableau | **oui**     | Au moins une semaine (voir ci-dessous). |
 
 ### Semaine (`weeks[]`)
@@ -74,14 +76,93 @@ Ce sont des **textes libres** (tu peux écrire `"12"`, `"8-10"`, `"max"`, `"10 p
 | Champ         | Type   | Obligatoire | Exemple | Description |
 |---------------|--------|-------------|---------|-------------|
 | `name`        | texte  | **oui**     | `"Squat"` | Nom de l'exercice. |
+| `id`          | texte  | non         | `"pompes"` | Relie le même exercice sur plusieurs jours (progression et stats communes). Par défaut : le nom, sans tenir compte des majuscules. |
 | `sets`        | entier | non         | `4`     | Nombre de séries (1 à 100). |
 | `reps`        | texte  | non         | `"8-10"` | Répétitions par série. Un nombre (`12`) est aussi accepté. |
 | `duration`    | texte  | non         | `"45s"`, `"20min"` | Durée (gainage, cardio, étirements…). |
 | `load`        | texte  | non         | `"60 kg"`, `"élastique rouge"` | Charge. |
 | `rest`        | texte  | non         | `"90s"` | Repos entre les séries. |
 | `description` | texte  | non         | `"Dos droit…"` | Explication détaillée, affichée en touchant l'exercice. |
+| `progression` | objet  | non         | voir plus bas | Progression automatique. |
 
 Affichage dans l'app : `sets × reps · load · repos rest`, par ex. **4 × 8-10 · 60 kg · repos 90s**.
+
+**Valeurs chiffrées.** Pour progresser (et pour des stats précises), une valeur doit être chiffrée :
+- `reps` : un nombre entier (`12` ou `"12"`). `"8-10"` ou `"max"` restent affichés tels quels, sans progression.
+- `duration` : `"45s"`, `"45"`, `"2min"`, `"1min30"`, `"1m30s"` ou `"1:30"`.
+- `load` : un nombre suivi d'une unité, `"8 kg"`, `"2,5kg"` (`kg` par défaut).
+
+### Progression (`exercises[].progression`)
+
+Chaque **cran** de progression ajoute les pas indiqués. Arrivé au plafond, on ajoute `addSets` série(s) et on
+repart de la valeur de départ (« double progression ») ; une fois `maxSets` atteint, l'exercice reste au plafond.
+
+| Champ         | Type   | Défaut   | Description |
+|---------------|--------|----------|-------------|
+| `basis`       | texte  | `"done"` | `"done"` : un cran par séance **validée** (une séance ratée ne fait pas progresser). `"week"` : un cran par semaine du calendrier. |
+| `every`       | entier | `1`      | Nombre de séances validées (ou de semaines) pour un cran. Ex. un exo fait 2 fois par semaine avec `"every": 2` = +1 cran par semaine. |
+| `reps`        | entier | —        | Répétitions ajoutées par cran. Nécessite `reps` chiffré. |
+| `maxReps`     | entier | —        | Plafond de répétitions. |
+| `duration`    | texte  | —        | Durée ajoutée par cran (`"5s"`). Nécessite `duration` chiffrée. |
+| `maxDuration` | texte  | —        | Plafond de durée (`"90s"`). |
+| `load`        | texte  | —        | Charge ajoutée par cran (`"1kg"`). Nécessite `load` chiffrée. |
+| `maxLoad`     | texte  | —        | Plafond de charge. |
+| `addSets`     | entier | `0`      | Séries ajoutées quand le plafond de reps (ou de durée) est atteint. 0 à 5. |
+| `maxSets`     | entier | —        | Nombre de séries maximum. |
+
+Au moins un pas (`reps`, `duration` ou `load`) est obligatoire.
+
+Exemple : 3 × 8 pompes, +1 rep par séance validée jusqu'à 12, puis une série de plus en repartant à 8, 5 séries max.
+
+```json
+{
+  "format": "flemmefit",
+  "version": 1,
+  "name": "Pompes progressives",
+  "repeat": "forever",
+  "weeks": [
+    {
+      "days": [
+        {
+          "day": 1,
+          "exercises": [
+            { "name": "Pompes", "sets": 3, "reps": 8, "rest": "60s",
+              "progression": { "reps": 1, "maxReps": 12, "addSets": 1, "maxSets": 5 } },
+            { "name": "Gainage", "sets": 2, "duration": "30s",
+              "progression": { "duration": "5s", "maxDuration": "90s" } }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Ajustement par le max.** Le max noté sur une série à fond ajuste la progression de l'exercice, prudemment :
+nettement au-dessus du prévu (≥ 3 pas) = +1 cran, très au-dessus (≥ 6 pas) = +2 crans, en dessous = −1 cran
+(au total entre −2 et +4 crans).
+
+## Semaine de décharge 🌿
+
+Une semaine sur `deloadEvery` (la 4e, la 8e… par défaut) est allégée de **50 %** : séries divisées par deux
+(arrondi au-dessus), ou répétitions/durée divisées par deux pour un exercice à une seule série.
+Elle ne fait pas progresser et n'a jamais de Boss.
+
+## Jours Boss 💀
+
+Toutes les **3 à 4 semaines**, une séance tirée au hasard devient un Boss (tirage fixe : rouvrir l'app ne le
+change pas ; repousser la séance déplace le Boss avec elle). Il se dévoile **la veille**.
+- Chiffres de la semaine prochaine (+1 cran de progression), et **dernière série à fond** sur chaque exercice.
+- En cochant un exercice, l'app demande le **max** fait sur la série à fond. Objectif affiché : dernier max + 1.
+- Boss entièrement validé = **Boss vaincu** dans les stats.
+
+## Suivi dans l'app
+
+- Cocher = fait comme prévu. **Appui long** (ou crayon) = noter ce qui a réellement été fait :
+  en dessous du prévu, l'exercice est **partiel** (la journée n'est pas validée, sa progression n'avance pas) ;
+  on peut aussi y noter un max n'importe quel jour.
+- **Stats** : par programme (onglet *Stats*) et globales (bouton *📊 Stats* de l'accueil). Les exercices
+  de même `id` (ou même nom) sont regroupés, y compris entre programmes.
 
 ## Règles de validation
 
@@ -91,7 +172,10 @@ L'import est refusé (avec la liste des erreurs) si :
 - `name` est vide, `weeks` est vide, ou le programme ne contient aucune séance ;
 - `repeat` est hors de 1–100, ou `semaines × repeat` dépasse 520 ;
 - un `day` est hors de 1–7 ou en double dans une même semaine ;
-- une séance n'a aucun exercice, un exercice n'a pas de `name`, ou `sets` est hors de 1–100.
+- une séance n'a aucun exercice, un exercice n'a pas de `name`, ou `sets` est hors de 1–100 ;
+- `deloadEvery` vaut autre chose que 0 ou 2–52 ;
+- une `progression` n'a aucun pas, a un pas sur une valeur non chiffrée (ex. `reps` = `"max"`),
+  ou une valeur illisible.
 
 Tolérances : les **champs inconnus sont ignorés** (tu peux ajouter tes propres notes, ex. `"_commentaire"`),
 l'ordre des jours dans `days` est libre, et les espaces en trop sont retirés.
@@ -110,10 +194,36 @@ Ensuite, choisis la date de début et valide.
 - Les ajouts compatibles (nouveaux champs **optionnels**) restent en `"version": 1`.
 - Un changement incompatible passerait en `"version": 2` ; l'app continuerait à lire la version 1.
 
-## Générer un programme à partir d'un texte libre
+## Écrire un programme en texte libre
 
-Pour convertir un programme écrit à la main (ou trouvé ailleurs), donne-le à un assistant avec cette consigne :
+Pour qu'un programme écrit à la main puisse être converti au mieux, voici ce qu'il peut contenir.
+Seul ce qui est en **gras** est indispensable ; le reste a une valeur par défaut.
 
-> Convertis ce programme au format FlemmeFit v1 décrit dans FORMAT.md. Une entrée `exercises` par exercice,
-> `day` = position 1–7 dans la semaine, jours de repos omis, textes libres pour `reps`/`duration`/`load`/`rest`,
-> et utilise `repeat` si les semaines se répètent à l'identique.
+**Programme**
+- **Nom.**
+- **Jours d'entraînement et de repos** de la semaine type (Jour 1 à 7).
+- Durée : illimitée par défaut, ou nombre de semaines.
+- Niveau général (débutant complet par défaut), objectif (force, endurance, bouger…), matériel disponible.
+
+**Séance**
+- **Liste des exercices**, titre de la séance (sinon déduit), consignes générales.
+
+**Exercice**
+- **Nom**, et comment le faire (position, tempo, pièges).
+- **Ce que tu arrives à faire aujourd'hui** (« 6 pompes lentes », « gainage 40 s ») : l'info la plus utile.
+- Séries (3 par défaut), répétitions ou durée, repos (60 s par défaut, 90 s pour les exos durs), charge.
+- Si c'est le même exercice qu'un autre jour (progression commune) ou non.
+
+**Progression (facultatif)**
+- Rythme (chaque semaine ou seulement si validé), objectif ou plafond, exercices qui ne progressent pas.
+
+**Valeurs par défaut pour débutant**, quand rien n'est précisé :
+
+| Type d'exercice | Départ | Progression | Plafond |
+|---|---|---|---|
+| Répétitions | ~70 % du max actuel | +1 rep par semaine validée | 12–15 reps, puis +1 série en repartant du départ, 4–5 séries max |
+| Durée (gainage…) | ~70 % du max actuel | +5 s par semaine validée | 60–90 s, puis +1 série |
+| Charge | celle indiquée | +1 kg quand le haut des reps est atteint | — |
+| Cardio / jeu | durée indiquée | +2 à 5 min toutes les 2 semaines | 30–45 min |
+
+Plus une semaine de décharge à 50 % toutes les 4 semaines et des jours Boss toutes les 3 à 4 semaines.

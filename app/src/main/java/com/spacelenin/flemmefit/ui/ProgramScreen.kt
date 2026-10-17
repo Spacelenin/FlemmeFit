@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -37,6 +39,8 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
@@ -53,7 +57,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.spacelenin.flemmefit.data.ProgramRepository
+import com.spacelenin.flemmefit.model.ExerciseLog
 import com.spacelenin.flemmefit.model.ProgramSchedule
+import com.spacelenin.flemmefit.model.Stats
 import com.spacelenin.flemmefit.model.Progress
 import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.ui.theme.programColor
@@ -66,8 +72,8 @@ private val TwoPaneMinWidth = 600.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProgramScreen(program: StoredProgram, repository: ProgramRepository, onBack: () -> Unit) {
-    val schedule = remember(program) { ProgramSchedule(program) }
     val today = rememberToday()
+    val schedule = remember(program, today) { ProgramSchedule(program, today) }
     val color = programColor(program.colorIndex)
 
     val initial = remember(program.id) { initialDate(schedule, LocalDate.now()) }
@@ -86,6 +92,11 @@ fun ProgramScreen(program: StoredProgram, repository: ProgramRepository, onBack:
     var confirmDelete by remember { mutableStateOf(false) }
     var pickStart by remember { mutableStateOf(false) }
     var postponeIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+    // Exercice en cours de saisie : index de jour, index d'exercice, et s'il s'agit du max de Boss.
+    var logDay by rememberSaveable { mutableStateOf<Int?>(null) }
+    var logExercise by rememberSaveable { mutableStateOf(0) }
+    var logBoss by rememberSaveable { mutableStateOf(false) }
+    var tab by rememberSaveable { mutableStateOf(0) }
 
     val actions = DayActions(
         onToggle = { s, i -> repository.toggleExercise(program.id, s.index, i) },
@@ -93,8 +104,10 @@ fun ProgramScreen(program: StoredProgram, repository: ProgramRepository, onBack:
         onPostpone = { s -> postponeIndex = s.index },
         onUndoPostpone = { s ->
             repository.undoPostpone(program.id, s.index)
-            select(ProgramSchedule(program.undoPostpone(s.index)).dateOf(s.index))
+            select(ProgramSchedule(program.undoPostpone(s.index), today).dateOf(s.index))
         },
+        onEditLog = { s, i -> logDay = s.index; logExercise = i; logBoss = false },
+        onBossCheck = { s, i -> logDay = s.index; logExercise = i; logBoss = true },
     )
 
     Scaffold(
@@ -123,41 +136,95 @@ fun ProgramScreen(program: StoredProgram, repository: ProgramRepository, onBack:
             )
         },
     ) { padding ->
-        BoxWithConstraints(Modifier.fillMaxSize().padding(padding)) {
-            val calendarItems: LazyListScope.() -> Unit = {
-                item(key = "summary") {
-                    ProgressSummary(schedule.progress(today), schedule, color, Modifier.padding(16.dp))
-                }
-                item(key = "calendar") {
-                    Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        MonthCalendar(
-                            schedule = schedule,
-                            color = color,
-                            month = month,
-                            onMonthChange = { monthIndex = it.year * 12 + it.monthValue - 1 },
-                            selected = selected,
-                            today = today,
-                            onSelect = ::select,
-                        )
-                    }
-                }
-                item(key = "legend") { Legend(color) }
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            TabRow(selectedTabIndex = tab) {
+                Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text("Calendrier") })
+                Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text("Stats") })
             }
+            BoxWithConstraints(Modifier.fillMaxSize()) {
+                val wide = maxWidth >= TwoPaneMinWidth
+                if (tab == 1) {
+                    val stats = remember(schedule) { Stats.of(schedule) }
+                    if (wide) {
+                        Row(Modifier.fillMaxSize()) {
+                            LazyColumn(Modifier.weight(1f).fillMaxHeight()) { statsOverviewItems(stats, color, showProgram = false) }
+                            VerticalDivider()
+                            LazyColumn(Modifier.weight(1f).fillMaxHeight()) { statsExerciseItems(stats) }
+                        }
+                    } else {
+                        LazyColumn(Modifier.fillMaxSize()) {
+                            statsOverviewItems(stats, color, showProgram = false)
+                            statsExerciseItems(stats)
+                        }
+                    }
+                } else {
+                    val calendarItems: LazyListScope.() -> Unit = {
+                        item(key = "summary") {
+                            ProgressSummary(schedule.progress(), schedule, color, Modifier.padding(16.dp))
+                        }
+                        item(key = "calendar") {
+                            Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                MonthCalendar(
+                                    schedule = schedule,
+                                    color = color,
+                                    month = month,
+                                    onMonthChange = { monthIndex = it.year * 12 + it.monthValue - 1 },
+                                    selected = selected,
+                                    today = today,
+                                    onSelect = ::select,
+                                )
+                            }
+                        }
+                        item(key = "legend") { Legend(color) }
+                    }
 
-            if (maxWidth >= TwoPaneMinWidth) {
-                Row(Modifier.fillMaxSize()) {
-                    LazyColumn(Modifier.weight(1f).fillMaxHeight(), content = calendarItems)
-                    VerticalDivider()
-                    LazyColumn(Modifier.weight(1f).fillMaxHeight()) {
-                        dayDetailItems(schedule, selected, color, actions)
+                    if (wide) {
+                        Row(Modifier.fillMaxSize()) {
+                            LazyColumn(Modifier.weight(1f).fillMaxHeight(), content = calendarItems)
+                            VerticalDivider()
+                            LazyColumn(Modifier.weight(1f).fillMaxHeight()) {
+                                dayDetailItems(schedule, selected, color, actions)
+                            }
+                        }
+                    } else {
+                        LazyColumn(Modifier.fillMaxSize()) {
+                            calendarItems(this)
+                            dayDetailItems(schedule, selected, color, actions)
+                        }
                     }
                 }
-            } else {
-                LazyColumn(Modifier.fillMaxSize()) {
-                    calendarItems(this)
-                    dayDetailItems(schedule, selected, color, actions)
-                }
             }
+        }
+    }
+
+    logDay?.let { dayIndex ->
+        val session = schedule.sessionAt(dayIndex)
+        val prescription = session?.prescriptions?.getOrNull(logExercise) ?: return@let
+        val close = { logDay = null }
+        if (logBoss) {
+            BossMaxDialog(
+                prescription = prescription,
+                onSave = { max ->
+                    if (max == null) repository.toggleExercise(program.id, dayIndex, logExercise)
+                    else repository.saveLog(program.id, dayIndex, logExercise, ExerciseLog(max = max), complete = true)
+                    close()
+                },
+                onDismiss = close,
+            )
+        } else {
+            LogDialog(
+                prescription = prescription,
+                existing = program.logOf(dayIndex, logExercise),
+                onSave = { log, complete ->
+                    repository.saveLog(program.id, dayIndex, logExercise, log, complete)
+                    close()
+                },
+                onClear = {
+                    repository.saveLog(program.id, dayIndex, logExercise, ExerciseLog(), program.isDone(dayIndex, logExercise))
+                    close()
+                },
+                onDismiss = close,
+            )
         }
     }
 
@@ -221,8 +288,7 @@ fun ProgramScreen(program: StoredProgram, repository: ProgramRepository, onBack:
 /** Aujourd'hui si on est dans le programme, sinon son début ou sa fin. */
 private fun initialDate(schedule: ProgramSchedule, today: LocalDate): LocalDate = when {
     today.isBefore(schedule.startDate) -> schedule.startDate
-    today.isAfter(schedule.endDate) -> schedule.endDate
-    else -> today
+    else -> schedule.endDate?.takeIf { today.isAfter(it) } ?: today
 }
 
 @Composable
@@ -231,13 +297,18 @@ fun ProgressSummary(progress: Progress, schedule: ProgramSchedule, color: Color,
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    "${(progress.ratio * 100).toInt()} %",
+                    "${progress.doneSessions}/${progress.totalSessions}",
                     style = MaterialTheme.typography.headlineMedium,
                     color = color,
                 )
+                Text(
+                    if (schedule.isForever) " séances à ce jour" else " séances",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(start = 4.dp),
+                )
                 Spacer(Modifier.weight(1f))
                 Text(
-                    "${schedule.startDate.shortLabel()} → ${schedule.endDate.shortLabel()}",
+                    "${schedule.startDate.shortLabel()} → ${schedule.endDate?.shortLabel() ?: "∞"}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -246,7 +317,6 @@ fun ProgressSummary(progress: Progress, schedule: ProgramSchedule, color: Color,
             LinearProgressIndicator(progress = { progress.ratio }, color = color, modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                Stat("${progress.doneSessions}/${progress.totalSessions}", "séances")
                 Stat("${progress.doneExercises}/${progress.totalExercises}", "exos")
                 Stat("${progress.streak} 🔥", "série")
                 Stat("${progress.missedSessions}", "manquées")
@@ -263,16 +333,19 @@ private fun Stat(value: String, label: String) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun Legend(color: Color) {
-    Row(
+    FlowRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier.fillMaxWidth().padding(8.dp),
     ) {
         LegendItem(color, "faite")
         LegendItem(color.copy(alpha = 0.35f), "commencée")
         LegendItem(MaterialTheme.colorScheme.errorContainer, "manquée")
         LegendItem(Color.Transparent, "prévue", border = color)
+        Text("💀 Boss", style = MaterialTheme.typography.labelSmall)
     }
 }
 
