@@ -63,6 +63,16 @@ fun LazyListScope.statsOverviewItems(stats: Stats, color: Color, showProgram: Bo
     }
     item(key = "stats-totals") { Totals(stats) }
     item(key = "stats-chart") { WeeklyChart(stats.weeks, color) }
+    if (stats.exploits.isNotEmpty()) {
+        item(key = "stats-exploits-title") { SectionTitle("Exploits 🏆") }
+        itemsIndexed(stats.exploits.take(10), key = { i, _ -> "x-$i" }) { _, x ->
+            Text(
+                "${x.date.shortLabel()} · ${x.label()}",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
+        }
+    }
     item(key = "stats-history-title") { SectionTitle("Historique") }
     itemsIndexed(stats.history, key = { i, _ -> "h-$i" }) { _, h -> HistoryRow(h, showProgram) }
 }
@@ -94,6 +104,7 @@ private fun Totals(stats: Stats) {
             Tile("${stats.currentStreak} 🔥", "série actuelle")
             Tile("${stats.bestStreak}", "meilleure série")
             Tile("${stats.bossDefeated}/${stats.bossMet} 💀", "Boss vaincus")
+            Tile("${stats.exploits.size} 🏆", "exploits (max ≥ 2× le prévu)")
         }
     }
 }

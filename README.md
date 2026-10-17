@@ -16,6 +16,10 @@ et une progression.
   Boss vaincus, historique.
 - **Rappels** (⋮ → Rappels), ton terriblement taquin : rappel du jour (18 h par défaut) les jours de séance,
   relance du soir désactivable (21 h) si la séance n'est pas finie, annonce du Boss la veille, bouton « Plus tard ».
+- **Les potes 👥** : pseudo, avancée du jour de chacun, série, Boss vaincus et **exploits 🏆** (un max au moins
+  2× supérieur à la série prévue), classement à points (Boss 5, exploit 3, séance 1). Sans serveur à nous :
+  les apps échangent une petite carte via le relais public gratuit [ntfy.sh](https://ntfy.sh) (sans compte),
+  et chacune garde la dernière carte connue des autres. Canal commun par défaut, modifiable dans les réglages.
 - **Plusieurs programmes**, chacun séparé sur l'accueil avec sa couleur.
 - **Pliables** (Galaxy Z Fold 5 et suivants) : écran extérieur = une colonne ; écran intérieur déplié =
   calendrier à gauche, détail du jour à droite, et accueil en grille. Le pliage/dépliage garde l'état.

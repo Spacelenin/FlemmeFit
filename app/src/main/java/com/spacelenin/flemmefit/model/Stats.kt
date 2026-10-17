@@ -19,6 +19,18 @@ data class ExerciseStats(
     val lastDate: LocalDate?,
 )
 
+/** Max noté sur une série au moins deux fois supérieur au prévu. */
+data class Exploit(val name: String, val value: Int, val planned: Int, val isSeconds: Boolean, val date: LocalDate) {
+    fun label(): String {
+        val fmt: (Int) -> String = if (isSeconds) Measures::formatSeconds else { n -> "$n reps" }
+        return "$name : ${fmt(value)} (prévu ${fmt(planned)})"
+    }
+
+    companion object {
+        const val FACTOR = 2
+    }
+}
+
 /** Volume d'une semaine calendaire (du lundi au dimanche). */
 data class WeekVolume(val monday: LocalDate, val sets: Int, val boss: Boolean, val deload: Boolean)
 
@@ -44,6 +56,7 @@ data class Stats(
     val exercises: List<ExerciseStats>,
     val weeks: List<WeekVolume>,
     val history: List<HistoryEntry>,
+    val exploits: List<Exploit> = emptyList(),
 ) {
     val isEmpty get() = sessionsDone == 0 && exercises.isEmpty()
 
@@ -85,6 +98,7 @@ data class Stats(
                 exercises = exercises,
                 weeks = weeks,
                 history = all.flatMap { it.history }.sortedByDescending { it.date }.take(HISTORY_SIZE),
+                exploits = all.flatMap { it.exploits }.sortedByDescending { it.date },
             )
         }
 
@@ -112,6 +126,7 @@ data class Stats(
             var sessionsDone = 0; var bossDefeated = 0; var bossMet = 0
             var bestStreak = 0; var run = 0
             val history = ArrayList<HistoryEntry>()
+            val exploits = ArrayList<Exploit>()
 
             for (s in sessions) {
                 val monday = s.date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
@@ -141,6 +156,10 @@ data class Stats(
                     val secPerSet = log?.seconds ?: pr.seconds
                     val maxReps = max?.takeIf { !pr.maxIsSeconds }
                     val maxSec = max?.takeIf { pr.maxIsSeconds }
+                    val planned = if (pr.maxIsSeconds) pr.seconds else pr.reps
+                    if (max != null && planned != null && planned > 0 && max >= Exploit.FACTOR * planned) {
+                        exploits += Exploit(pr.exercise.name, max, planned, pr.maxIsSeconds, s.date)
+                    }
                     // Sur une série à fond, la dernière série vaut le max noté.
                     val reps = when {
                         repsPerSet != null && maxReps != null && pr.allOut -> (sets - 1) * repsPerSet + maxReps
@@ -188,6 +207,7 @@ data class Stats(
                     WeekVolume(it, weekSets[it] ?: 0, it in weekBoss, it in weekDeload)
                 },
                 history = history.sortedByDescending { it.date }.take(HISTORY_SIZE),
+                exploits = exploits.sortedByDescending { it.date },
             )
         }
     }
