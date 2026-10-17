@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -28,6 +29,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -48,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.ui.theme.programColor
+import com.spacelenin.flemmefit.update.AppUpdater
 import java.time.LocalDate
 
 class ImportActions(
@@ -63,8 +66,10 @@ fun HomeScreen(
     onOpen: (String) -> Unit,
     onStats: () -> Unit,
     importActions: ImportActions,
+    updater: AppUpdater,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
+    var moreOpen by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -72,6 +77,20 @@ fun HomeScreen(
                 actions = {
                     if (programs.isNotEmpty()) {
                         TextButton(onClick = onStats) { Text("📊 Stats") }
+                    }
+                    Box {
+                        IconButton(onClick = { moreOpen = true }) { Icon(Icons.Default.MoreVert, "Plus d'options") }
+                        DropdownMenu(expanded = moreOpen, onDismissRequest = { moreOpen = false }) {
+                            DropdownMenuItem(
+                                text = { Text("Vérifier les mises à jour") },
+                                onClick = { moreOpen = false; updater.check() },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Version : build ${updater.currentVersion}") },
+                                onClick = {},
+                                enabled = false,
+                            )
+                        }
                     }
                 },
             )
@@ -93,21 +112,34 @@ fun HomeScreen(
             }
         },
     ) { padding ->
-        if (programs.isEmpty()) {
-            EmptyHome(importActions, Modifier.padding(padding))
-        } else {
-            val today = rememberToday()
-            // Une colonne sur téléphone / Fold plié, plusieurs sur l'écran déplié.
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 320.dp),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize().padding(padding),
-            ) {
-                items(programs, key = { it.id }) { program ->
-                    ProgramCard(program, today, onClick = { onOpen(program.id) })
-                }
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            UpdateBanner(updater)
+            HomeContent(programs, onOpen, importActions, Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+private fun HomeContent(
+    programs: List<StoredProgram>,
+    onOpen: (String) -> Unit,
+    importActions: ImportActions,
+    modifier: Modifier,
+) {
+    if (programs.isEmpty()) {
+        EmptyHome(importActions, modifier)
+    } else {
+        val today = rememberToday()
+        // Une colonne sur téléphone / Fold plié, plusieurs sur l'écran déplié.
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 320.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = modifier.fillMaxSize(),
+        ) {
+            items(programs, key = { it.id }) { program ->
+                ProgramCard(program, today, onClick = { onOpen(program.id) })
             }
         }
     }

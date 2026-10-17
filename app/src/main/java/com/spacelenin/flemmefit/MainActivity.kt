@@ -24,10 +24,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) incoming = intent.toImportSource()
 
-        val repository = (application as FlemmeFitApp).repository
+        val app = application as FlemmeFitApp
         setContent {
             FlemmeFitTheme {
-                AppRoot(repository = repository, incoming = incoming, onIncomingConsumed = { incoming = null })
+                AppRoot(
+                    repository = app.repository,
+                    updater = app.updater,
+                    incoming = incoming,
+                    onIncomingConsumed = { incoming = null },
+                )
             }
         }
     }

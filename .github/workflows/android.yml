@@ -40,6 +40,6 @@ jobs:
         with:
           tag_name: build-${{ github.run_number }}
           name: FlemmeFit build ${{ github.run_number }}
-          body: "APK à installer : FlemmeFit-${{ github.run_number }}.apk (commit ${{ github.sha }})"
+          body: ${{ toJSON(github.event.head_commit.message) }}
           files: FlemmeFit-${{ github.run_number }}.apk
           make_latest: true
