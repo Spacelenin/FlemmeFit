@@ -28,8 +28,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,7 +42,6 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -66,8 +63,6 @@ import com.spacelenin.flemmefit.ui.theme.programColor
 import java.time.LocalDate
 import java.time.YearMonth
 
-/** Largeur à partir de laquelle on affiche calendrier et détail côte à côte (écran intérieur des Fold, tablettes, paysage). */
-private val TwoPaneMinWidth = 600.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -144,19 +139,7 @@ fun ProgramScreen(program: StoredProgram, repository: ProgramRepository, onBack:
             BoxWithConstraints(Modifier.fillMaxSize()) {
                 val wide = maxWidth >= TwoPaneMinWidth
                 if (tab == 1) {
-                    val stats = remember(schedule) { Stats.of(schedule) }
-                    if (wide) {
-                        Row(Modifier.fillMaxSize()) {
-                            LazyColumn(Modifier.weight(1f).fillMaxHeight()) { statsOverviewItems(stats, color, showProgram = false) }
-                            VerticalDivider()
-                            LazyColumn(Modifier.weight(1f).fillMaxHeight()) { statsExerciseItems(stats) }
-                        }
-                    } else {
-                        LazyColumn(Modifier.fillMaxSize()) {
-                            statsOverviewItems(stats, color, showProgram = false)
-                            statsExerciseItems(stats)
-                        }
-                    }
+                    StatsPanes(remember(schedule) { Stats.of(schedule) }, color, showProgram = false)
                 } else {
                     val calendarItems: LazyListScope.() -> Unit = {
                         item(key = "summary") {
@@ -267,21 +250,14 @@ fun ProgramScreen(program: StoredProgram, repository: ProgramRepository, onBack:
     }
 
     if (pickStart) {
-        val state = rememberDatePickerState(initialSelectedDateMillis = program.start.toPickerMillis())
-        DatePickerDialog(
-            onDismissRequest = { pickStart = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    state.selectedDateMillis?.let {
-                        val date = it.pickerMillisToDate()
-                        repository.changeStartDate(program.id, date)
-                        select(date)
-                    }
-                    pickStart = false
-                }) { Text("Valider") }
+        DateSelectDialog(
+            initial = program.start,
+            onSelect = { date ->
+                repository.changeStartDate(program.id, date)
+                select(date)
             },
-            dismissButton = { TextButton(onClick = { pickStart = false }) { Text("Annuler") } },
-        ) { DatePicker(state = state) }
+            onDismiss = { pickStart = false },
+        )
     }
 }
 

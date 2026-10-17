@@ -70,8 +70,6 @@ data class StoredProgram(
         return copy(done = if (complete) done + key else done - key, logs = newLogs)
     }
 
-    fun clearLog(dayIndex: Int, exerciseIndex: Int) = copy(logs = logs - doneKey(dayIndex, exerciseIndex))
-
     fun postpone(dayIndex: Int) = copy(postpones = (postpones + dayIndex).sorted())
 
     fun undoPostpone(dayIndex: Int): StoredProgram {

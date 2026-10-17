@@ -6,12 +6,12 @@ et une progression.
 - **Import** d'un programme au format JSON → voir **[FORMAT.md](FORMAT.md)** (format stable, versionné).
 - **Calendrier** mensuel : séances faites / commencées / manquées / prévues.
 - **Suivi** : on coche chaque exercice ; un appui affiche sa description. « Tout cocher » pour la séance.
-  Appui long : noter ce qui a vraiment été fait (exercice partiel) ou son max.
+  Appui long : noter ce qui a vraiment été fait (exercice partiel) ou son max. % de la journée, séances et
+  exos faits, série en cours 🔥, séances manquées, prochaine séance.
 - **Programmes illimités** (`"repeat": "forever"`) : le calendrier se remplit sans fin.
 - **Progression automatique** des séries / reps / durées / charges, semaine de **décharge** à 50 %.
 - **Jours Boss 💀** aléatoires toutes les 3 à 4 semaines : séance renforcée et série à fond, on note son max.
 - **Repousser** une séance d'un jour : tout le reste du programme est décalé (annulable).
-- **Suivi** : % de la journée, séances et exos faits, série en cours 🔥, séances manquées, prochaine séance.
 - **Stats** par programme et globales : reps, séries, temps, records, évolution par exercice, volume par semaine,
   Boss vaincus, historique.
 - **Plusieurs programmes**, chacun séparé sur l'accueil avec sa couleur.

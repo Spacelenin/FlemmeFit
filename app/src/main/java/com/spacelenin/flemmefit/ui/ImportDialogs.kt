@@ -7,15 +7,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,7 +64,6 @@ fun ImportErrorDialog(errors: List<String>, onDismiss: () -> Unit) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImportConfirmDialog(plan: Plan, onDismiss: () -> Unit, onConfirm: (LocalDate) -> Unit) {
     var startEpoch by rememberSaveable { mutableStateOf(LocalDate.now().toEpochDay()) }
@@ -117,16 +112,6 @@ fun ImportConfirmDialog(plan: Plan, onDismiss: () -> Unit, onConfirm: (LocalDate
     )
 
     if (picking) {
-        val state = rememberDatePickerState(initialSelectedDateMillis = start.toPickerMillis())
-        DatePickerDialog(
-            onDismissRequest = { picking = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    state.selectedDateMillis?.let { startEpoch = it.pickerMillisToDate().toEpochDay() }
-                    picking = false
-                }) { Text("Valider") }
-            },
-            dismissButton = { TextButton(onClick = { picking = false }) { Text("Annuler") } },
-        ) { DatePicker(state = state) }
+        DateSelectDialog(start, onSelect = { startEpoch = it.toEpochDay() }, onDismiss = { picking = false })
     }
 }
