@@ -69,7 +69,14 @@ import java.time.YearMonth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProgramScreen(program: StoredProgram, repository: ProgramRepository, onBack: () -> Unit) {
+fun ProgramScreen(
+    program: StoredProgram,
+    repository: ProgramRepository,
+    onBack: () -> Unit,
+    /** Ouvre directement la saisie des tests de départ (juste après l'import). */
+    askTests: Boolean = false,
+    onTestsAsked: () -> Unit = {},
+) {
     val today = rememberToday()
     val schedule = remember(program, today) { ProgramSchedule(program, today) }
     val color = programColor(program.colorIndex)
@@ -89,7 +96,7 @@ fun ProgramScreen(program: StoredProgram, repository: ProgramRepository, onBack:
     var menuOpen by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
     var pickStart by remember { mutableStateOf(false) }
-    var editTests by remember { mutableStateOf(false) }
+    var editTests by remember { mutableStateOf(askTests) }
     var postponeIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     // Exercice en cours de saisie : index de jour, index d'exercice, et s'il s'agit du max de Boss.
     var logDay by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -285,8 +292,12 @@ fun ProgramScreen(program: StoredProgram, repository: ProgramRepository, onBack:
             onSave = { results ->
                 repository.setTests(program.id, results)
                 editTests = false
+                onTestsAsked()
             },
-            onDismiss = { editTests = false },
+            onDismiss = {
+                editTests = false
+                onTestsAsked()
+            },
         )
     }
 
