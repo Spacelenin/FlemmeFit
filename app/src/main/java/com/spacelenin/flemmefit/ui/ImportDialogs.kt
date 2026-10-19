@@ -2,18 +2,30 @@ package com.spacelenin.flemmefit.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,12 +34,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.spacelenin.flemmefit.model.DAYS_PER_WEEK
 import com.spacelenin.flemmefit.model.Measures
 import com.spacelenin.flemmefit.model.Plan
-import com.spacelenin.flemmefit.model.PlanTest
 import com.spacelenin.flemmefit.model.StoredProgram
 import java.time.LocalDate
 
@@ -72,9 +86,8 @@ fun ImportErrorDialog(errors: List<String>, onDismiss: () -> Unit) {
 }
 
 @Composable
-fun ImportConfirmDialog(plan: Plan, onDismiss: () -> Unit, onConfirm: (LocalDate, tests: Map<String, Int>) -> Unit) {
+fun ImportConfirmDialog(plan: Plan, onDismiss: () -> Unit, onConfirm: (LocalDate) -> Unit) {
     var startEpoch by rememberSaveable { mutableStateOf(LocalDate.now().toEpochDay()) }
-    var results by remember { mutableStateOf(emptyMap<String, String>()) }
     var picking by rememberSaveable { mutableStateOf(false) }
     val start = LocalDate.ofEpochDay(startEpoch)
 
@@ -115,19 +128,15 @@ fun ImportConfirmDialog(plan: Plan, onDismiss: () -> Unit, onConfirm: (LocalDate
                 )
                 if (plan.tests.isNotEmpty()) {
                     Spacer(Modifier.height(16.dp))
-                    Text("Tests de départ", style = MaterialTheme.typography.labelLarge)
                     Text(
-                        "Fais chaque test une fois, à fond, et note le résultat : il choisit ton palier de départ. " +
-                            "Laissé vide : palier le plus facile, à remplir plus tard (menu ⋮ du programme).",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        "📏 ${plan.tests.size} tests de départ (${plan.tests.joinToString { it.name }}) : " +
+                            "tu noteras tes résultats juste après l'import.",
+                        style = MaterialTheme.typography.bodyMedium,
                     )
-                    Spacer(Modifier.height(8.dp))
-                    TestResultFields(plan.tests, results) { id, v -> results = results + (id to v) }
                 }
             }
         },
-        confirmButton = { TextButton(onClick = { onConfirm(start, results.parsedResults()) }) { Text("Importer") } },
+        confirmButton = { TextButton(onClick = { onConfirm(start) }) { Text("Importer") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Annuler") } },
     )
 
@@ -139,48 +148,64 @@ fun ImportConfirmDialog(plan: Plan, onDismiss: () -> Unit, onConfirm: (LocalDate
 private fun Map<String, String>.parsedResults(): Map<String, Int> =
     mapNotNull { (id, v) -> v.toIntOrNull()?.let { id to it } }.toMap()
 
-/** Un champ par test, avec sa consigne. Valeurs en texte pour pouvoir rester vides. */
-@Composable
-private fun TestResultFields(tests: List<PlanTest>, values: Map<String, String>, onChange: (id: String, value: String) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        tests.forEach { test ->
-            OutlinedTextField(
-                value = values[test.id].orEmpty(),
-                onValueChange = { v -> onChange(test.id, v.filter(Char::isDigit).take(4)) },
-                label = { Text(test.name) },
-                suffix = { Text(if (test.isSeconds) "s" else "reps") },
-                supportingText = if (test.description != null) {
-                    { Text(test.description) }
-                } else {
-                    null
-                },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-    }
-}
-
-/** Corriger les résultats des tests de départ après l'import. */
+/**
+ * Saisie des résultats des tests, en plein écran : avec un champ par test, une simple boîte de dialogue
+ * passait sous le clavier. Le contenu se décale au-dessus du clavier et « Suivant » passe au champ d'après.
+ */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun TestsDialog(program: StoredProgram, current: Map<String, Int>, onSave: (Map<String, Int>) -> Unit, onDismiss: () -> Unit) {
     var results by remember { mutableStateOf(program.tests.mapValues { it.value.toString() }) }
-    AlertDialog(
+    val tests = program.plan.tests
+    Dialog(
         onDismissRequest = onDismiss,
-        title = { Text("Tests de départ") },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState())) {
-                Text(
-                    "Les paliers suivent le dernier résultat : celui-ci, puis ceux des tests refaits en cours de route.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Tests de départ") },
+                    navigationIcon = { IconButton(onClick = onDismiss) { Icon(Icons.Default.Close, "Fermer") } },
+                    actions = { TextButton(onClick = { onSave(results.parsedResults()) }) { Text("Enregistrer") } },
                 )
-                Spacer(Modifier.height(8.dp))
-                TestResultFields(program.plan.tests, results) { id, v -> results = results + (id to v) }
-                val retested = program.plan.tests.filter { t -> current[t.id] != null && current[t.id] != program.tests[t.id] }
+            },
+        ) { padding ->
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .consumeWindowInsets(padding)
+                    .imePadding()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+            ) {
+                Text(
+                    "Fais chaque test une fois, bien échauffé et à fond, puis note le résultat : il choisit ton palier de départ. " +
+                        "Laissé vide : palier le plus facile. Les tests refaits en cours de route prennent ensuite le relais.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                tests.forEachIndexed { i, test ->
+                    OutlinedTextField(
+                        value = results[test.id].orEmpty(),
+                        onValueChange = { v -> results = results + (test.id to v.filter(Char::isDigit).take(4)) },
+                        label = { Text(test.name) },
+                        suffix = { Text(if (test.isSeconds) "s" else "reps") },
+                        supportingText = if (test.description != null) {
+                            { Text(test.description) }
+                        } else {
+                            null
+                        },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = if (i == tests.lastIndex) ImeAction.Done else ImeAction.Next,
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                val retested = tests.filter { t -> current[t.id] != null && current[t.id] != program.tests[t.id] }
                 if (retested.isNotEmpty()) {
-                    Spacer(Modifier.height(8.dp))
                     Text("Derniers résultats", style = MaterialTheme.typography.labelLarge)
                     retested.forEach { t ->
                         val v = current.getValue(t.id)
@@ -188,8 +213,6 @@ fun TestsDialog(program: StoredProgram, current: Map<String, Int>, onSave: (Map<
                     }
                 }
             }
-        },
-        confirmButton = { TextButton(onClick = { onSave(results.parsedResults()) }) { Text("Enregistrer") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Annuler") } },
-    )
+        }
+    }
 }

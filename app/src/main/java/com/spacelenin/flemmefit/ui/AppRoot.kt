@@ -49,6 +49,8 @@ fun AppRoot(
     val scope = rememberCoroutineScope()
 
     var openId by rememberSaveable { mutableStateOf<String?>(null) }
+    // Programme tout juste importé dont il faut demander les tests de départ.
+    var askTestsFor by rememberSaveable { mutableStateOf<String?>(null) }
     var showStats by rememberSaveable { mutableStateOf(false) }
     var showSocial by rememberSaveable { mutableStateOf(false) }
     var pasting by rememberSaveable { mutableStateOf(false) }
@@ -112,7 +114,13 @@ fun AppRoot(
     when {
         program != null -> {
             BackHandler { openId = null }
-            ProgramScreen(program = program, repository = repository, onBack = { openId = null })
+            ProgramScreen(
+                program = program,
+                repository = repository,
+                onBack = { openId = null },
+                askTests = askTestsFor == program.id,
+                onTestsAsked = { askTestsFor = null },
+            )
         }
         showSocial -> {
             BackHandler { showSocial = false }
@@ -148,9 +156,11 @@ fun AppRoot(
         is ParseResult.Success -> ImportConfirmDialog(
             plan = result.plan,
             onDismiss = ::clearImport,
-            onConfirm = { start, tests ->
+            onConfirm = { start ->
                 clearImport()
-                openId = repository.addProgram(result.plan, start, tests)
+                val id = repository.addProgram(result.plan, start)
+                if (result.plan.tests.isNotEmpty()) askTestsFor = id
+                openId = id
             },
         )
         null -> {}

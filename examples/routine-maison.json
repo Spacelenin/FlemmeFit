@@ -49,8 +49,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
             },
             {
               "name": "Pompes lentes et contrôlées",
@@ -68,32 +68,57 @@
                 {
                   "from": 6,
                   "sets": 4,
-                  "reps": "3"
+                  "reps": "2"
                 },
                 {
                   "from": 11,
                   "sets": 4,
-                  "reps": "4"
+                  "reps": "3"
                 },
                 {
                   "from": 21,
                   "sets": 4,
-                  "reps": "6"
+                  "reps": "5"
                 },
                 {
                   "from": 26,
                   "sets": 4,
-                  "reps": "7"
+                  "reps": "6"
                 },
                 {
                   "from": 31,
+                  "sets": 4,
+                  "reps": "8"
+                },
+                {
+                  "from": 36,
                   "sets": 4,
                   "reps": "9"
                 },
                 {
                   "from": 41,
                   "sets": 4,
+                  "reps": "10"
+                },
+                {
+                  "from": 46,
+                  "sets": 4,
                   "reps": "11"
+                },
+                {
+                  "from": 51,
+                  "sets": 4,
+                  "reps": "12"
+                },
+                {
+                  "from": 56,
+                  "sets": 4,
+                  "reps": "13"
+                },
+                {
+                  "from": 61,
+                  "sets": 4,
+                  "reps": "15"
                 }
               ],
               "progression": {
@@ -120,7 +145,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos)."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos)."
             }
           ]
         },
@@ -131,8 +156,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
             },
             {
               "name": "Abdos bras tendus",
@@ -144,44 +169,66 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 4,
-                  "reps": "5",
+                  "sets": 6,
+                  "reps": "3",
                   "note": "Palier facile : jambes pliées, ne ramène que le buste."
                 },
                 {
                   "from": 11,
-                  "sets": 4,
-                  "reps": "8"
+                  "sets": 6,
+                  "reps": "6"
                 },
                 {
                   "from": 21,
-                  "sets": 4,
-                  "reps": "12"
+                  "sets": 6,
+                  "reps": "8"
                 },
                 {
                   "from": 31,
-                  "sets": 4,
-                  "reps": "15"
+                  "sets": 6,
+                  "reps": "9"
                 },
                 {
                   "from": 41,
-                  "sets": 4,
-                  "reps": "18"
+                  "sets": 6,
+                  "reps": "11"
                 },
                 {
                   "from": 51,
-                  "sets": 4,
-                  "reps": "22"
+                  "sets": 6,
+                  "reps": "13"
+                },
+                {
+                  "from": 61,
+                  "sets": 6,
+                  "reps": "15"
                 },
                 {
                   "from": 71,
-                  "sets": 4,
-                  "reps": "28"
+                  "sets": 6,
+                  "reps": "17"
+                },
+                {
+                  "from": 81,
+                  "sets": 6,
+                  "reps": "20"
                 },
                 {
                   "from": 91,
-                  "sets": 4,
-                  "reps": "35"
+                  "sets": 6,
+                  "reps": "22"
+                },
+                {
+                  "from": 101,
+                  "sets": 8,
+                  "reps": "20",
+                  "rest": "45s"
+                },
+                {
+                  "from": 116,
+                  "sets": 8,
+                  "reps": "23",
+                  "rest": "45s"
                 }
               ],
               "progression": {
@@ -198,26 +245,31 @@
                 {
                   "from": 0,
                   "sets": 3,
-                  "reps": "5",
+                  "reps": "4",
                   "note": "Palier facile : genoux au sol, jambes pliées."
                 },
                 {
                   "from": 21,
                   "sets": 3,
-                  "reps": "8"
+                  "reps": "6"
                 },
                 {
                   "from": 41,
                   "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 61,
+                  "sets": 3,
                   "reps": "10"
                 },
                 {
-                  "from": 71,
+                  "from": 81,
                   "sets": 3,
                   "reps": "12"
                 },
                 {
-                  "from": 91,
+                  "from": 101,
                   "sets": 3,
                   "reps": "15"
                 }
@@ -280,7 +332,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant."
             }
           ]
         },
@@ -291,8 +343,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
             },
             {
               "name": "Tractions sous une table",
@@ -306,39 +358,58 @@
                   "from": 0,
                   "sets": 5,
                   "reps": "2",
-                  "note": "Palier facile : genoux pliés, pieds près de toi. Sinon, négatives : pars en haut et descends le plus lentement possible."
+                  "note": "Moins de 4 au test : négatives. Pars en haut (poitrine au plateau), descends en 3 s jusqu'aux bras tendus, repose les fesses et remonte sans tirer."
                 },
                 {
                   "from": 4,
                   "sets": 5,
-                  "reps": "3"
+                  "reps": "3",
+                  "note": "Encore en négatives si la forme casse : montée avec les jambes, descente en 3 s."
                 },
                 {
                   "from": 6,
                   "sets": 5,
-                  "reps": "5"
+                  "reps": "4"
                 },
                 {
                   "from": 9,
                   "sets": 5,
-                  "reps": "7"
+                  "reps": "6"
                 },
                 {
                   "from": 12,
                   "sets": 5,
-                  "reps": "9"
+                  "reps": "8"
                 },
                 {
                   "from": 16,
                   "sets": 5,
-                  "reps": "11",
-                  "rest": "90s"
+                  "reps": "10"
                 },
                 {
                   "from": 21,
                   "sets": 5,
-                  "reps": "14",
-                  "rest": "90s"
+                  "reps": "13"
+                },
+                {
+                  "from": 26,
+                  "sets": 5,
+                  "reps": "16"
+                },
+                {
+                  "from": 31,
+                  "sets": 5,
+                  "reps": "19"
+                },
+                {
+                  "from": 36,
+                  "sets": 5,
+                  "reps": "22"
+                },
+                {
+                  "from": 41,
+                  "sets": 5,
+                  "reps": "25"
                 }
               ],
               "progression": {
@@ -349,7 +420,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras."
             }
           ]
         },
@@ -360,8 +431,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger."
             },
             {
               "name": "Pompes classiques",
@@ -390,23 +461,50 @@
                 {
                   "from": 21,
                   "sets": 5,
-                  "reps": "12"
+                  "reps": "13"
                 },
                 {
                   "from": 26,
                   "sets": 5,
-                  "reps": "15"
+                  "reps": "16"
                 },
                 {
                   "from": 31,
                   "sets": 5,
-                  "reps": "18"
+                  "reps": "20"
+                },
+                {
+                  "from": 36,
+                  "sets": 8,
+                  "reps": "14",
+                  "rest": "45s"
                 },
                 {
                   "from": 41,
-                  "sets": 5,
-                  "reps": "22",
+                  "sets": 8,
+                  "reps": "16",
                   "rest": "45s"
+                },
+                {
+                  "from": 46,
+                  "sets": 8,
+                  "reps": "18",
+                  "rest": "45s"
+                },
+                {
+                  "from": 51,
+                  "sets": 5,
+                  "reps": "32"
+                },
+                {
+                  "from": 56,
+                  "sets": 5,
+                  "reps": "38"
+                },
+                {
+                  "from": 61,
+                  "sets": 5,
+                  "reps": "44"
                 }
               ],
               "progression": {
@@ -428,7 +526,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber."
             }
           ]
         },
@@ -440,8 +538,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
             },
             {
               "name": "Abdos",
@@ -453,47 +551,71 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 4,
-                  "reps": "6"
+                  "sets": 6,
+                  "reps": "3",
+                  "note": "Palier facile : mains le long du corps, petite amplitude."
                 },
                 {
                   "from": 11,
-                  "sets": 4,
-                  "reps": "10"
+                  "sets": 6,
+                  "reps": "6"
                 },
                 {
                   "from": 21,
-                  "sets": 4,
-                  "reps": "14"
+                  "sets": 6,
+                  "reps": "8"
                 },
                 {
                   "from": 31,
-                  "sets": 4,
-                  "reps": "18"
+                  "sets": 6,
+                  "reps": "9"
                 },
                 {
                   "from": 41,
-                  "sets": 4,
-                  "reps": "22"
+                  "sets": 6,
+                  "reps": "11"
                 },
                 {
                   "from": 51,
-                  "sets": 4,
-                  "reps": "26"
+                  "sets": 6,
+                  "reps": "13"
+                },
+                {
+                  "from": 61,
+                  "sets": 6,
+                  "reps": "15"
                 },
                 {
                   "from": 71,
-                  "sets": 4,
-                  "reps": "32"
+                  "sets": 6,
+                  "reps": "17"
+                },
+                {
+                  "from": 81,
+                  "sets": 6,
+                  "reps": "20"
                 },
                 {
                   "from": 91,
-                  "sets": 4,
-                  "reps": "40"
+                  "sets": 6,
+                  "reps": "22"
+                },
+                {
+                  "from": 101,
+                  "sets": 8,
+                  "reps": "20",
+                  "rest": "45s"
+                },
+                {
+                  "from": 116,
+                  "sets": 8,
+                  "reps": "23",
+                  "rest": "45s"
                 }
               ],
               "progression": {
-                "reps": 2
+                "every": 2,
+                "reps": 1
               }
             },
             {
@@ -546,7 +668,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets."
             }
           ]
         }
@@ -562,8 +684,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
             },
             {
               "name": "Pompes lentes et contrôlées",
@@ -581,32 +703,57 @@
                 {
                   "from": 6,
                   "sets": 4,
-                  "reps": "3"
+                  "reps": "2"
                 },
                 {
                   "from": 11,
                   "sets": 4,
-                  "reps": "4"
+                  "reps": "3"
                 },
                 {
                   "from": 21,
                   "sets": 4,
-                  "reps": "6"
+                  "reps": "5"
                 },
                 {
                   "from": 26,
                   "sets": 4,
-                  "reps": "7"
+                  "reps": "6"
                 },
                 {
                   "from": 31,
+                  "sets": 4,
+                  "reps": "8"
+                },
+                {
+                  "from": 36,
                   "sets": 4,
                   "reps": "9"
                 },
                 {
                   "from": 41,
                   "sets": 4,
+                  "reps": "10"
+                },
+                {
+                  "from": 46,
+                  "sets": 4,
                   "reps": "11"
+                },
+                {
+                  "from": 51,
+                  "sets": 4,
+                  "reps": "12"
+                },
+                {
+                  "from": 56,
+                  "sets": 4,
+                  "reps": "13"
+                },
+                {
+                  "from": 61,
+                  "sets": 4,
+                  "reps": "15"
                 }
               ],
               "progression": {
@@ -633,7 +780,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos)."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos)."
             }
           ]
         },
@@ -644,8 +791,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
             },
             {
               "name": "Abdos bras tendus",
@@ -657,44 +804,66 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 4,
-                  "reps": "5",
+                  "sets": 6,
+                  "reps": "3",
                   "note": "Palier facile : jambes pliées, ne ramène que le buste."
                 },
                 {
                   "from": 11,
-                  "sets": 4,
-                  "reps": "8"
+                  "sets": 6,
+                  "reps": "6"
                 },
                 {
                   "from": 21,
-                  "sets": 4,
-                  "reps": "12"
+                  "sets": 6,
+                  "reps": "8"
                 },
                 {
                   "from": 31,
-                  "sets": 4,
-                  "reps": "15"
+                  "sets": 6,
+                  "reps": "9"
                 },
                 {
                   "from": 41,
-                  "sets": 4,
-                  "reps": "18"
+                  "sets": 6,
+                  "reps": "11"
                 },
                 {
                   "from": 51,
-                  "sets": 4,
-                  "reps": "22"
+                  "sets": 6,
+                  "reps": "13"
+                },
+                {
+                  "from": 61,
+                  "sets": 6,
+                  "reps": "15"
                 },
                 {
                   "from": 71,
-                  "sets": 4,
-                  "reps": "28"
+                  "sets": 6,
+                  "reps": "17"
+                },
+                {
+                  "from": 81,
+                  "sets": 6,
+                  "reps": "20"
                 },
                 {
                   "from": 91,
-                  "sets": 4,
-                  "reps": "35"
+                  "sets": 6,
+                  "reps": "22"
+                },
+                {
+                  "from": 101,
+                  "sets": 8,
+                  "reps": "20",
+                  "rest": "45s"
+                },
+                {
+                  "from": 116,
+                  "sets": 8,
+                  "reps": "23",
+                  "rest": "45s"
                 }
               ],
               "progression": {
@@ -711,26 +880,31 @@
                 {
                   "from": 0,
                   "sets": 3,
-                  "reps": "5",
+                  "reps": "4",
                   "note": "Palier facile : genoux au sol, jambes pliées."
                 },
                 {
                   "from": 21,
                   "sets": 3,
-                  "reps": "8"
+                  "reps": "6"
                 },
                 {
                   "from": 41,
                   "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 61,
+                  "sets": 3,
                   "reps": "10"
                 },
                 {
-                  "from": 71,
+                  "from": 81,
                   "sets": 3,
                   "reps": "12"
                 },
                 {
-                  "from": 91,
+                  "from": 101,
                   "sets": 3,
                   "reps": "15"
                 }
@@ -793,7 +967,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant."
             }
           ]
         },
@@ -804,8 +978,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
             },
             {
               "name": "Tractions sous une table",
@@ -819,39 +993,58 @@
                   "from": 0,
                   "sets": 5,
                   "reps": "2",
-                  "note": "Palier facile : genoux pliés, pieds près de toi. Sinon, négatives : pars en haut et descends le plus lentement possible."
+                  "note": "Moins de 4 au test : négatives. Pars en haut (poitrine au plateau), descends en 3 s jusqu'aux bras tendus, repose les fesses et remonte sans tirer."
                 },
                 {
                   "from": 4,
                   "sets": 5,
-                  "reps": "3"
+                  "reps": "3",
+                  "note": "Encore en négatives si la forme casse : montée avec les jambes, descente en 3 s."
                 },
                 {
                   "from": 6,
                   "sets": 5,
-                  "reps": "5"
+                  "reps": "4"
                 },
                 {
                   "from": 9,
                   "sets": 5,
-                  "reps": "7"
+                  "reps": "6"
                 },
                 {
                   "from": 12,
                   "sets": 5,
-                  "reps": "9"
+                  "reps": "8"
                 },
                 {
                   "from": 16,
                   "sets": 5,
-                  "reps": "11",
-                  "rest": "90s"
+                  "reps": "10"
                 },
                 {
                   "from": 21,
                   "sets": 5,
-                  "reps": "14",
-                  "rest": "90s"
+                  "reps": "13"
+                },
+                {
+                  "from": 26,
+                  "sets": 5,
+                  "reps": "16"
+                },
+                {
+                  "from": 31,
+                  "sets": 5,
+                  "reps": "19"
+                },
+                {
+                  "from": 36,
+                  "sets": 5,
+                  "reps": "22"
+                },
+                {
+                  "from": 41,
+                  "sets": 5,
+                  "reps": "25"
                 }
               ],
               "progression": {
@@ -862,7 +1055,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras."
             }
           ]
         },
@@ -873,8 +1066,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger."
             },
             {
               "name": "Pompes classiques",
@@ -903,23 +1096,50 @@
                 {
                   "from": 21,
                   "sets": 5,
-                  "reps": "12"
+                  "reps": "13"
                 },
                 {
                   "from": 26,
                   "sets": 5,
-                  "reps": "15"
+                  "reps": "16"
                 },
                 {
                   "from": 31,
                   "sets": 5,
-                  "reps": "18"
+                  "reps": "20"
+                },
+                {
+                  "from": 36,
+                  "sets": 8,
+                  "reps": "14",
+                  "rest": "45s"
                 },
                 {
                   "from": 41,
-                  "sets": 5,
-                  "reps": "22",
+                  "sets": 8,
+                  "reps": "16",
                   "rest": "45s"
+                },
+                {
+                  "from": 46,
+                  "sets": 8,
+                  "reps": "18",
+                  "rest": "45s"
+                },
+                {
+                  "from": 51,
+                  "sets": 5,
+                  "reps": "32"
+                },
+                {
+                  "from": 56,
+                  "sets": 5,
+                  "reps": "38"
+                },
+                {
+                  "from": 61,
+                  "sets": 5,
+                  "reps": "44"
                 }
               ],
               "progression": {
@@ -941,7 +1161,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber."
             }
           ]
         },
@@ -953,8 +1173,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
             },
             {
               "name": "Abdos",
@@ -966,47 +1186,71 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 4,
-                  "reps": "6"
+                  "sets": 6,
+                  "reps": "3",
+                  "note": "Palier facile : mains le long du corps, petite amplitude."
                 },
                 {
                   "from": 11,
-                  "sets": 4,
-                  "reps": "10"
+                  "sets": 6,
+                  "reps": "6"
                 },
                 {
                   "from": 21,
-                  "sets": 4,
-                  "reps": "14"
+                  "sets": 6,
+                  "reps": "8"
                 },
                 {
                   "from": 31,
-                  "sets": 4,
-                  "reps": "18"
+                  "sets": 6,
+                  "reps": "9"
                 },
                 {
                   "from": 41,
-                  "sets": 4,
-                  "reps": "22"
+                  "sets": 6,
+                  "reps": "11"
                 },
                 {
                   "from": 51,
-                  "sets": 4,
-                  "reps": "26"
+                  "sets": 6,
+                  "reps": "13"
+                },
+                {
+                  "from": 61,
+                  "sets": 6,
+                  "reps": "15"
                 },
                 {
                   "from": 71,
-                  "sets": 4,
-                  "reps": "32"
+                  "sets": 6,
+                  "reps": "17"
+                },
+                {
+                  "from": 81,
+                  "sets": 6,
+                  "reps": "20"
                 },
                 {
                   "from": 91,
-                  "sets": 4,
-                  "reps": "40"
+                  "sets": 6,
+                  "reps": "22"
+                },
+                {
+                  "from": 101,
+                  "sets": 8,
+                  "reps": "20",
+                  "rest": "45s"
+                },
+                {
+                  "from": 116,
+                  "sets": 8,
+                  "reps": "23",
+                  "rest": "45s"
                 }
               ],
               "progression": {
-                "reps": 2
+                "every": 2,
+                "reps": 1
               }
             },
             {
@@ -1059,7 +1303,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets."
             }
           ]
         }
@@ -1075,8 +1319,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
             },
             {
               "name": "Pompes lentes et contrôlées",
@@ -1094,32 +1338,57 @@
                 {
                   "from": 6,
                   "sets": 4,
-                  "reps": "3"
+                  "reps": "2"
                 },
                 {
                   "from": 11,
                   "sets": 4,
-                  "reps": "4"
+                  "reps": "3"
                 },
                 {
                   "from": 21,
                   "sets": 4,
-                  "reps": "6"
+                  "reps": "5"
                 },
                 {
                   "from": 26,
                   "sets": 4,
-                  "reps": "7"
+                  "reps": "6"
                 },
                 {
                   "from": 31,
+                  "sets": 4,
+                  "reps": "8"
+                },
+                {
+                  "from": 36,
                   "sets": 4,
                   "reps": "9"
                 },
                 {
                   "from": 41,
                   "sets": 4,
+                  "reps": "10"
+                },
+                {
+                  "from": 46,
+                  "sets": 4,
                   "reps": "11"
+                },
+                {
+                  "from": 51,
+                  "sets": 4,
+                  "reps": "12"
+                },
+                {
+                  "from": 56,
+                  "sets": 4,
+                  "reps": "13"
+                },
+                {
+                  "from": 61,
+                  "sets": 4,
+                  "reps": "15"
                 }
               ],
               "progression": {
@@ -1146,7 +1415,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos)."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos)."
             }
           ]
         },
@@ -1157,8 +1426,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
             },
             {
               "name": "Abdos bras tendus",
@@ -1170,44 +1439,66 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 4,
-                  "reps": "5",
+                  "sets": 6,
+                  "reps": "3",
                   "note": "Palier facile : jambes pliées, ne ramène que le buste."
                 },
                 {
                   "from": 11,
-                  "sets": 4,
-                  "reps": "8"
+                  "sets": 6,
+                  "reps": "6"
                 },
                 {
                   "from": 21,
-                  "sets": 4,
-                  "reps": "12"
+                  "sets": 6,
+                  "reps": "8"
                 },
                 {
                   "from": 31,
-                  "sets": 4,
-                  "reps": "15"
+                  "sets": 6,
+                  "reps": "9"
                 },
                 {
                   "from": 41,
-                  "sets": 4,
-                  "reps": "18"
+                  "sets": 6,
+                  "reps": "11"
                 },
                 {
                   "from": 51,
-                  "sets": 4,
-                  "reps": "22"
+                  "sets": 6,
+                  "reps": "13"
+                },
+                {
+                  "from": 61,
+                  "sets": 6,
+                  "reps": "15"
                 },
                 {
                   "from": 71,
-                  "sets": 4,
-                  "reps": "28"
+                  "sets": 6,
+                  "reps": "17"
+                },
+                {
+                  "from": 81,
+                  "sets": 6,
+                  "reps": "20"
                 },
                 {
                   "from": 91,
-                  "sets": 4,
-                  "reps": "35"
+                  "sets": 6,
+                  "reps": "22"
+                },
+                {
+                  "from": 101,
+                  "sets": 8,
+                  "reps": "20",
+                  "rest": "45s"
+                },
+                {
+                  "from": 116,
+                  "sets": 8,
+                  "reps": "23",
+                  "rest": "45s"
                 }
               ],
               "progression": {
@@ -1224,26 +1515,31 @@
                 {
                   "from": 0,
                   "sets": 3,
-                  "reps": "5",
+                  "reps": "4",
                   "note": "Palier facile : genoux au sol, jambes pliées."
                 },
                 {
                   "from": 21,
                   "sets": 3,
-                  "reps": "8"
+                  "reps": "6"
                 },
                 {
                   "from": 41,
                   "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 61,
+                  "sets": 3,
                   "reps": "10"
                 },
                 {
-                  "from": 71,
+                  "from": 81,
                   "sets": 3,
                   "reps": "12"
                 },
                 {
-                  "from": 91,
+                  "from": 101,
                   "sets": 3,
                   "reps": "15"
                 }
@@ -1306,7 +1602,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant."
             }
           ]
         },
@@ -1317,8 +1613,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
             },
             {
               "name": "Tractions sous une table",
@@ -1332,39 +1628,58 @@
                   "from": 0,
                   "sets": 5,
                   "reps": "2",
-                  "note": "Palier facile : genoux pliés, pieds près de toi. Sinon, négatives : pars en haut et descends le plus lentement possible."
+                  "note": "Moins de 4 au test : négatives. Pars en haut (poitrine au plateau), descends en 3 s jusqu'aux bras tendus, repose les fesses et remonte sans tirer."
                 },
                 {
                   "from": 4,
                   "sets": 5,
-                  "reps": "3"
+                  "reps": "3",
+                  "note": "Encore en négatives si la forme casse : montée avec les jambes, descente en 3 s."
                 },
                 {
                   "from": 6,
                   "sets": 5,
-                  "reps": "5"
+                  "reps": "4"
                 },
                 {
                   "from": 9,
                   "sets": 5,
-                  "reps": "7"
+                  "reps": "6"
                 },
                 {
                   "from": 12,
                   "sets": 5,
-                  "reps": "9"
+                  "reps": "8"
                 },
                 {
                   "from": 16,
                   "sets": 5,
-                  "reps": "11",
-                  "rest": "90s"
+                  "reps": "10"
                 },
                 {
                   "from": 21,
                   "sets": 5,
-                  "reps": "14",
-                  "rest": "90s"
+                  "reps": "13"
+                },
+                {
+                  "from": 26,
+                  "sets": 5,
+                  "reps": "16"
+                },
+                {
+                  "from": 31,
+                  "sets": 5,
+                  "reps": "19"
+                },
+                {
+                  "from": 36,
+                  "sets": 5,
+                  "reps": "22"
+                },
+                {
+                  "from": 41,
+                  "sets": 5,
+                  "reps": "25"
                 }
               ],
               "progression": {
@@ -1375,7 +1690,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras."
             }
           ]
         },
@@ -1386,8 +1701,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger."
             },
             {
               "name": "Pompes classiques",
@@ -1416,23 +1731,50 @@
                 {
                   "from": 21,
                   "sets": 5,
-                  "reps": "12"
+                  "reps": "13"
                 },
                 {
                   "from": 26,
                   "sets": 5,
-                  "reps": "15"
+                  "reps": "16"
                 },
                 {
                   "from": 31,
                   "sets": 5,
-                  "reps": "18"
+                  "reps": "20"
+                },
+                {
+                  "from": 36,
+                  "sets": 8,
+                  "reps": "14",
+                  "rest": "45s"
                 },
                 {
                   "from": 41,
-                  "sets": 5,
-                  "reps": "22",
+                  "sets": 8,
+                  "reps": "16",
                   "rest": "45s"
+                },
+                {
+                  "from": 46,
+                  "sets": 8,
+                  "reps": "18",
+                  "rest": "45s"
+                },
+                {
+                  "from": 51,
+                  "sets": 5,
+                  "reps": "32"
+                },
+                {
+                  "from": 56,
+                  "sets": 5,
+                  "reps": "38"
+                },
+                {
+                  "from": 61,
+                  "sets": 5,
+                  "reps": "44"
                 }
               ],
               "progression": {
@@ -1454,7 +1796,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber."
             }
           ]
         },
@@ -1466,8 +1808,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
             },
             {
               "name": "Abdos",
@@ -1479,47 +1821,71 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 4,
-                  "reps": "6"
+                  "sets": 6,
+                  "reps": "3",
+                  "note": "Palier facile : mains le long du corps, petite amplitude."
                 },
                 {
                   "from": 11,
-                  "sets": 4,
-                  "reps": "10"
+                  "sets": 6,
+                  "reps": "6"
                 },
                 {
                   "from": 21,
-                  "sets": 4,
-                  "reps": "14"
+                  "sets": 6,
+                  "reps": "8"
                 },
                 {
                   "from": 31,
-                  "sets": 4,
-                  "reps": "18"
+                  "sets": 6,
+                  "reps": "9"
                 },
                 {
                   "from": 41,
-                  "sets": 4,
-                  "reps": "22"
+                  "sets": 6,
+                  "reps": "11"
                 },
                 {
                   "from": 51,
-                  "sets": 4,
-                  "reps": "26"
+                  "sets": 6,
+                  "reps": "13"
+                },
+                {
+                  "from": 61,
+                  "sets": 6,
+                  "reps": "15"
                 },
                 {
                   "from": 71,
-                  "sets": 4,
-                  "reps": "32"
+                  "sets": 6,
+                  "reps": "17"
+                },
+                {
+                  "from": 81,
+                  "sets": 6,
+                  "reps": "20"
                 },
                 {
                   "from": 91,
-                  "sets": 4,
-                  "reps": "40"
+                  "sets": 6,
+                  "reps": "22"
+                },
+                {
+                  "from": 101,
+                  "sets": 8,
+                  "reps": "20",
+                  "rest": "45s"
+                },
+                {
+                  "from": 116,
+                  "sets": 8,
+                  "reps": "23",
+                  "rest": "45s"
                 }
               ],
               "progression": {
-                "reps": 2
+                "every": 2,
+                "reps": 1
               }
             },
             {
@@ -1572,7 +1938,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets."
             }
           ]
         }
@@ -1588,8 +1954,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
             },
             {
               "name": "Test pompes",
@@ -1614,32 +1980,57 @@
                 {
                   "from": 6,
                   "sets": 4,
-                  "reps": "3"
+                  "reps": "2"
                 },
                 {
                   "from": 11,
                   "sets": 4,
-                  "reps": "4"
+                  "reps": "3"
                 },
                 {
                   "from": 21,
                   "sets": 4,
-                  "reps": "6"
+                  "reps": "5"
                 },
                 {
                   "from": 26,
                   "sets": 4,
-                  "reps": "7"
+                  "reps": "6"
                 },
                 {
                   "from": 31,
+                  "sets": 4,
+                  "reps": "8"
+                },
+                {
+                  "from": 36,
                   "sets": 4,
                   "reps": "9"
                 },
                 {
                   "from": 41,
                   "sets": 4,
+                  "reps": "10"
+                },
+                {
+                  "from": 46,
+                  "sets": 4,
                   "reps": "11"
+                },
+                {
+                  "from": 51,
+                  "sets": 4,
+                  "reps": "12"
+                },
+                {
+                  "from": 56,
+                  "sets": 4,
+                  "reps": "13"
+                },
+                {
+                  "from": 61,
+                  "sets": 4,
+                  "reps": "15"
                 }
               ],
               "progression": {
@@ -1666,7 +2057,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos)."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos)."
             }
           ]
         },
@@ -1677,8 +2068,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
             },
             {
               "name": "Test abdos",
@@ -1704,44 +2095,66 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 4,
-                  "reps": "5",
+                  "sets": 6,
+                  "reps": "3",
                   "note": "Palier facile : jambes pliées, ne ramène que le buste."
                 },
                 {
                   "from": 11,
-                  "sets": 4,
-                  "reps": "8"
+                  "sets": 6,
+                  "reps": "6"
                 },
                 {
                   "from": 21,
-                  "sets": 4,
-                  "reps": "12"
+                  "sets": 6,
+                  "reps": "8"
                 },
                 {
                   "from": 31,
-                  "sets": 4,
-                  "reps": "15"
+                  "sets": 6,
+                  "reps": "9"
                 },
                 {
                   "from": 41,
-                  "sets": 4,
-                  "reps": "18"
+                  "sets": 6,
+                  "reps": "11"
                 },
                 {
                   "from": 51,
-                  "sets": 4,
-                  "reps": "22"
+                  "sets": 6,
+                  "reps": "13"
+                },
+                {
+                  "from": 61,
+                  "sets": 6,
+                  "reps": "15"
                 },
                 {
                   "from": 71,
-                  "sets": 4,
-                  "reps": "28"
+                  "sets": 6,
+                  "reps": "17"
+                },
+                {
+                  "from": 81,
+                  "sets": 6,
+                  "reps": "20"
                 },
                 {
                   "from": 91,
-                  "sets": 4,
-                  "reps": "35"
+                  "sets": 6,
+                  "reps": "22"
+                },
+                {
+                  "from": 101,
+                  "sets": 8,
+                  "reps": "20",
+                  "rest": "45s"
+                },
+                {
+                  "from": 116,
+                  "sets": 8,
+                  "reps": "23",
+                  "rest": "45s"
                 }
               ],
               "progression": {
@@ -1758,26 +2171,31 @@
                 {
                   "from": 0,
                   "sets": 3,
-                  "reps": "5",
+                  "reps": "4",
                   "note": "Palier facile : genoux au sol, jambes pliées."
                 },
                 {
                   "from": 21,
                   "sets": 3,
-                  "reps": "8"
+                  "reps": "6"
                 },
                 {
                   "from": 41,
                   "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 61,
+                  "sets": 3,
                   "reps": "10"
                 },
                 {
-                  "from": 71,
+                  "from": 81,
                   "sets": 3,
                   "reps": "12"
                 },
                 {
-                  "from": 91,
+                  "from": 101,
                   "sets": 3,
                   "reps": "15"
                 }
@@ -1840,7 +2258,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant."
             }
           ]
         },
@@ -1851,8 +2269,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
             },
             {
               "name": "Test tractions",
@@ -1873,39 +2291,58 @@
                   "from": 0,
                   "sets": 5,
                   "reps": "2",
-                  "note": "Palier facile : genoux pliés, pieds près de toi. Sinon, négatives : pars en haut et descends le plus lentement possible."
+                  "note": "Moins de 4 au test : négatives. Pars en haut (poitrine au plateau), descends en 3 s jusqu'aux bras tendus, repose les fesses et remonte sans tirer."
                 },
                 {
                   "from": 4,
                   "sets": 5,
-                  "reps": "3"
+                  "reps": "3",
+                  "note": "Encore en négatives si la forme casse : montée avec les jambes, descente en 3 s."
                 },
                 {
                   "from": 6,
                   "sets": 5,
-                  "reps": "5"
+                  "reps": "4"
                 },
                 {
                   "from": 9,
                   "sets": 5,
-                  "reps": "7"
+                  "reps": "6"
                 },
                 {
                   "from": 12,
                   "sets": 5,
-                  "reps": "9"
+                  "reps": "8"
                 },
                 {
                   "from": 16,
                   "sets": 5,
-                  "reps": "11",
-                  "rest": "90s"
+                  "reps": "10"
                 },
                 {
                   "from": 21,
                   "sets": 5,
-                  "reps": "14",
-                  "rest": "90s"
+                  "reps": "13"
+                },
+                {
+                  "from": 26,
+                  "sets": 5,
+                  "reps": "16"
+                },
+                {
+                  "from": 31,
+                  "sets": 5,
+                  "reps": "19"
+                },
+                {
+                  "from": 36,
+                  "sets": 5,
+                  "reps": "22"
+                },
+                {
+                  "from": 41,
+                  "sets": 5,
+                  "reps": "25"
                 }
               ],
               "progression": {
@@ -1916,7 +2353,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras."
             }
           ]
         },
@@ -1927,8 +2364,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger."
             },
             {
               "name": "Pompes classiques",
@@ -1957,23 +2394,50 @@
                 {
                   "from": 21,
                   "sets": 5,
-                  "reps": "12"
+                  "reps": "13"
                 },
                 {
                   "from": 26,
                   "sets": 5,
-                  "reps": "15"
+                  "reps": "16"
                 },
                 {
                   "from": 31,
                   "sets": 5,
-                  "reps": "18"
+                  "reps": "20"
+                },
+                {
+                  "from": 36,
+                  "sets": 8,
+                  "reps": "14",
+                  "rest": "45s"
                 },
                 {
                   "from": 41,
-                  "sets": 5,
-                  "reps": "22",
+                  "sets": 8,
+                  "reps": "16",
                   "rest": "45s"
+                },
+                {
+                  "from": 46,
+                  "sets": 8,
+                  "reps": "18",
+                  "rest": "45s"
+                },
+                {
+                  "from": 51,
+                  "sets": 5,
+                  "reps": "32"
+                },
+                {
+                  "from": 56,
+                  "sets": 5,
+                  "reps": "38"
+                },
+                {
+                  "from": 61,
+                  "sets": 5,
+                  "reps": "44"
                 }
               ],
               "progression": {
@@ -1995,7 +2459,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber."
             }
           ]
         },
@@ -2007,8 +2471,8 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "5min",
-              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
+              "duration": "10min",
+              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
             },
             {
               "name": "Test squat sur une jambe",
@@ -2027,47 +2491,71 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 4,
-                  "reps": "6"
+                  "sets": 6,
+                  "reps": "3",
+                  "note": "Palier facile : mains le long du corps, petite amplitude."
                 },
                 {
                   "from": 11,
-                  "sets": 4,
-                  "reps": "10"
+                  "sets": 6,
+                  "reps": "6"
                 },
                 {
                   "from": 21,
-                  "sets": 4,
-                  "reps": "14"
+                  "sets": 6,
+                  "reps": "8"
                 },
                 {
                   "from": 31,
-                  "sets": 4,
-                  "reps": "18"
+                  "sets": 6,
+                  "reps": "9"
                 },
                 {
                   "from": 41,
-                  "sets": 4,
-                  "reps": "22"
+                  "sets": 6,
+                  "reps": "11"
                 },
                 {
                   "from": 51,
-                  "sets": 4,
-                  "reps": "26"
+                  "sets": 6,
+                  "reps": "13"
+                },
+                {
+                  "from": 61,
+                  "sets": 6,
+                  "reps": "15"
                 },
                 {
                   "from": 71,
-                  "sets": 4,
-                  "reps": "32"
+                  "sets": 6,
+                  "reps": "17"
+                },
+                {
+                  "from": 81,
+                  "sets": 6,
+                  "reps": "20"
                 },
                 {
                   "from": 91,
-                  "sets": 4,
-                  "reps": "40"
+                  "sets": 6,
+                  "reps": "22"
+                },
+                {
+                  "from": 101,
+                  "sets": 8,
+                  "reps": "20",
+                  "rest": "45s"
+                },
+                {
+                  "from": 116,
+                  "sets": 8,
+                  "reps": "23",
+                  "rest": "45s"
                 }
               ],
               "progression": {
-                "reps": 2
+                "every": 2,
+                "reps": 1
               }
             },
             {
@@ -2120,7 +2608,7 @@
               "name": "Étirements",
               "id": "etirements",
               "duration": "5min",
-              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets."
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets."
             }
           ]
         }
