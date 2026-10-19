@@ -153,19 +153,30 @@ Pour un programme « à démarrage objectif » (100 pompes, 50 tractions…) : u
 et le test refait plus tard fait passer au palier suivant.
 
 ```json
-"tests": [
-  { "id": "pompes", "name": "Pompes", "unit": "reps", "description": "Max d'affilée, corps gainé." }
-],
-…
-{ "name": "Pompes", "test": "pompes", "amrap": true, "rest": "60s",
-  "levels": [
-    { "from": 0,  "sets": 5, "reps": "2", "note": "Sur les genoux." },
-    { "from": 6,  "sets": 5, "reps": "5" },
-    { "from": 11, "sets": 5, "reps": "8" }
+{
+  "format": "flemmefit",
+  "version": 1,
+  "name": "100 pompes maison",
+  "tests": [
+    { "id": "pompes", "name": "Pompes", "unit": "reps", "description": "Max d'affilée, corps gainé." }
   ],
-  "progression": { "reps": 1 } },
-…
-{ "name": "Test pompes", "test": "pompes", "retest": true }
+  "weeks": [
+    { "days": [
+      { "day": 1, "exercises": [
+        { "name": "Pompes", "test": "pompes", "amrap": true, "rest": "60s",
+          "levels": [
+            { "from": 0,  "sets": 5, "reps": "2", "note": "Sur les genoux." },
+            { "from": 6,  "sets": 5, "reps": "5" },
+            { "from": 11, "sets": 5, "reps": "8" }
+          ],
+          "progression": { "reps": 1 } }
+      ] }
+    ] },
+    { "label": "Test", "days": [
+      { "day": 1, "exercises": [ { "name": "Test pompes", "test": "pompes", "retest": true } ] }
+    ] }
+  ]
+}
 ```
 
 - **Test** (`tests[]`) : `id` et `name` obligatoires, `description` (consigne), `unit` = `"reps"` (défaut) ou `"seconds"`.
