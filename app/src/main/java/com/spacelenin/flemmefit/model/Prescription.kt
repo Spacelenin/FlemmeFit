@@ -13,9 +13,16 @@ data class Prescription(
     val load: Measures.Load?,
     /** Dernière série « à fond » (jour Boss). */
     val allOut: Boolean = false,
-    /** Objectif de la série à fond : dernier max + 1. */
+    /** Objectif de la série à fond : dernier max + 1 (Boss, test), ou le prévu (« au moins »). */
     val target: Int? = null,
     val level: Int = 0,
+    val isBoss: Boolean = false,
+    /** Test : une seule série à fond, son résultat devient la référence du test. */
+    val isTest: Boolean = false,
+    /** Palier en cours (0-based) sur [levelCount], si l'exercice a des paliers. */
+    val palier: Int? = null,
+    val levelCount: Int = 0,
+    private val secondsMax: Boolean? = null,
 ) {
     val key get() = exercise.key
     val repsLabel: String? get() = reps?.toString() ?: exercise.reps
@@ -23,7 +30,7 @@ data class Prescription(
     val loadLabel: String? get() = load?.let(Measures::formatLoad) ?: exercise.load
 
     /** Le max se mesure en répétitions, sauf pour un exercice uniquement en durée. */
-    val maxIsSeconds: Boolean get() = reps == null && exercise.reps == null && (seconds != null || exercise.duration != null)
+    val maxIsSeconds: Boolean get() = secondsMax ?: (reps == null && exercise.reps == null && (seconds != null || exercise.duration != null))
 
     /** « 3 × 12 · 8 kg · repos 60s » */
     fun summary(): String = listOfNotNull(
@@ -46,8 +53,25 @@ data class Prescription(
             (seconds == null || (log.seconds ?: seconds) >= seconds)
 
     companion object {
-        /** Applique [level] crans de progression au départ défini par l'exercice. */
-        fun of(exercise: Exercise, level: Int, deload: Boolean, allOut: Boolean, lastMax: Int?): Prescription {
+        /** Un test : une série à fond, objectif = dernier résultat + 1. */
+        fun test(exercise: Exercise, test: PlanTest?, current: Int?) = Prescription(
+            exercise, sets = null, reps = null, seconds = null, load = null,
+            allOut = true, target = current?.plus(1), isTest = true, secondsMax = test?.isSeconds ?: false,
+        )
+
+        /**
+         * Applique [level] crans de progression au départ défini par l'exercice (déjà ramené à son palier).
+         * [boss] : dernière série à fond, objectif dernier max + 1. Sinon, si l'exercice est en [Exercise.amrap],
+         * dernière série au max, objectif le prévu.
+         */
+        fun of(
+            exercise: Exercise,
+            level: Int,
+            deload: Boolean,
+            boss: Boolean,
+            lastMax: Int?,
+            palier: Int? = null,
+        ): Prescription {
             val baseReps = Measures.reps(exercise.reps)
             val baseSeconds = Measures.seconds(exercise.duration)
             var sets = exercise.sets
@@ -106,8 +130,17 @@ data class Prescription(
                 }
             }
 
-            val target = if (!allOut) null else lastMax?.plus(1) ?: reps ?: seconds?.takeIf { reps == null && exercise.reps == null }
-            return Prescription(exercise, sets, reps, seconds, load, allOut, target, level)
+            val planned = reps ?: seconds?.takeIf { reps == null && exercise.reps == null }
+            val target = when {
+                boss -> lastMax?.plus(1) ?: planned
+                exercise.amrap -> planned
+                else -> null
+            }
+            return Prescription(
+                exercise, sets, reps, seconds, load,
+                allOut = boss || exercise.amrap, target = target, level = level, isBoss = boss,
+                palier = palier, levelCount = exercise.levels.size,
+            )
         }
     }
 }

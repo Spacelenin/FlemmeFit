@@ -128,6 +128,9 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     private val validated = HashMap<String, Int>()
     private val bonus = HashMap<String, Int>()
     private val lastMax = HashMap<String, Int>()
+    private val testResults = HashMap(program.tests)
+    private val levelOf = HashMap<String, Int>()
+    private val levelSince = HashMap<String, Int>()
 
     private fun ensure(dayIndex: Int) {
         val limit = totalDays?.let { minOf(dayIndex, it - 1) } ?: dayIndex
@@ -146,24 +149,47 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         val weeksBefore = if (deloadEvery > 0) week - week / deloadEvery else week
 
         val prescriptions = day.exercises.map { ex ->
+            if (ex.retest) return@map Prescription.test(ex, plan.test(ex.test), ex.test?.let(testResults::get))
+            val palier = if (ex.levels.isEmpty()) null else ex.levelIndexFor(ex.test?.let(testResults::get))
+            // Nouveau palier : la progression repart de son départ.
+            if (palier != null && levelOf[ex.key] != palier) {
+                levelOf[ex.key] = palier
+                validated[ex.key] = 0
+                bonus[ex.key] = 0
+                levelSince[ex.key] = weeksBefore
+            }
             val p = ex.progression
             val steps = when {
                 p == null -> 0
-                p.basis == Progression.BASIS_WEEK -> weeksBefore / p.every
+                p.basis == Progression.BASIS_WEEK -> (weeksBefore - (levelSince[ex.key] ?: 0)) / p.every
                 else -> (validated[ex.key] ?: 0) / p.every
             }
             val level = (steps + (bonus[ex.key] ?: 0)).coerceAtLeast(0) + if (boss && p != null) 1 else 0
-            Prescription.of(ex, level, deload, allOut = boss, lastMax = lastMax[ex.key])
+            Prescription.of(
+                palier?.let(ex::atLevel) ?: ex, level, deload, boss = boss, lastMax = lastMax[ex.key], palier = palier,
+            )
         }
         resolved[i] = Session(i, week / plan.weeks.size + 1, cycleWeek + 1, day, planWeek.label, date, boss, deload, prescriptions)
 
         prescriptions.forEachIndexed { e, pr ->
             val key = pr.key
+            val max = program.logOf(i, e)?.max
+            if (pr.isTest) {
+                val test = pr.exercise.test
+                if (max != null && test != null) testResults[test] = max
+                return@forEachIndexed
+            }
             if (program.isDone(i, e) && !deload) validated[key] = (validated[key] ?: 0) + 1
-            val max = program.logOf(i, e)?.max ?: return@forEachIndexed
+            if (max == null) return@forEachIndexed
             lastMax[key] = max
             adjustBonus(pr, max)
         }
+    }
+
+    /** Dernier résultat connu de chaque test : celui de départ, ou celui du dernier test refait. */
+    fun currentTestResults(): Map<String, Int> {
+        ensure(lastIndexOnOrBefore(today))
+        return testResults.toMap()
     }
 
     /** Un max nettement au-dessus du prévu accélère la progression, en dessous il la ralentit (prudemment). */

@@ -45,6 +45,8 @@ data class Plan(
     val deloadEvery: Int? = null,
     /** Jours Boss aléatoires (toutes les 3 à 4 semaines). */
     val boss: Boolean = true,
+    /** Tests de départ : leur résultat choisit le palier des exercices qui s'y rattachent. */
+    val tests: List<PlanTest> = emptyList(),
     val weeks: List<PlanWeek>,
 ) {
     val isForever get() = repeat == REPEAT_FOREVER
@@ -52,7 +54,42 @@ data class Plan(
     val effectiveDeloadEvery: Int
         get() = deloadEvery
             ?: if (weeks.any { w -> w.days.any { d -> d.exercises.any { it.progression != null } } }) DEFAULT_DELOAD_EVERY else 0
+
+    fun test(id: String?): PlanTest? = id?.let { t -> tests.firstOrNull { it.id == t } }
 }
+
+/** Un test « à fond » (max de répétitions, ou durée tenue) fait au départ puis refait en cours de route. */
+@Serializable
+data class PlanTest(
+    val id: String,
+    val name: String,
+    val description: String? = null,
+    /** "reps" ou "seconds". */
+    val unit: String = UNIT_REPS,
+) {
+    val isSeconds get() = unit == UNIT_SECONDS
+
+    companion object {
+        const val UNIT_REPS = "reps"
+        const val UNIT_SECONDS = "seconds"
+    }
+}
+
+/**
+ * Palier d'un exercice, choisi d'après le dernier résultat du test : le palier retenu est le dernier
+ * dont [from] est inférieur ou égal au résultat. Les champs présents remplacent ceux de l'exercice.
+ */
+@Serializable
+data class Level(
+    val from: Int = 0,
+    val sets: Int? = null,
+    val reps: String? = null,
+    val duration: String? = null,
+    val load: String? = null,
+    val rest: String? = null,
+    /** Ajouté à la description (variante plus facile, consigne…). */
+    val note: String? = null,
+)
 
 @Serializable
 data class PlanWeek(
@@ -81,9 +118,33 @@ data class Exercise(
     val load: String? = null,
     val rest: String? = null,
     val progression: Progression? = null,
+    /** Test de départ auquel l'exercice se rattache (id dans [Plan.tests]). */
+    val test: String? = null,
+    /** Paliers choisis d'après le résultat de [test], du plus facile au plus dur. */
+    val levels: List<Level> = emptyList(),
+    /** Dernière série : le maximum possible (« au moins » le prévu), à noter. */
+    val amrap: Boolean = false,
+    /** Cet exercice est le test lui-même : une série à fond dont le résultat devient la nouvelle référence. */
+    val retest: Boolean = false,
 ) {
     /** Clé de regroupement : stable entre jours et entre programmes. */
     val key: String get() = (id ?: name).trim().lowercase()
+
+    /** Index du palier pour un résultat de test (0 si pas de résultat). */
+    fun levelIndexFor(result: Int?): Int = levels.indexOfLast { it.from <= (result ?: 0) }.coerceAtLeast(0)
+
+    /** L'exercice tel qu'il se présente au palier [index]. */
+    fun atLevel(index: Int): Exercise {
+        val l = levels.getOrNull(index) ?: return this
+        return copy(
+            sets = l.sets ?: sets,
+            reps = l.reps ?: reps,
+            duration = l.duration ?: duration,
+            load = l.load ?: load,
+            rest = l.rest ?: rest,
+            description = listOfNotNull(description, l.note).joinToString("\n\n").ifEmpty { null },
+        )
+    }
 }
 
 /**

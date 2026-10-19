@@ -26,8 +26,10 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,6 +53,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.spacelenin.flemmefit.data.ProgramRepository
@@ -86,6 +89,7 @@ fun ProgramScreen(program: StoredProgram, repository: ProgramRepository, onBack:
     var menuOpen by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
     var pickStart by remember { mutableStateOf(false) }
+    var editTests by remember { mutableStateOf(false) }
     var postponeIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     // Exercice en cours de saisie : index de jour, index d'exercice, et s'il s'agit du max de Boss.
     var logDay by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -121,6 +125,13 @@ fun ProgramScreen(program: StoredProgram, repository: ProgramRepository, onBack:
                             leadingIcon = { Icon(Icons.Default.Edit, null) },
                             onClick = { menuOpen = false; pickStart = true },
                         )
+                        if (program.plan.tests.isNotEmpty()) {
+                            DropdownMenuItem(
+                                text = { Text("Tests de départ") },
+                                leadingIcon = { Icon(Icons.Default.Star, null) },
+                                onClick = { menuOpen = false; editTests = true },
+                            )
+                        }
                         DropdownMenuItem(
                             text = { Text("Supprimer le programme") },
                             leadingIcon = { Icon(Icons.Default.Delete, null) },
@@ -142,6 +153,24 @@ fun ProgramScreen(program: StoredProgram, repository: ProgramRepository, onBack:
                     StatsPanes(remember(schedule) { Stats.of(schedule) }, color, showProgram = false)
                 } else {
                     val calendarItems: LazyListScope.() -> Unit = {
+                        if (program.missingTests.isNotEmpty()) {
+                            item(key = "tests") {
+                                Card(
+                                    onClick = { editTests = true },
+                                    colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.14f)),
+                                    modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 16.dp),
+                                ) {
+                                    Column(Modifier.padding(12.dp)) {
+                                        Text("📏 Tests de départ à faire", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                                        Text(
+                                            program.missingTests.joinToString { it.name } +
+                                                " : en attendant, tu es au palier le plus facile. Touche pour noter tes résultats.",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                        )
+                                    }
+                                }
+                            }
+                        }
                         item(key = "summary") {
                             ProgressSummary(schedule.progress(), schedule, color, Modifier.padding(16.dp))
                         }
@@ -246,6 +275,18 @@ fun ProgramScreen(program: StoredProgram, repository: ProgramRepository, onBack:
                 }) { Text("Supprimer") }
             },
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Annuler") } },
+        )
+    }
+
+    if (editTests) {
+        TestsDialog(
+            program = program,
+            current = remember(schedule) { schedule.currentTestResults() },
+            onSave = { results ->
+                repository.setTests(program.id, results)
+                editTests = false
+            },
+            onDismiss = { editTests = false },
         )
     }
 

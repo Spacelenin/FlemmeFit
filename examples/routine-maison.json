@@ -1,0 +1,2130 @@
+{
+  "format": "flemmefit",
+  "version": 1,
+  "name": "Routine maison",
+  "description": "5 séances par semaine (jours 4 et 7 : repos, ou rien selon la fatigue). Paliers inspirés de 100pompes, 50tractions, musclesabdominaux et musclesdesjambes : un test de départ choisit ton palier, la dernière série va souvent au max, et la 4e semaine allège tout de moitié et refait les tests pour passer au palier suivant. Échauffement et étirements d'après echauffez-vous et etirez-vous.",
+  "repeat": "forever",
+  "deloadEvery": 4,
+  "boss": true,
+  "tests": [
+    {
+      "id": "pompes",
+      "name": "Pompes",
+      "unit": "reps",
+      "description": "Pompes classiques d'affilée, corps gainé, poitrine à un poing du sol. Arrête dès que la forme casse."
+    },
+    {
+      "id": "tractions",
+      "name": "Tractions sous une table",
+      "unit": "reps",
+      "description": "D'affilée, corps droit, poitrine jusqu'au plateau."
+    },
+    {
+      "id": "abdos",
+      "name": "Abdos",
+      "unit": "reps",
+      "description": "Crunchs d'affilée, sans pause en bas."
+    },
+    {
+      "id": "gainage",
+      "name": "Gainage",
+      "unit": "seconds",
+      "description": "Planche sur les avant-bras, le plus longtemps possible en restant droit."
+    },
+    {
+      "id": "squat",
+      "name": "Squat sur une jambe",
+      "unit": "reps",
+      "description": "Sur ta moins bonne jambe. Se tenir à un appui est permis, mais compte 0 si tu ne descends pas sous les genoux."
+    }
+  ],
+  "weeks": [
+    {
+      "label": "Semaine 1",
+      "days": [
+        {
+          "day": 1,
+          "title": "Pompes lentes et shadow",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
+            },
+            {
+              "name": "Pompes lentes et contrôlées",
+              "id": "pompes-lentes",
+              "description": "3 s pour descendre, 1 s de pause poitrine à un poing du sol, 3 s pour remonter. Corps gainé du talon à la tête, coudes à 45° du corps. Si la forme casse, arrête la série : la lenteur compte plus que le nombre.",
+              "rest": "90s",
+              "test": "pompes",
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 4,
+                  "reps": "1",
+                  "note": "Palier facile : pompes sur les genoux, ou mains sur une table."
+                },
+                {
+                  "from": 6,
+                  "sets": 4,
+                  "reps": "3"
+                },
+                {
+                  "from": 11,
+                  "sets": 4,
+                  "reps": "4"
+                },
+                {
+                  "from": 21,
+                  "sets": 4,
+                  "reps": "6"
+                },
+                {
+                  "from": 26,
+                  "sets": 4,
+                  "reps": "7"
+                },
+                {
+                  "from": 31,
+                  "sets": 4,
+                  "reps": "9"
+                },
+                {
+                  "from": 41,
+                  "sets": 4,
+                  "reps": "11"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              }
+            },
+            {
+              "name": "Shadow boxing léger",
+              "id": "shadow-boxing",
+              "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids si possible (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes.",
+              "sets": 3,
+              "duration": "2min",
+              "rest": "1min",
+              "progression": {
+                "every": 2,
+                "duration": "15s",
+                "maxDuration": "3min",
+                "addSets": 1,
+                "maxSets": 5
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos)."
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Abdos et gainage",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
+            },
+            {
+              "name": "Abdos bras tendus",
+              "id": "abdos-bras-tendus",
+              "description": "Allongé sur le dos, bras tendus au-dessus de la tête. Remonte buste et bras tendus en même temps que les jambes se ramènent vers toi, mains vers les pieds, puis redescends lentement sans poser complètement. Bas du dos plaqué au sol, souffle en montant.",
+              "rest": "60s",
+              "test": "abdos",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 4,
+                  "reps": "5",
+                  "note": "Palier facile : jambes pliées, ne ramène que le buste."
+                },
+                {
+                  "from": 11,
+                  "sets": 4,
+                  "reps": "8"
+                },
+                {
+                  "from": 21,
+                  "sets": 4,
+                  "reps": "12"
+                },
+                {
+                  "from": 31,
+                  "sets": 4,
+                  "reps": "15"
+                },
+                {
+                  "from": 41,
+                  "sets": 4,
+                  "reps": "18"
+                },
+                {
+                  "from": 51,
+                  "sets": 4,
+                  "reps": "22"
+                },
+                {
+                  "from": 71,
+                  "sets": 4,
+                  "reps": "28"
+                },
+                {
+                  "from": 91,
+                  "sets": 4,
+                  "reps": "35"
+                }
+              ],
+              "progression": {
+                "reps": 1
+              }
+            },
+            {
+              "name": "Obliques en planche latérale",
+              "id": "obliques",
+              "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : fais tout un côté, puis l'autre.",
+              "rest": "45s",
+              "test": "abdos",
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Palier facile : genoux au sol, jambes pliées."
+                },
+                {
+                  "from": 21,
+                  "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 41,
+                  "sets": 3,
+                  "reps": "10"
+                },
+                {
+                  "from": 71,
+                  "sets": 3,
+                  "reps": "12"
+                },
+                {
+                  "from": 91,
+                  "sets": 3,
+                  "reps": "15"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              }
+            },
+            {
+              "name": "Gainage",
+              "id": "gainage",
+              "description": "Planche sur les avant-bras, corps parfaitement droit : fesses ni en l'air ni affaissées, ventre et fessiers serrés, regard vers le sol. La dernière série dure aussi longtemps que possible en restant droit : dès que ça s'affaisse, stop.",
+              "rest": "60s",
+              "test": "gainage",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "duration": "15s",
+                  "note": "Palier facile : sur les genoux."
+                },
+                {
+                  "from": 30,
+                  "sets": 3,
+                  "duration": "25s"
+                },
+                {
+                  "from": 45,
+                  "sets": 3,
+                  "duration": "35s"
+                },
+                {
+                  "from": 60,
+                  "sets": 3,
+                  "duration": "45s"
+                },
+                {
+                  "from": 90,
+                  "sets": 3,
+                  "duration": "1min"
+                },
+                {
+                  "from": 120,
+                  "sets": 3,
+                  "duration": "1min15"
+                },
+                {
+                  "from": 180,
+                  "sets": 3,
+                  "duration": "1min30"
+                }
+              ],
+              "progression": {
+                "duration": "5s"
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant."
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Tractions",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
+            },
+            {
+              "name": "Tractions sous une table",
+              "id": "tractions-table",
+              "description": "Allongé sous une table bien solide (vérifie qu'elle ne bascule pas), mains au bord du plateau. Corps droit, talons au sol, tire la poitrine jusqu'au plateau puis redescends en 2 s. Alterne d'une série à l'autre : mains écartées sur les côtés (dos large), puis mains serrées paumes vers toi (biceps).",
+              "rest": "2min",
+              "test": "tractions",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 5,
+                  "reps": "2",
+                  "note": "Palier facile : genoux pliés, pieds près de toi. Sinon, négatives : pars en haut et descends le plus lentement possible."
+                },
+                {
+                  "from": 4,
+                  "sets": 5,
+                  "reps": "3"
+                },
+                {
+                  "from": 6,
+                  "sets": 5,
+                  "reps": "5"
+                },
+                {
+                  "from": 9,
+                  "sets": 5,
+                  "reps": "7"
+                },
+                {
+                  "from": 12,
+                  "sets": 5,
+                  "reps": "9"
+                },
+                {
+                  "from": 16,
+                  "sets": 5,
+                  "reps": "11",
+                  "rest": "90s"
+                },
+                {
+                  "from": 21,
+                  "sets": 5,
+                  "reps": "14",
+                  "rest": "90s"
+                }
+              ],
+              "progression": {
+                "reps": 1
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras."
+            }
+          ]
+        },
+        {
+          "day": 5,
+          "title": "Pompes et Beat Saber",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger."
+            },
+            {
+              "name": "Pompes classiques",
+              "id": "pompes",
+              "description": "Mains un peu plus larges que les épaules, corps gainé, poitrine jusqu'à un poing du sol, rythme normal. Dernière série : le maximum possible, proprement.",
+              "rest": "60s",
+              "test": "pompes",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 5,
+                  "reps": "2",
+                  "note": "Palier facile : sur les genoux, ou mains sur une table."
+                },
+                {
+                  "from": 6,
+                  "sets": 5,
+                  "reps": "5"
+                },
+                {
+                  "from": 11,
+                  "sets": 5,
+                  "reps": "8"
+                },
+                {
+                  "from": 21,
+                  "sets": 5,
+                  "reps": "12"
+                },
+                {
+                  "from": 26,
+                  "sets": 5,
+                  "reps": "15"
+                },
+                {
+                  "from": 31,
+                  "sets": 5,
+                  "reps": "18"
+                },
+                {
+                  "from": 41,
+                  "sets": 5,
+                  "reps": "22",
+                  "rest": "45s"
+                }
+              ],
+              "progression": {
+                "reps": 1
+              }
+            },
+            {
+              "name": "Beat Saber",
+              "id": "beatsaber",
+              "description": "Cardio en VR. Choisis des musiques en Normal/Hard au début, monte en difficulté au fil des semaines. Hydrate-toi, et garde de la place autour de toi.",
+              "duration": "20min",
+              "progression": {
+                "every": 2,
+                "duration": "5min",
+                "maxDuration": "45min"
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber."
+            }
+          ]
+        },
+        {
+          "day": 6,
+          "title": "Abdos et jambes",
+          "notes": "Pas fatigué du tout ? Jour défonce en bonus : 3 tours de pompes, tractions sous table, crunchs et squats, le max à chaque fois, 2 min de repos entre les tours. Rien d'obligatoire, rien de compté. Fatigué : tu t'arrêtes là.",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
+            },
+            {
+              "name": "Abdos",
+              "id": "abdos",
+              "description": "Crunchs : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Décolle les omoplates en soufflant, redescends lentement. Dernière série : le max possible.",
+              "rest": "60s",
+              "test": "abdos",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 4,
+                  "reps": "6"
+                },
+                {
+                  "from": 11,
+                  "sets": 4,
+                  "reps": "10"
+                },
+                {
+                  "from": 21,
+                  "sets": 4,
+                  "reps": "14"
+                },
+                {
+                  "from": 31,
+                  "sets": 4,
+                  "reps": "18"
+                },
+                {
+                  "from": 41,
+                  "sets": 4,
+                  "reps": "22"
+                },
+                {
+                  "from": 51,
+                  "sets": 4,
+                  "reps": "26"
+                },
+                {
+                  "from": 71,
+                  "sets": 4,
+                  "reps": "32"
+                },
+                {
+                  "from": 91,
+                  "sets": 4,
+                  "reps": "40"
+                }
+              ],
+              "progression": {
+                "reps": 2
+              }
+            },
+            {
+              "name": "Squats sur une jambe",
+              "id": "squat-une-jambe",
+              "description": "Sur une jambe, l'autre tendue devant toi, descends le bassin dans l'axe le plus bas possible en contrôlant, genou dans l'axe du pied (il ne rentre pas vers l'intérieur), talon au sol, puis remonte. Les reps sont par jambe.",
+              "rest": "90s",
+              "test": "squat",
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "reps": "3",
+                  "note": "Palier facile : tiens-toi à une porte ou une table, et descends jusqu'à t'asseoir sur une chaise."
+                },
+                {
+                  "from": 3,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Tiens-toi encore à un appui si besoin, sans tirer dessus."
+                },
+                {
+                  "from": 5,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Sans appui, en descendant jusqu'à une chaise."
+                },
+                {
+                  "from": 8,
+                  "sets": 3,
+                  "reps": "6"
+                },
+                {
+                  "from": 12,
+                  "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 16,
+                  "sets": 3,
+                  "reps": "10"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Semaine 2",
+      "days": [
+        {
+          "day": 1,
+          "title": "Pompes lentes et shadow",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
+            },
+            {
+              "name": "Pompes lentes et contrôlées",
+              "id": "pompes-lentes",
+              "description": "3 s pour descendre, 1 s de pause poitrine à un poing du sol, 3 s pour remonter. Corps gainé du talon à la tête, coudes à 45° du corps. Si la forme casse, arrête la série : la lenteur compte plus que le nombre.",
+              "rest": "90s",
+              "test": "pompes",
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 4,
+                  "reps": "1",
+                  "note": "Palier facile : pompes sur les genoux, ou mains sur une table."
+                },
+                {
+                  "from": 6,
+                  "sets": 4,
+                  "reps": "3"
+                },
+                {
+                  "from": 11,
+                  "sets": 4,
+                  "reps": "4"
+                },
+                {
+                  "from": 21,
+                  "sets": 4,
+                  "reps": "6"
+                },
+                {
+                  "from": 26,
+                  "sets": 4,
+                  "reps": "7"
+                },
+                {
+                  "from": 31,
+                  "sets": 4,
+                  "reps": "9"
+                },
+                {
+                  "from": 41,
+                  "sets": 4,
+                  "reps": "11"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              }
+            },
+            {
+              "name": "Shadow boxing léger",
+              "id": "shadow-boxing",
+              "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids si possible (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes.",
+              "sets": 3,
+              "duration": "2min",
+              "rest": "1min",
+              "progression": {
+                "every": 2,
+                "duration": "15s",
+                "maxDuration": "3min",
+                "addSets": 1,
+                "maxSets": 5
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos)."
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Abdos et gainage",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
+            },
+            {
+              "name": "Abdos bras tendus",
+              "id": "abdos-bras-tendus",
+              "description": "Allongé sur le dos, bras tendus au-dessus de la tête. Remonte buste et bras tendus en même temps que les jambes se ramènent vers toi, mains vers les pieds, puis redescends lentement sans poser complètement. Bas du dos plaqué au sol, souffle en montant.",
+              "rest": "60s",
+              "test": "abdos",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 4,
+                  "reps": "5",
+                  "note": "Palier facile : jambes pliées, ne ramène que le buste."
+                },
+                {
+                  "from": 11,
+                  "sets": 4,
+                  "reps": "8"
+                },
+                {
+                  "from": 21,
+                  "sets": 4,
+                  "reps": "12"
+                },
+                {
+                  "from": 31,
+                  "sets": 4,
+                  "reps": "15"
+                },
+                {
+                  "from": 41,
+                  "sets": 4,
+                  "reps": "18"
+                },
+                {
+                  "from": 51,
+                  "sets": 4,
+                  "reps": "22"
+                },
+                {
+                  "from": 71,
+                  "sets": 4,
+                  "reps": "28"
+                },
+                {
+                  "from": 91,
+                  "sets": 4,
+                  "reps": "35"
+                }
+              ],
+              "progression": {
+                "reps": 1
+              }
+            },
+            {
+              "name": "Obliques en planche latérale",
+              "id": "obliques",
+              "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : fais tout un côté, puis l'autre.",
+              "rest": "45s",
+              "test": "abdos",
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Palier facile : genoux au sol, jambes pliées."
+                },
+                {
+                  "from": 21,
+                  "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 41,
+                  "sets": 3,
+                  "reps": "10"
+                },
+                {
+                  "from": 71,
+                  "sets": 3,
+                  "reps": "12"
+                },
+                {
+                  "from": 91,
+                  "sets": 3,
+                  "reps": "15"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              }
+            },
+            {
+              "name": "Gainage",
+              "id": "gainage",
+              "description": "Planche sur les avant-bras, corps parfaitement droit : fesses ni en l'air ni affaissées, ventre et fessiers serrés, regard vers le sol. La dernière série dure aussi longtemps que possible en restant droit : dès que ça s'affaisse, stop.",
+              "rest": "60s",
+              "test": "gainage",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "duration": "15s",
+                  "note": "Palier facile : sur les genoux."
+                },
+                {
+                  "from": 30,
+                  "sets": 3,
+                  "duration": "25s"
+                },
+                {
+                  "from": 45,
+                  "sets": 3,
+                  "duration": "35s"
+                },
+                {
+                  "from": 60,
+                  "sets": 3,
+                  "duration": "45s"
+                },
+                {
+                  "from": 90,
+                  "sets": 3,
+                  "duration": "1min"
+                },
+                {
+                  "from": 120,
+                  "sets": 3,
+                  "duration": "1min15"
+                },
+                {
+                  "from": 180,
+                  "sets": 3,
+                  "duration": "1min30"
+                }
+              ],
+              "progression": {
+                "duration": "5s"
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant."
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Tractions",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
+            },
+            {
+              "name": "Tractions sous une table",
+              "id": "tractions-table",
+              "description": "Allongé sous une table bien solide (vérifie qu'elle ne bascule pas), mains au bord du plateau. Corps droit, talons au sol, tire la poitrine jusqu'au plateau puis redescends en 2 s. Alterne d'une série à l'autre : mains écartées sur les côtés (dos large), puis mains serrées paumes vers toi (biceps).",
+              "rest": "2min",
+              "test": "tractions",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 5,
+                  "reps": "2",
+                  "note": "Palier facile : genoux pliés, pieds près de toi. Sinon, négatives : pars en haut et descends le plus lentement possible."
+                },
+                {
+                  "from": 4,
+                  "sets": 5,
+                  "reps": "3"
+                },
+                {
+                  "from": 6,
+                  "sets": 5,
+                  "reps": "5"
+                },
+                {
+                  "from": 9,
+                  "sets": 5,
+                  "reps": "7"
+                },
+                {
+                  "from": 12,
+                  "sets": 5,
+                  "reps": "9"
+                },
+                {
+                  "from": 16,
+                  "sets": 5,
+                  "reps": "11",
+                  "rest": "90s"
+                },
+                {
+                  "from": 21,
+                  "sets": 5,
+                  "reps": "14",
+                  "rest": "90s"
+                }
+              ],
+              "progression": {
+                "reps": 1
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras."
+            }
+          ]
+        },
+        {
+          "day": 5,
+          "title": "Pompes et Beat Saber",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger."
+            },
+            {
+              "name": "Pompes classiques",
+              "id": "pompes",
+              "description": "Mains un peu plus larges que les épaules, corps gainé, poitrine jusqu'à un poing du sol, rythme normal. Dernière série : le maximum possible, proprement.",
+              "rest": "60s",
+              "test": "pompes",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 5,
+                  "reps": "2",
+                  "note": "Palier facile : sur les genoux, ou mains sur une table."
+                },
+                {
+                  "from": 6,
+                  "sets": 5,
+                  "reps": "5"
+                },
+                {
+                  "from": 11,
+                  "sets": 5,
+                  "reps": "8"
+                },
+                {
+                  "from": 21,
+                  "sets": 5,
+                  "reps": "12"
+                },
+                {
+                  "from": 26,
+                  "sets": 5,
+                  "reps": "15"
+                },
+                {
+                  "from": 31,
+                  "sets": 5,
+                  "reps": "18"
+                },
+                {
+                  "from": 41,
+                  "sets": 5,
+                  "reps": "22",
+                  "rest": "45s"
+                }
+              ],
+              "progression": {
+                "reps": 1
+              }
+            },
+            {
+              "name": "Beat Saber",
+              "id": "beatsaber",
+              "description": "Cardio en VR. Choisis des musiques en Normal/Hard au début, monte en difficulté au fil des semaines. Hydrate-toi, et garde de la place autour de toi.",
+              "duration": "20min",
+              "progression": {
+                "every": 2,
+                "duration": "5min",
+                "maxDuration": "45min"
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber."
+            }
+          ]
+        },
+        {
+          "day": 6,
+          "title": "Abdos et jambes",
+          "notes": "Pas fatigué du tout ? Jour défonce en bonus : 3 tours de pompes, tractions sous table, crunchs et squats, le max à chaque fois, 2 min de repos entre les tours. Rien d'obligatoire, rien de compté. Fatigué : tu t'arrêtes là.",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
+            },
+            {
+              "name": "Abdos",
+              "id": "abdos",
+              "description": "Crunchs : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Décolle les omoplates en soufflant, redescends lentement. Dernière série : le max possible.",
+              "rest": "60s",
+              "test": "abdos",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 4,
+                  "reps": "6"
+                },
+                {
+                  "from": 11,
+                  "sets": 4,
+                  "reps": "10"
+                },
+                {
+                  "from": 21,
+                  "sets": 4,
+                  "reps": "14"
+                },
+                {
+                  "from": 31,
+                  "sets": 4,
+                  "reps": "18"
+                },
+                {
+                  "from": 41,
+                  "sets": 4,
+                  "reps": "22"
+                },
+                {
+                  "from": 51,
+                  "sets": 4,
+                  "reps": "26"
+                },
+                {
+                  "from": 71,
+                  "sets": 4,
+                  "reps": "32"
+                },
+                {
+                  "from": 91,
+                  "sets": 4,
+                  "reps": "40"
+                }
+              ],
+              "progression": {
+                "reps": 2
+              }
+            },
+            {
+              "name": "Squats sur une jambe",
+              "id": "squat-une-jambe",
+              "description": "Sur une jambe, l'autre tendue devant toi, descends le bassin dans l'axe le plus bas possible en contrôlant, genou dans l'axe du pied (il ne rentre pas vers l'intérieur), talon au sol, puis remonte. Les reps sont par jambe.",
+              "rest": "90s",
+              "test": "squat",
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "reps": "3",
+                  "note": "Palier facile : tiens-toi à une porte ou une table, et descends jusqu'à t'asseoir sur une chaise."
+                },
+                {
+                  "from": 3,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Tiens-toi encore à un appui si besoin, sans tirer dessus."
+                },
+                {
+                  "from": 5,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Sans appui, en descendant jusqu'à une chaise."
+                },
+                {
+                  "from": 8,
+                  "sets": 3,
+                  "reps": "6"
+                },
+                {
+                  "from": 12,
+                  "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 16,
+                  "sets": 3,
+                  "reps": "10"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Semaine 3",
+      "days": [
+        {
+          "day": 1,
+          "title": "Pompes lentes et shadow",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
+            },
+            {
+              "name": "Pompes lentes et contrôlées",
+              "id": "pompes-lentes",
+              "description": "3 s pour descendre, 1 s de pause poitrine à un poing du sol, 3 s pour remonter. Corps gainé du talon à la tête, coudes à 45° du corps. Si la forme casse, arrête la série : la lenteur compte plus que le nombre.",
+              "rest": "90s",
+              "test": "pompes",
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 4,
+                  "reps": "1",
+                  "note": "Palier facile : pompes sur les genoux, ou mains sur une table."
+                },
+                {
+                  "from": 6,
+                  "sets": 4,
+                  "reps": "3"
+                },
+                {
+                  "from": 11,
+                  "sets": 4,
+                  "reps": "4"
+                },
+                {
+                  "from": 21,
+                  "sets": 4,
+                  "reps": "6"
+                },
+                {
+                  "from": 26,
+                  "sets": 4,
+                  "reps": "7"
+                },
+                {
+                  "from": 31,
+                  "sets": 4,
+                  "reps": "9"
+                },
+                {
+                  "from": 41,
+                  "sets": 4,
+                  "reps": "11"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              }
+            },
+            {
+              "name": "Shadow boxing léger",
+              "id": "shadow-boxing",
+              "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids si possible (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes.",
+              "sets": 3,
+              "duration": "2min",
+              "rest": "1min",
+              "progression": {
+                "every": 2,
+                "duration": "15s",
+                "maxDuration": "3min",
+                "addSets": 1,
+                "maxSets": 5
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos)."
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Abdos et gainage",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
+            },
+            {
+              "name": "Abdos bras tendus",
+              "id": "abdos-bras-tendus",
+              "description": "Allongé sur le dos, bras tendus au-dessus de la tête. Remonte buste et bras tendus en même temps que les jambes se ramènent vers toi, mains vers les pieds, puis redescends lentement sans poser complètement. Bas du dos plaqué au sol, souffle en montant.",
+              "rest": "60s",
+              "test": "abdos",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 4,
+                  "reps": "5",
+                  "note": "Palier facile : jambes pliées, ne ramène que le buste."
+                },
+                {
+                  "from": 11,
+                  "sets": 4,
+                  "reps": "8"
+                },
+                {
+                  "from": 21,
+                  "sets": 4,
+                  "reps": "12"
+                },
+                {
+                  "from": 31,
+                  "sets": 4,
+                  "reps": "15"
+                },
+                {
+                  "from": 41,
+                  "sets": 4,
+                  "reps": "18"
+                },
+                {
+                  "from": 51,
+                  "sets": 4,
+                  "reps": "22"
+                },
+                {
+                  "from": 71,
+                  "sets": 4,
+                  "reps": "28"
+                },
+                {
+                  "from": 91,
+                  "sets": 4,
+                  "reps": "35"
+                }
+              ],
+              "progression": {
+                "reps": 1
+              }
+            },
+            {
+              "name": "Obliques en planche latérale",
+              "id": "obliques",
+              "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : fais tout un côté, puis l'autre.",
+              "rest": "45s",
+              "test": "abdos",
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Palier facile : genoux au sol, jambes pliées."
+                },
+                {
+                  "from": 21,
+                  "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 41,
+                  "sets": 3,
+                  "reps": "10"
+                },
+                {
+                  "from": 71,
+                  "sets": 3,
+                  "reps": "12"
+                },
+                {
+                  "from": 91,
+                  "sets": 3,
+                  "reps": "15"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              }
+            },
+            {
+              "name": "Gainage",
+              "id": "gainage",
+              "description": "Planche sur les avant-bras, corps parfaitement droit : fesses ni en l'air ni affaissées, ventre et fessiers serrés, regard vers le sol. La dernière série dure aussi longtemps que possible en restant droit : dès que ça s'affaisse, stop.",
+              "rest": "60s",
+              "test": "gainage",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "duration": "15s",
+                  "note": "Palier facile : sur les genoux."
+                },
+                {
+                  "from": 30,
+                  "sets": 3,
+                  "duration": "25s"
+                },
+                {
+                  "from": 45,
+                  "sets": 3,
+                  "duration": "35s"
+                },
+                {
+                  "from": 60,
+                  "sets": 3,
+                  "duration": "45s"
+                },
+                {
+                  "from": 90,
+                  "sets": 3,
+                  "duration": "1min"
+                },
+                {
+                  "from": 120,
+                  "sets": 3,
+                  "duration": "1min15"
+                },
+                {
+                  "from": 180,
+                  "sets": 3,
+                  "duration": "1min30"
+                }
+              ],
+              "progression": {
+                "duration": "5s"
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant."
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Tractions",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
+            },
+            {
+              "name": "Tractions sous une table",
+              "id": "tractions-table",
+              "description": "Allongé sous une table bien solide (vérifie qu'elle ne bascule pas), mains au bord du plateau. Corps droit, talons au sol, tire la poitrine jusqu'au plateau puis redescends en 2 s. Alterne d'une série à l'autre : mains écartées sur les côtés (dos large), puis mains serrées paumes vers toi (biceps).",
+              "rest": "2min",
+              "test": "tractions",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 5,
+                  "reps": "2",
+                  "note": "Palier facile : genoux pliés, pieds près de toi. Sinon, négatives : pars en haut et descends le plus lentement possible."
+                },
+                {
+                  "from": 4,
+                  "sets": 5,
+                  "reps": "3"
+                },
+                {
+                  "from": 6,
+                  "sets": 5,
+                  "reps": "5"
+                },
+                {
+                  "from": 9,
+                  "sets": 5,
+                  "reps": "7"
+                },
+                {
+                  "from": 12,
+                  "sets": 5,
+                  "reps": "9"
+                },
+                {
+                  "from": 16,
+                  "sets": 5,
+                  "reps": "11",
+                  "rest": "90s"
+                },
+                {
+                  "from": 21,
+                  "sets": 5,
+                  "reps": "14",
+                  "rest": "90s"
+                }
+              ],
+              "progression": {
+                "reps": 1
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras."
+            }
+          ]
+        },
+        {
+          "day": 5,
+          "title": "Pompes et Beat Saber",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger."
+            },
+            {
+              "name": "Pompes classiques",
+              "id": "pompes",
+              "description": "Mains un peu plus larges que les épaules, corps gainé, poitrine jusqu'à un poing du sol, rythme normal. Dernière série : le maximum possible, proprement.",
+              "rest": "60s",
+              "test": "pompes",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 5,
+                  "reps": "2",
+                  "note": "Palier facile : sur les genoux, ou mains sur une table."
+                },
+                {
+                  "from": 6,
+                  "sets": 5,
+                  "reps": "5"
+                },
+                {
+                  "from": 11,
+                  "sets": 5,
+                  "reps": "8"
+                },
+                {
+                  "from": 21,
+                  "sets": 5,
+                  "reps": "12"
+                },
+                {
+                  "from": 26,
+                  "sets": 5,
+                  "reps": "15"
+                },
+                {
+                  "from": 31,
+                  "sets": 5,
+                  "reps": "18"
+                },
+                {
+                  "from": 41,
+                  "sets": 5,
+                  "reps": "22",
+                  "rest": "45s"
+                }
+              ],
+              "progression": {
+                "reps": 1
+              }
+            },
+            {
+              "name": "Beat Saber",
+              "id": "beatsaber",
+              "description": "Cardio en VR. Choisis des musiques en Normal/Hard au début, monte en difficulté au fil des semaines. Hydrate-toi, et garde de la place autour de toi.",
+              "duration": "20min",
+              "progression": {
+                "every": 2,
+                "duration": "5min",
+                "maxDuration": "45min"
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber."
+            }
+          ]
+        },
+        {
+          "day": 6,
+          "title": "Abdos et jambes",
+          "notes": "Pas fatigué du tout ? Jour défonce en bonus : 3 tours de pompes, tractions sous table, crunchs et squats, le max à chaque fois, 2 min de repos entre les tours. Rien d'obligatoire, rien de compté. Fatigué : tu t'arrêtes là.",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
+            },
+            {
+              "name": "Abdos",
+              "id": "abdos",
+              "description": "Crunchs : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Décolle les omoplates en soufflant, redescends lentement. Dernière série : le max possible.",
+              "rest": "60s",
+              "test": "abdos",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 4,
+                  "reps": "6"
+                },
+                {
+                  "from": 11,
+                  "sets": 4,
+                  "reps": "10"
+                },
+                {
+                  "from": 21,
+                  "sets": 4,
+                  "reps": "14"
+                },
+                {
+                  "from": 31,
+                  "sets": 4,
+                  "reps": "18"
+                },
+                {
+                  "from": 41,
+                  "sets": 4,
+                  "reps": "22"
+                },
+                {
+                  "from": 51,
+                  "sets": 4,
+                  "reps": "26"
+                },
+                {
+                  "from": 71,
+                  "sets": 4,
+                  "reps": "32"
+                },
+                {
+                  "from": 91,
+                  "sets": 4,
+                  "reps": "40"
+                }
+              ],
+              "progression": {
+                "reps": 2
+              }
+            },
+            {
+              "name": "Squats sur une jambe",
+              "id": "squat-une-jambe",
+              "description": "Sur une jambe, l'autre tendue devant toi, descends le bassin dans l'axe le plus bas possible en contrôlant, genou dans l'axe du pied (il ne rentre pas vers l'intérieur), talon au sol, puis remonte. Les reps sont par jambe.",
+              "rest": "90s",
+              "test": "squat",
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "reps": "3",
+                  "note": "Palier facile : tiens-toi à une porte ou une table, et descends jusqu'à t'asseoir sur une chaise."
+                },
+                {
+                  "from": 3,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Tiens-toi encore à un appui si besoin, sans tirer dessus."
+                },
+                {
+                  "from": 5,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Sans appui, en descendant jusqu'à une chaise."
+                },
+                {
+                  "from": 8,
+                  "sets": 3,
+                  "reps": "6"
+                },
+                {
+                  "from": 12,
+                  "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 16,
+                  "sets": 3,
+                  "reps": "10"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Décharge et tests",
+      "days": [
+        {
+          "day": 1,
+          "title": "Pompes lentes et shadow",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
+            },
+            {
+              "name": "Test pompes",
+              "id": "test-pompes",
+              "test": "pompes",
+              "retest": true,
+              "description": "Pompes classiques d'affilée, corps gainé, poitrine à un poing du sol. Arrête dès que la forme casse. Fais-le avant le reste de la séance, bien échauffé."
+            },
+            {
+              "name": "Pompes lentes et contrôlées",
+              "id": "pompes-lentes",
+              "description": "3 s pour descendre, 1 s de pause poitrine à un poing du sol, 3 s pour remonter. Corps gainé du talon à la tête, coudes à 45° du corps. Si la forme casse, arrête la série : la lenteur compte plus que le nombre.",
+              "rest": "90s",
+              "test": "pompes",
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 4,
+                  "reps": "1",
+                  "note": "Palier facile : pompes sur les genoux, ou mains sur une table."
+                },
+                {
+                  "from": 6,
+                  "sets": 4,
+                  "reps": "3"
+                },
+                {
+                  "from": 11,
+                  "sets": 4,
+                  "reps": "4"
+                },
+                {
+                  "from": 21,
+                  "sets": 4,
+                  "reps": "6"
+                },
+                {
+                  "from": 26,
+                  "sets": 4,
+                  "reps": "7"
+                },
+                {
+                  "from": 31,
+                  "sets": 4,
+                  "reps": "9"
+                },
+                {
+                  "from": 41,
+                  "sets": 4,
+                  "reps": "11"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              }
+            },
+            {
+              "name": "Shadow boxing léger",
+              "id": "shadow-boxing",
+              "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids si possible (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes.",
+              "sets": 3,
+              "duration": "2min",
+              "rest": "1min",
+              "progression": {
+                "every": 2,
+                "duration": "15s",
+                "maxDuration": "3min",
+                "addSets": 1,
+                "maxSets": 5
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos)."
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Abdos et gainage",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
+            },
+            {
+              "name": "Test abdos",
+              "id": "test-abdos",
+              "test": "abdos",
+              "retest": true,
+              "description": "Crunchs d'affilée, sans pause en bas."
+            },
+            {
+              "name": "Test gainage",
+              "id": "test-gainage",
+              "test": "gainage",
+              "retest": true,
+              "description": "Planche sur les avant-bras, le plus longtemps possible en restant droit."
+            },
+            {
+              "name": "Abdos bras tendus",
+              "id": "abdos-bras-tendus",
+              "description": "Allongé sur le dos, bras tendus au-dessus de la tête. Remonte buste et bras tendus en même temps que les jambes se ramènent vers toi, mains vers les pieds, puis redescends lentement sans poser complètement. Bas du dos plaqué au sol, souffle en montant.",
+              "rest": "60s",
+              "test": "abdos",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 4,
+                  "reps": "5",
+                  "note": "Palier facile : jambes pliées, ne ramène que le buste."
+                },
+                {
+                  "from": 11,
+                  "sets": 4,
+                  "reps": "8"
+                },
+                {
+                  "from": 21,
+                  "sets": 4,
+                  "reps": "12"
+                },
+                {
+                  "from": 31,
+                  "sets": 4,
+                  "reps": "15"
+                },
+                {
+                  "from": 41,
+                  "sets": 4,
+                  "reps": "18"
+                },
+                {
+                  "from": 51,
+                  "sets": 4,
+                  "reps": "22"
+                },
+                {
+                  "from": 71,
+                  "sets": 4,
+                  "reps": "28"
+                },
+                {
+                  "from": 91,
+                  "sets": 4,
+                  "reps": "35"
+                }
+              ],
+              "progression": {
+                "reps": 1
+              }
+            },
+            {
+              "name": "Obliques en planche latérale",
+              "id": "obliques",
+              "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : fais tout un côté, puis l'autre.",
+              "rest": "45s",
+              "test": "abdos",
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Palier facile : genoux au sol, jambes pliées."
+                },
+                {
+                  "from": 21,
+                  "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 41,
+                  "sets": 3,
+                  "reps": "10"
+                },
+                {
+                  "from": 71,
+                  "sets": 3,
+                  "reps": "12"
+                },
+                {
+                  "from": 91,
+                  "sets": 3,
+                  "reps": "15"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              }
+            },
+            {
+              "name": "Gainage",
+              "id": "gainage",
+              "description": "Planche sur les avant-bras, corps parfaitement droit : fesses ni en l'air ni affaissées, ventre et fessiers serrés, regard vers le sol. La dernière série dure aussi longtemps que possible en restant droit : dès que ça s'affaisse, stop.",
+              "rest": "60s",
+              "test": "gainage",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "duration": "15s",
+                  "note": "Palier facile : sur les genoux."
+                },
+                {
+                  "from": 30,
+                  "sets": 3,
+                  "duration": "25s"
+                },
+                {
+                  "from": 45,
+                  "sets": 3,
+                  "duration": "35s"
+                },
+                {
+                  "from": 60,
+                  "sets": 3,
+                  "duration": "45s"
+                },
+                {
+                  "from": 90,
+                  "sets": 3,
+                  "duration": "1min"
+                },
+                {
+                  "from": 120,
+                  "sets": 3,
+                  "duration": "1min15"
+                },
+                {
+                  "from": 180,
+                  "sets": 3,
+                  "duration": "1min30"
+                }
+              ],
+              "progression": {
+                "duration": "5s"
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant."
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Tractions",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
+            },
+            {
+              "name": "Test tractions",
+              "id": "test-tractions",
+              "test": "tractions",
+              "retest": true,
+              "description": "D'affilée, corps droit, poitrine jusqu'au plateau."
+            },
+            {
+              "name": "Tractions sous une table",
+              "id": "tractions-table",
+              "description": "Allongé sous une table bien solide (vérifie qu'elle ne bascule pas), mains au bord du plateau. Corps droit, talons au sol, tire la poitrine jusqu'au plateau puis redescends en 2 s. Alterne d'une série à l'autre : mains écartées sur les côtés (dos large), puis mains serrées paumes vers toi (biceps).",
+              "rest": "2min",
+              "test": "tractions",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 5,
+                  "reps": "2",
+                  "note": "Palier facile : genoux pliés, pieds près de toi. Sinon, négatives : pars en haut et descends le plus lentement possible."
+                },
+                {
+                  "from": 4,
+                  "sets": 5,
+                  "reps": "3"
+                },
+                {
+                  "from": 6,
+                  "sets": 5,
+                  "reps": "5"
+                },
+                {
+                  "from": 9,
+                  "sets": 5,
+                  "reps": "7"
+                },
+                {
+                  "from": 12,
+                  "sets": 5,
+                  "reps": "9"
+                },
+                {
+                  "from": 16,
+                  "sets": 5,
+                  "reps": "11",
+                  "rest": "90s"
+                },
+                {
+                  "from": 21,
+                  "sets": 5,
+                  "reps": "14",
+                  "rest": "90s"
+                }
+              ],
+              "progression": {
+                "reps": 1
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras."
+            }
+          ]
+        },
+        {
+          "day": 5,
+          "title": "Pompes et Beat Saber",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger."
+            },
+            {
+              "name": "Pompes classiques",
+              "id": "pompes",
+              "description": "Mains un peu plus larges que les épaules, corps gainé, poitrine jusqu'à un poing du sol, rythme normal. Dernière série : le maximum possible, proprement.",
+              "rest": "60s",
+              "test": "pompes",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 5,
+                  "reps": "2",
+                  "note": "Palier facile : sur les genoux, ou mains sur une table."
+                },
+                {
+                  "from": 6,
+                  "sets": 5,
+                  "reps": "5"
+                },
+                {
+                  "from": 11,
+                  "sets": 5,
+                  "reps": "8"
+                },
+                {
+                  "from": 21,
+                  "sets": 5,
+                  "reps": "12"
+                },
+                {
+                  "from": 26,
+                  "sets": 5,
+                  "reps": "15"
+                },
+                {
+                  "from": 31,
+                  "sets": 5,
+                  "reps": "18"
+                },
+                {
+                  "from": 41,
+                  "sets": 5,
+                  "reps": "22",
+                  "rest": "45s"
+                }
+              ],
+              "progression": {
+                "reps": 1
+              }
+            },
+            {
+              "name": "Beat Saber",
+              "id": "beatsaber",
+              "description": "Cardio en VR. Choisis des musiques en Normal/Hard au début, monte en difficulté au fil des semaines. Hydrate-toi, et garde de la place autour de toi.",
+              "duration": "20min",
+              "progression": {
+                "every": 2,
+                "duration": "5min",
+                "maxDuration": "45min"
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber."
+            }
+          ]
+        },
+        {
+          "day": 6,
+          "title": "Abdos et jambes",
+          "notes": "Pas fatigué du tout ? Jour défonce en bonus : 3 tours de pompes, tractions sous table, crunchs et squats, le max à chaque fois, 2 min de repos entre les tours. Rien d'obligatoire, rien de compté. Fatigué : tu t'arrêtes là.",
+          "exercises": [
+            {
+              "name": "Échauffement",
+              "id": "echauffement",
+              "duration": "5min",
+              "description": "Rotations articulaires, 10 de chaque côté : cou, épaules, coudes, poignets, hanches, genoux, chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour monter le cardio sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
+            },
+            {
+              "name": "Test squat sur une jambe",
+              "id": "test-squat",
+              "test": "squat",
+              "retest": true,
+              "description": "Sur ta moins bonne jambe. Se tenir à un appui est permis, mais compte 0 si tu ne descends pas sous les genoux."
+            },
+            {
+              "name": "Abdos",
+              "id": "abdos",
+              "description": "Crunchs : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Décolle les omoplates en soufflant, redescends lentement. Dernière série : le max possible.",
+              "rest": "60s",
+              "test": "abdos",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 4,
+                  "reps": "6"
+                },
+                {
+                  "from": 11,
+                  "sets": 4,
+                  "reps": "10"
+                },
+                {
+                  "from": 21,
+                  "sets": 4,
+                  "reps": "14"
+                },
+                {
+                  "from": 31,
+                  "sets": 4,
+                  "reps": "18"
+                },
+                {
+                  "from": 41,
+                  "sets": 4,
+                  "reps": "22"
+                },
+                {
+                  "from": 51,
+                  "sets": 4,
+                  "reps": "26"
+                },
+                {
+                  "from": 71,
+                  "sets": 4,
+                  "reps": "32"
+                },
+                {
+                  "from": 91,
+                  "sets": 4,
+                  "reps": "40"
+                }
+              ],
+              "progression": {
+                "reps": 2
+              }
+            },
+            {
+              "name": "Squats sur une jambe",
+              "id": "squat-une-jambe",
+              "description": "Sur une jambe, l'autre tendue devant toi, descends le bassin dans l'axe le plus bas possible en contrôlant, genou dans l'axe du pied (il ne rentre pas vers l'intérieur), talon au sol, puis remonte. Les reps sont par jambe.",
+              "rest": "90s",
+              "test": "squat",
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "reps": "3",
+                  "note": "Palier facile : tiens-toi à une porte ou une table, et descends jusqu'à t'asseoir sur une chaise."
+                },
+                {
+                  "from": 3,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Tiens-toi encore à un appui si besoin, sans tirer dessus."
+                },
+                {
+                  "from": 5,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Sans appui, en descendant jusqu'à une chaise."
+                },
+                {
+                  "from": 8,
+                  "sets": 3,
+                  "reps": "6"
+                },
+                {
+                  "from": 12,
+                  "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 16,
+                  "sets": 3,
+                  "reps": "10"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              }
+            },
+            {
+              "name": "Étirements",
+              "id": "etirements",
+              "duration": "5min",
+              "description": "À froid du travail, en douceur, sans à-coups ni douleur : 20 à 30 s par position en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -50,6 +50,7 @@ dans l'app : *Importer → Programme d'exemple*).
 | `repeat`      | entier ou `"forever"` | non (défaut `1`) | Nombre de fois où la liste `weeks` est jouée (1 à 100), ou `"forever"` pour un programme illimité. |
 | `deloadEvery` | entier  | non         | Une semaine de **décharge** toutes les N semaines (2 à 52), `0` = jamais. Par défaut : `4` si au moins un exercice a une `progression`, sinon `0`. |
 | `boss`        | booléen | non (défaut `true`) | Jours **Boss** aléatoires. `false` pour les désactiver. |
+| `tests`       | tableau | non         | **Tests de départ** : leur résultat choisit le palier des exercices (voir « Tests et paliers »). |
 | `weeks`       | tableau | **oui**     | Au moins une semaine (voir ci-dessous). |
 
 ### Semaine (`weeks[]`)
@@ -84,6 +85,10 @@ Ce sont des **textes libres** (tu peux écrire `"12"`, `"8-10"`, `"max"`, `"10 p
 | `rest`        | texte  | non         | `"90s"` | Repos entre les séries. |
 | `description` | texte  | non         | `"Dos droit…"` | Explication détaillée, affichée en touchant l'exercice. |
 | `progression` | objet  | non         | voir plus bas | Progression automatique. |
+| `test`        | texte  | non         | `"pompes"` | Id d'un test de `tests` : l'exercice suit son résultat. |
+| `levels`      | tableau | non        | voir plus bas | Paliers choisis d'après le résultat de `test`. |
+| `amrap`       | booléen | non (défaut `false`) | `true` | Dernière série : le **max possible** (« au moins » le prévu), noté en cochant. |
+| `retest`      | booléen | non (défaut `false`) | `true` | L'exercice **est** le test : une série à fond, son résultat devient la nouvelle référence. |
 
 Affichage dans l'app : `sets × reps · load · repos rest`, par ex. **4 × 8-10 · 60 kg · repos 90s**.
 
@@ -142,6 +147,36 @@ Exemple : 3 × 8 pompes, +1 rep par séance validée jusqu'à 12, puis une séri
 nettement au-dessus du prévu (≥ 3 pas) = +1 cran, très au-dessus (≥ 6 pas) = +2 crans, en dessous = −1 cran
 (au total entre −2 et +4 crans).
 
+## Tests et paliers 📏
+
+Pour un programme « à démarrage objectif » (100 pompes, 50 tractions…) : un test à fond choisit le palier de départ,
+et le test refait plus tard fait passer au palier suivant.
+
+```json
+"tests": [
+  { "id": "pompes", "name": "Pompes", "unit": "reps", "description": "Max d'affilée, corps gainé." }
+],
+…
+{ "name": "Pompes", "test": "pompes", "amrap": true, "rest": "60s",
+  "levels": [
+    { "from": 0,  "sets": 5, "reps": "2", "note": "Sur les genoux." },
+    { "from": 6,  "sets": 5, "reps": "5" },
+    { "from": 11, "sets": 5, "reps": "8" }
+  ],
+  "progression": { "reps": 1 } },
+…
+{ "name": "Test pompes", "test": "pompes", "retest": true }
+```
+
+- **Test** (`tests[]`) : `id` et `name` obligatoires, `description` (consigne), `unit` = `"reps"` (défaut) ou `"seconds"`.
+- À l'import, l'app demande le résultat de chaque test (facultatif, modifiable ensuite par *⋮ → Tests de départ*).
+  Sans résultat : palier le plus facile.
+- **Palier** (`levels[]`) : le palier retenu est le dernier dont `from` ≤ résultat du test (`from` croissants).
+  Ses champs `sets`, `reps`, `duration`, `load`, `rest` remplacent ceux de l'exercice ; `note` s'ajoute à la description.
+- La `progression` s'applique **depuis le départ du palier**, et repart de zéro quand le palier change.
+- Un exercice `retest` met à jour le résultat du test avec le max noté : les séances suivantes changent de palier
+  si besoin. Il n'est jamais allégé par la décharge, ce qui permet de placer les tests en semaine de décharge.
+
 ## Semaine de décharge 🌿
 
 Une semaine sur `deloadEvery` (la 4e, la 8e… par défaut) est allégée de **50 %** : séries divisées par deux
@@ -174,6 +209,8 @@ L'import est refusé (avec la liste des erreurs) si :
 - un `day` est hors de 1–7 ou en double dans une même semaine ;
 - une séance n'a aucun exercice, un exercice n'a pas de `name`, ou `sets` est hors de 1–100 ;
 - `deloadEvery` vaut autre chose que 0 ou 2–52 ;
+- un `test` ne correspond à aucun id de `tests`, des `levels` sont sans `test` ou avec des `from` non croissants,
+  ou un exercice `retest` n'a pas de `test` ;
 - une `progression` n'a aucun pas, a un pas sur une valeur non chiffrée (ex. `reps` = `"max"`),
   ou une valeur illisible.
 

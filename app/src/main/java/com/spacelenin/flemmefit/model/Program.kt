@@ -45,6 +45,8 @@ data class StoredProgram(
     val done: Set<String> = emptySet(),
     /** Saisies (réel fait, max), mêmes clés que [done]. */
     val logs: Map<String, ExerciseLog> = emptyMap(),
+    /** Résultats des tests de départ ([Plan.tests]), par id de test. */
+    val tests: Map<String, Int> = emptyMap(),
 ) {
     val start: LocalDate get() = LocalDate.parse(startDate)
 
@@ -80,6 +82,11 @@ data class StoredProgram(
     fun postponeCount(dayIndex: Int) = postpones.count { it == dayIndex }
 
     fun withStartDate(date: LocalDate) = copy(startDate = date.toString())
+
+    fun withTests(results: Map<String, Int>) = copy(tests = results.filterKeys { id -> plan.tests.any { it.id == id } })
+
+    /** Tests de départ pas encore renseignés. */
+    val missingTests: List<PlanTest> get() = plan.tests.filter { it.id !in tests }
 
     /** Plus grand index de jour ayant une trace (case cochée ou saisie). */
     fun lastTrackedIndex(): Int = (done.asSequence() + logs.keys.asSequence())

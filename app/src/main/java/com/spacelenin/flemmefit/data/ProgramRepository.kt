@@ -62,7 +62,7 @@ class ProgramRepository(dir: File) {
         state.copy(programs = state.programs.map { if (it.id == id) transform(it) else it })
     }
 
-    fun addProgram(plan: Plan, start: LocalDate): String {
+    fun addProgram(plan: Plan, start: LocalDate, tests: Map<String, Int> = emptyMap()): String {
         val id = UUID.randomUUID().toString()
         mutate { state ->
             val usedColors = state.programs.map { it.colorIndex }.toSet()
@@ -74,7 +74,7 @@ class ProgramRepository(dir: File) {
                 startDate = start.toString(),
                 colorIndex = color,
                 importedAt = System.currentTimeMillis(),
-            )
+            ).withTests(tests)
             state.copy(programs = state.programs + program)
         }
         return id
@@ -96,6 +96,8 @@ class ProgramRepository(dir: File) {
     fun undoPostpone(id: String, dayIndex: Int) = updateProgram(id) { it.undoPostpone(dayIndex) }
 
     fun changeStartDate(id: String, date: LocalDate) = updateProgram(id) { it.withStartDate(date) }
+
+    fun setTests(id: String, results: Map<String, Int>) = updateProgram(id) { it.withTests(results) }
 
     companion object {
         private const val TAG = "ProgramRepository"

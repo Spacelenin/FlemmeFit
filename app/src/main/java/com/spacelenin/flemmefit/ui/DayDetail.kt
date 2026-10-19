@@ -251,9 +251,21 @@ private fun ExerciseRow(
                 if (summary.isNotEmpty()) {
                     Text(summary, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                if (prescription.allOut) {
+                prescription.palier?.let {
                     Text(
-                        "Dernière série à fond" + (prescription.target?.let { " · objectif ${prescription.maxLabel(it)}" } ?: ""),
+                        "Palier ${it + 1}/${prescription.levelCount}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = color,
+                    )
+                }
+                if (prescription.allOut) {
+                    val target = prescription.target?.let(prescription::maxLabel)
+                    Text(
+                        when {
+                            prescription.isTest -> "📏 Test : une seule série, à fond" + (target?.let { " · record à battre : $it" } ?: "")
+                            prescription.isBoss -> "Dernière série à fond" + (target?.let { " · objectif $it" } ?: "")
+                            else -> "Dernière série : le max possible" + (target?.let { " (au moins $it)" } ?: "")
+                        },
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = BossColor,
