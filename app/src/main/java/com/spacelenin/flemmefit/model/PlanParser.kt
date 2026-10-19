@@ -83,6 +83,17 @@ object PlanParser {
             if (it != 0 && it !in 2..52) add("\"deloadEvery\" doit valoir 0 (jamais) ou être entre 2 et 52 (reçu $it).")
         }
 
+        val testIds = mutableSetOf<String>()
+        plan.tests.forEachIndexed { t, test ->
+            val at = "tests[$t]"
+            if (test.id.isBlank()) add("$at.id ne doit pas être vide.")
+            else if (!testIds.add(test.id)) add("$at.id : le test \"${test.id}\" apparaît deux fois.")
+            if (test.name.isBlank()) add("$at.name ne doit pas être vide.")
+            if (test.unit != PlanTest.UNIT_REPS && test.unit != PlanTest.UNIT_SECONDS) {
+                add("$at.unit doit valoir \"reps\" ou \"seconds\" (reçu \"${test.unit}\").")
+            }
+        }
+
         plan.weeks.forEachIndexed { w, week ->
             val seen = mutableSetOf<Int>()
             week.days.forEachIndexed { d, day ->
@@ -96,12 +107,29 @@ object PlanParser {
                         add("$at.exercises[$e].sets doit être entre 1 et $MAX_SETS (reçu ${ex.sets}).")
                     }
                     if (ex.id != null && ex.id.isBlank()) add("$at.exercises[$e].id ne doit pas être vide.")
-                    ex.progression?.let { addAll(validateProgression(ex, it, "$at.exercises[$e].progression")) }
+                    addAll(validateLevels(ex, testIds, "$at.exercises[$e]"))
+                    ex.progression?.let { p ->
+                        // Avec des paliers, chaque palier doit pouvoir progresser.
+                        val variants = if (ex.levels.isEmpty()) listOf(ex) else ex.levels.indices.map(ex::atLevel)
+                        variants.flatMap { validateProgression(it, p, "$at.exercises[$e].progression") }.distinct().forEach(::add)
+                    }
                 }
             }
         }
         if (plan.weeks.isNotEmpty() && plan.weeks.all { it.days.isEmpty() }) {
             add("Le programme ne contient aucune séance.")
+        }
+    }
+
+    private fun validateLevels(ex: Exercise, testIds: Set<String>, at: String): List<String> = buildList {
+        if (ex.test != null && ex.test !in testIds) add("$at.test : aucun test \"${ex.test}\" dans \"tests\".")
+        if (ex.levels.isNotEmpty() && ex.test == null) add("$at.levels : il faut aussi \"test\" pour choisir le palier.")
+        if (ex.retest && ex.test == null) add("$at.retest : il faut aussi \"test\" (le test refait).")
+        if (ex.retest && ex.levels.isNotEmpty()) add("$at : un exercice \"retest\" n'a pas de paliers.")
+        ex.levels.forEachIndexed { l, level ->
+            if (level.from < 0) add("$at.levels[$l].from doit être positif (reçu ${level.from}).")
+            if (l > 0 && level.from <= ex.levels[l - 1].from) add("$at.levels : les \"from\" doivent être croissants.")
+            if (level.sets != null && level.sets !in 1..MAX_SETS) add("$at.levels[$l].sets doit être entre 1 et $MAX_SETS.")
         }
     }
 
@@ -141,6 +169,7 @@ object PlanParser {
         format = PLAN_FORMAT_ID,
         name = plan.name.trim(),
         description = plan.description.clean(),
+        tests = plan.tests.map { it.copy(id = it.id.trim(), name = it.name.trim(), description = it.description.clean()) },
         weeks = plan.weeks.map { week ->
             week.copy(
                 label = week.label.clean(),
@@ -157,6 +186,10 @@ object PlanParser {
                                 duration = ex.duration.clean(),
                                 load = ex.load.clean(),
                                 rest = ex.rest.clean(),
+                                test = ex.test?.trim(),
+                                levels = ex.levels.map { l ->
+                                    l.copy(reps = l.reps.clean(), duration = l.duration.clean(), load = l.load.clean(), rest = l.rest.clean(), note = l.note.clean())
+                                },
                             )
                         },
                     )

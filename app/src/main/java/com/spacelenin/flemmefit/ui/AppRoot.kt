@@ -31,6 +31,7 @@ sealed interface ImportSource {
 }
 
 const val EXAMPLE_ASSET = "exemple-full-body.json"
+const val ROUTINE_ASSET = "routine-maison.json"
 
 @Composable
 fun AppRoot(
@@ -98,10 +99,10 @@ fun AppRoot(
         // Beaucoup de gestionnaires de fichiers ne typent pas bien le .json : on accepte aussi le texte et tout le reste.
         fromFile = { picker.launch(arrayOf("application/json", "text/*", "application/octet-stream", "*/*")) },
         fromPaste = { pasting = true },
-        example = {
+        example = { asset ->
             scope.launch {
                 pendingText = withContext(Dispatchers.IO) {
-                    context.assets.open(EXAMPLE_ASSET).bufferedReader().use { it.readText() }
+                    context.assets.open(asset).bufferedReader().use { it.readText() }
                 }
             }
         },
@@ -147,9 +148,9 @@ fun AppRoot(
         is ParseResult.Success -> ImportConfirmDialog(
             plan = result.plan,
             onDismiss = ::clearImport,
-            onConfirm = { start ->
+            onConfirm = { start, tests ->
                 clearImport()
-                openId = repository.addProgram(result.plan, start)
+                openId = repository.addProgram(result.plan, start, tests)
             },
         )
         null -> {}

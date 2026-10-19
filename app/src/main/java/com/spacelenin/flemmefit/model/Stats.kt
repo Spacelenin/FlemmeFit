@@ -28,6 +28,12 @@ data class Exploit(val name: String, val value: Int, val planned: Int, val isSec
 
     companion object {
         const val FACTOR = 2
+        /** Écart minimal en plus du facteur, pour que 4 reps au lieu de 2 ne compte pas. */
+        const val MIN_GAIN_REPS = 5
+        const val MIN_GAIN_SECONDS = 15
+
+        fun isExploit(max: Int, planned: Int, isSeconds: Boolean) =
+            planned > 0 && max >= FACTOR * planned && max - planned >= if (isSeconds) MIN_GAIN_SECONDS else MIN_GAIN_REPS
     }
 }
 
@@ -157,7 +163,7 @@ data class Stats(
                     val maxReps = max?.takeIf { !pr.maxIsSeconds }
                     val maxSec = max?.takeIf { pr.maxIsSeconds }
                     val planned = if (pr.maxIsSeconds) pr.seconds else pr.reps
-                    if (max != null && planned != null && planned > 0 && max >= Exploit.FACTOR * planned) {
+                    if (max != null && planned != null && Exploit.isExploit(max, planned, pr.maxIsSeconds)) {
                         exploits += Exploit(pr.exercise.name, max, planned, pr.maxIsSeconds, s.date)
                     }
                     // Sur une série à fond, la dernière série vaut le max noté.

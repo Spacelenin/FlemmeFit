@@ -19,7 +19,7 @@ class ProgressionTest {
     )
 
     private fun at(level: Int, deload: Boolean = false, ex: Exercise = pushups) =
-        Prescription.of(ex, level, deload, allOut = false, lastMax = null)
+        Prescription.of(ex, level, deload, boss = false, lastMax = null)
 
     @Test
     fun `double progression adds reps then a set`() {

@@ -90,13 +90,20 @@ fun LogDialog(
     )
 }
 
-/** Valider un exercice de Boss : on note le max de la série à fond pour la suite. */
+/** Valider une série à fond (Boss, test, dernière série au max) : on note le max pour la suite. */
 @Composable
 fun BossMaxDialog(prescription: Prescription, onSave: (max: Int?) -> Unit, onDismiss: () -> Unit) {
     var max by rememberSaveable { mutableStateOf(prescription.target?.toString().orEmpty()) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("💀 ${prescription.exercise.name}") },
+        title = {
+            val icon = when {
+                prescription.isTest -> "📏"
+                prescription.isBoss -> "💀"
+                else -> "🔥"
+            }
+            Text("$icon ${prescription.exercise.name}")
+        },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
@@ -104,6 +111,9 @@ fun BossMaxDialog(prescription: Prescription, onSave: (max: Int?) -> Unit, onDis
                     else "Combien de répétitions sur la série à fond ?",
                 )
                 prescription.target?.let { Text("Objectif : $it", style = MaterialTheme.typography.bodySmall) }
+                if (prescription.isTest) {
+                    Text("Ce résultat choisit tes paliers pour la suite.", style = MaterialTheme.typography.bodySmall)
+                }
                 NumberField(if (prescription.maxIsSeconds) "Secondes" else "Répétitions", max) { max = it }
             }
         },

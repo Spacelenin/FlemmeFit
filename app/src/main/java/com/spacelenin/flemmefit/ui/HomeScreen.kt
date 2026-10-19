@@ -57,7 +57,8 @@ import java.time.LocalDate
 class ImportActions(
     val fromFile: () -> Unit,
     val fromPaste: () -> Unit,
-    val example: () -> Unit,
+    /** Programme embarqué (fichier de examples/). */
+    val example: (asset: String) -> Unit,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -115,7 +116,11 @@ fun HomeScreen(
                     DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                         DropdownMenuItem(text = { Text("Depuis un fichier") }, onClick = { menuOpen = false; importActions.fromFile() })
                         DropdownMenuItem(text = { Text("Coller du texte") }, onClick = { menuOpen = false; importActions.fromPaste() })
-                        DropdownMenuItem(text = { Text("Programme d'exemple") }, onClick = { menuOpen = false; importActions.example() })
+                        DropdownMenuItem(text = { Text("Programme d'exemple") }, onClick = { menuOpen = false; importActions.example(EXAMPLE_ASSET) })
+                        DropdownMenuItem(
+                            text = { Text("Routine maison (paliers)") },
+                            onClick = { menuOpen = false; importActions.example(ROUTINE_ASSET) },
+                        )
                     }
                 }
             }
@@ -222,7 +227,7 @@ private fun EmptyHome(importActions: ImportActions, modifier: Modifier = Modifie
             Spacer(Modifier.height(8.dp))
             Button(onClick = importActions.fromFile, modifier = Modifier.fillMaxWidth()) { Text("Importer un fichier") }
             OutlinedButton(onClick = importActions.fromPaste, modifier = Modifier.fillMaxWidth()) { Text("Coller du texte") }
-            OutlinedButton(onClick = importActions.example, modifier = Modifier.fillMaxWidth()) { Text("Essayer le programme d'exemple") }
+            OutlinedButton(onClick = { importActions.example(EXAMPLE_ASSET) }, modifier = Modifier.fillMaxWidth()) { Text("Essayer le programme d'exemple") }
         }
     }
 }
