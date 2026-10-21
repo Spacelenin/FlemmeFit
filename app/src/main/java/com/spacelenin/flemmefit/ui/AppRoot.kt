@@ -5,9 +5,13 @@ import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -15,15 +19,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.spacelenin.flemmefit.data.AppSettings
 import com.spacelenin.flemmefit.data.ProgramRepository
 import com.spacelenin.flemmefit.model.ParseResult
 import com.spacelenin.flemmefit.model.PlanParser
+import com.spacelenin.flemmefit.model.ProgramSchedule
+import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.reminders.ReminderScheduler
 import com.spacelenin.flemmefit.social.SocialSync
 import com.spacelenin.flemmefit.update.AppUpdater
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
 
 sealed interface ImportSource {
     data class Text(val text: String) : ImportSource
@@ -39,6 +47,7 @@ fun AppRoot(
     updater: AppUpdater,
     reminders: ReminderScheduler,
     social: SocialSync,
+    settings: AppSettings,
     incoming: ImportSource?,
     onIncomingConsumed: () -> Unit,
     openRequest: String?,
@@ -51,8 +60,19 @@ fun AppRoot(
     var openId by rememberSaveable { mutableStateOf<String?>(null) }
     // Programme tout juste importé dont il faut demander les tests de départ.
     var askTestsFor by rememberSaveable { mutableStateOf<String?>(null) }
-    var showStats by rememberSaveable { mutableStateOf(false) }
-    var showSocial by rememberSaveable { mutableStateOf(false) }
+    // Jour et onglet demandés en ouvrant un programme depuis l'accueil.
+    var openEpoch by rememberSaveable { mutableStateOf<Long?>(null) }
+    var openTab by rememberSaveable { mutableStateOf(0) }
+    // Onglet du bas : 0 accueil, 1 stats, 2 potes.
+    var tab by rememberSaveable { mutableStateOf(0) }
+    var showSettings by rememberSaveable { mutableStateOf(false) }
+    var restarting by remember { mutableStateOf<StoredProgram?>(null) }
+    fun open(id: String, date: LocalDate? = null, programTab: Int = 0) {
+        openEpoch = date?.toEpochDay()
+        openTab = programTab
+        showSettings = false
+        openId = id
+    }
     var pasting by rememberSaveable { mutableStateOf(false) }
     // Texte brut sauvegardé (et non le résultat) pour que l'import en cours survive au pliage / dépliage.
     var pendingText by rememberSaveable { mutableStateOf<String?>(null) }
@@ -77,11 +97,7 @@ fun AppRoot(
 
     LaunchedEffect(openRequest) {
         openRequest?.let { id ->
-            if (state.programs.any { it.id == id }) {
-                showStats = false
-                showSocial = false
-                openId = id
-            }
+            if (state.programs.any { it.id == id }) open(id)
             onOpenRequestConsumed()
         }
     }
@@ -114,30 +130,70 @@ fun AppRoot(
     when {
         program != null -> {
             BackHandler { openId = null }
-            ProgramScreen(
-                program = program,
-                repository = repository,
-                onBack = { openId = null },
-                askTests = askTestsFor == program.id,
-                onTestsAsked = { askTestsFor = null },
+            key(program.id) {
+                ProgramScreen(
+                    program = program,
+                    repository = repository,
+                    onBack = { openId = null },
+                    askTests = askTestsFor == program.id,
+                    onTestsAsked = { askTestsFor = null },
+                    openOn = openEpoch?.let(LocalDate::ofEpochDay),
+                    initialTab = openTab,
+                )
+            }
+        }
+        showSettings -> {
+            BackHandler { showSettings = false }
+            SettingsScreen(
+                settings = settings,
+                reminders = reminders,
+                updater = updater,
+                social = social,
+                programs = state.programs,
+                onSocial = { showSettings = false; tab = 2 },
+                onBack = { showSettings = false },
             )
         }
-        showSocial -> {
-            BackHandler { showSocial = false }
-            SocialScreen(social = social, repository = repository, onBack = { showSocial = false })
+        else -> {
+            if (tab != 0) BackHandler { tab = 0 }
+            MainTabs(tab = tab, onTab = { tab = it }) {
+                when (tab) {
+                    1 -> GlobalStatsScreen(programs = state.programs)
+                    2 -> SocialScreen(social = social, repository = repository)
+                    else -> HomeScreen(
+                        programs = state.programs,
+                        actions = HomeActions(
+                            open = ::open,
+                            postpone = repository::postpone,
+                            restart = { restarting = it },
+                            settings = { showSettings = true },
+                        ),
+                        importActions = importActions,
+                        updater = updater,
+                    )
+                }
+            }
         }
-        showStats -> {
-            BackHandler { showStats = false }
-            GlobalStatsScreen(programs = state.programs, onBack = { showStats = false })
-        }
-        else -> HomeScreen(
-            programs = state.programs,
-            onOpen = { openId = it },
-            onStats = { showStats = true },
-            onSocial = { showSocial = true },
-            importActions = importActions,
-            updater = updater,
-            reminders = reminders,
+    }
+
+    restarting?.let { old ->
+        AlertDialog(
+            onDismissRequest = { restarting = null },
+            title = { Text("Recommencer « ${old.plan.name} » ?") },
+            text = {
+                Text(
+                    "Un nouveau programme démarre aujourd'hui avec la même routine et tes derniers résultats de tests. " +
+                        "L'ancien reste dans la liste avec son bilan : tu pourras le supprimer.",
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    restarting = null
+                    val results = ProgramSchedule(old, LocalDate.now()).currentTestResults()
+                    open(repository.addProgram(old.plan, LocalDate.now(), results))
+                }) { Text("Recommencer") }
+            },
+            dismissButton = { TextButton(onClick = { restarting = null }) { Text("Annuler") } },
         )
     }
 
@@ -161,15 +217,13 @@ fun AppRoot(
                 clearImport()
                 repository.replacePlan(id, result.plan)
                 if (result.plan.tests.any { t -> state.programs.first { it.id == id }.tests[t.id] == null }) askTestsFor = id
-                showStats = false
-                showSocial = false
-                openId = id
+                open(id)
             },
             onConfirm = { start ->
                 clearImport()
                 val id = repository.addProgram(result.plan, start)
                 if (result.plan.tests.isNotEmpty()) askTestsFor = id
-                openId = id
+                open(id)
             },
         )
         null -> {}

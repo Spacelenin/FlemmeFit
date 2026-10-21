@@ -20,7 +20,7 @@ import com.spacelenin.flemmefit.model.StoredProgram
 /** Stats tous programmes confondus. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GlobalStatsScreen(programs: List<StoredProgram>, onBack: () -> Unit) {
+fun GlobalStatsScreen(programs: List<StoredProgram>, onBack: (() -> Unit)? = null) {
     val today = rememberToday()
     val stats = remember(programs, today) { Stats.merge(programs.map { Stats.of(ProgramSchedule(it, today)) }, today) }
     val color = MaterialTheme.colorScheme.primary
@@ -29,7 +29,7 @@ fun GlobalStatsScreen(programs: List<StoredProgram>, onBack: () -> Unit) {
         topBar = {
             TopAppBar(
                 title = { Text("Stats globales") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") } },
+                navigationIcon = { onBack?.let { IconButton(onClick = it) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") } } },
             )
         },
     ) { padding ->

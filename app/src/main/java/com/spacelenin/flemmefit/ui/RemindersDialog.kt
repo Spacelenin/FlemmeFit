@@ -6,6 +6,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
@@ -16,6 +18,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -33,7 +36,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.reminders.ReminderScheduler
 
-private fun Int.asClock() = "%02d:%02d".format(this / 60, this % 60)
+private val TimePresets = listOf(7 * 60 + 30, 12 * 60, 18 * 60, 20 * 60)
+
+fun Int.asClock() = "%02d:%02d".format(this / 60, this % 60)
 
 @Composable
 fun RemindersDialog(reminders: ReminderScheduler, programs: List<StoredProgram>, onDismiss: () -> Unit) {
@@ -131,13 +136,29 @@ private fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Un
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 private fun TimeSelectDialog(initialMinutes: Int, onSelect: (Int) -> Unit, onDismiss: () -> Unit) {
     val state = rememberTimePickerState(initialHour = initialMinutes / 60, initialMinute = initialMinutes % 60, is24Hour = true)
     AlertDialog(
         onDismissRequest = onDismiss,
-        text = { TimePicker(state = state) },
+        text = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                TimePicker(state = state)
+                // Raccourcis : un appui suffit.
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)) {
+                    TimePresets.forEach { m ->
+                        SuggestionChip(
+                            onClick = {
+                                onSelect(m)
+                                onDismiss()
+                            },
+                            label = { Text(m.asClock()) },
+                        )
+                    }
+                }
+            }
+        },
         confirmButton = {
             TextButton(onClick = {
                 onSelect(state.hour * 60 + state.minute)

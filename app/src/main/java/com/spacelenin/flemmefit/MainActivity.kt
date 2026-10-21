@@ -5,11 +5,13 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spacelenin.flemmefit.ui.AppRoot
 import com.spacelenin.flemmefit.ui.ImportSource
 import com.spacelenin.flemmefit.ui.theme.FlemmeFitTheme
@@ -23,7 +25,11 @@ class MainActivity : ComponentActivity() {
     private var openRequest by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
+        // L'appli est toujours en sombre : icônes claires dans les barres système.
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+        )
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) {
             incoming = intent.toImportSource()
@@ -32,12 +38,14 @@ class MainActivity : ComponentActivity() {
 
         val app = application as FlemmeFitApp
         setContent {
-            FlemmeFitTheme {
+            val theme by app.settings.theme.collectAsStateWithLifecycle()
+            FlemmeFitTheme(theme) {
                 AppRoot(
                     repository = app.repository,
                     updater = app.updater,
                     reminders = app.reminders,
                     social = app.social,
+                    settings = app.settings,
                     incoming = incoming,
                     onIncomingConsumed = { incoming = null },
                     openRequest = openRequest,
