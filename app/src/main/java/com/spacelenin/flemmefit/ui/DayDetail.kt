@@ -1,6 +1,19 @@
 package com.spacelenin.flemmefit.ui
 
-import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,28 +31,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -64,6 +71,8 @@ class DayActions(
     val onEditLog: (session: Session, exerciseIndex: Int) -> Unit,
     /** Cocher un exercice de Boss : demande le max de la série à fond. */
     val onBossCheck: (session: Session, exerciseIndex: Int) -> Unit,
+    /** Ouvrir le détail d'un exercice. */
+    val onDetail: (session: Session, exerciseIndex: Int) -> Unit,
 )
 
 /** Détail du jour sélectionné, sous forme d'éléments de liste pour s'insérer dans n'importe quelle LazyColumn. */
@@ -76,19 +85,30 @@ fun LazyListScope.dayDetailItems(
     val session = schedule.sessionOn(date)
     item(key = "day-header") {
         Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text(date.longLabel(), style = MaterialTheme.typography.titleLarge)
-            Spacer(Modifier.height(4.dp))
             when {
                 session != null -> SessionHeader(schedule, session, color, actions)
-                schedule.isInProgram(date) -> Text("Repos 😴", style = MaterialTheme.typography.bodyLarge)
-                date.isBefore(schedule.startDate) -> Text(
-                    "Le programme commence le ${schedule.startDate.shortLabel()}.",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                else -> Text(
-                    "Programme terminé le ${schedule.endDate?.shortLabel()}.",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                else -> {
+                    Text(date.longLabel().uppercase(), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        when {
+                            schedule.isInProgram(date) -> "Repos 😴"
+                            date.isBefore(schedule.startDate) -> "Pas encore commencé"
+                            else -> "Programme terminé 🎉"
+                        },
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold,
+                    )
+                    Text(
+                        when {
+                            schedule.isInProgram(date) -> "Rien de prévu ce jour-là. Profites-en."
+                            date.isBefore(schedule.startDate) -> "Le programme commence le ${schedule.startDate.shortLabel()}."
+                            else -> "Programme terminé le ${schedule.endDate?.shortLabel()}."
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }
@@ -105,13 +125,14 @@ fun LazyListScope.dayDetailItems(
                     if (prescription.allOut && !done) actions.onBossCheck(session, i) else actions.onToggle(session, i)
                 },
                 onEdit = { actions.onEditLog(session, i) },
-                expandKey = "${session.index}-$i",
+                onDetail = { actions.onDetail(session, i) },
             )
         }
     }
     item(key = "day-footer") {
         Text(
-            "Appui long sur un exercice : noter ce que tu as vraiment fait, ou ton max.",
+            if (session.isBoss) "Cocher un exercice Boss demande ton max. Boss entièrement validé = Boss vaincu."
+            else "Touche la vignette pour cocher, l'exercice pour son détail. Appui long : noter ce que tu as fait.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -131,17 +152,23 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
 
     if (session.isBoss) {
         Banner("💀 Jour Boss", "Chiffres de la semaine prochaine, et dernière série à fond. Bats ton dernier max !", BossColor)
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(12.dp))
     } else if (session.isDeload) {
-        Banner("🌿 Semaine de décharge", "Volume divisé par deux pour récupérer. La progression reprend la semaine suivante.", color)
-        Spacer(Modifier.height(8.dp))
+        val withTest = session.prescriptions.any { it.isTest }
+        Banner(
+            "🌿 Semaine de décharge",
+            "Volume divisé par deux pour récupérer." +
+                if (withTest) " Commence par le test : il choisit tes paliers pour la suite." else " La progression reprend la semaine suivante.",
+            DeloadColor,
+        )
+        Spacer(Modifier.height(12.dp))
     }
-    Text(session.title(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
     Text(
-        session.position(schedule.program.plan.repeat),
-        style = MaterialTheme.typography.bodyMedium,
+        "${session.date.longLabel().uppercase()} · ${session.position(schedule.program.plan.repeat).uppercase()}",
+        style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
+    Text(session.title(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
     session.day.notes?.let {
         Spacer(Modifier.height(4.dp))
         Text(it, style = MaterialTheme.typography.bodyMedium)
@@ -177,15 +204,21 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
 
 @Composable
 private fun Banner(title: String, text: String, color: Color) {
-    Card(colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.14f)), modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(12.dp)) {
-            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+    Card(
+        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.16f)),
+        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(14.dp)) {
+            Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold, color = color)
+            Spacer(Modifier.height(2.dp))
             Text(text, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
 
 private fun ExerciseLog.doneLabel(p: Prescription): String {
+    perSet?.let { values -> return values.joinToString(" · ") { if (it == 0) "–" else if (p.maxIsSeconds) Measures.formatSeconds(it) else "$it" } }
     val sets = sets ?: p.sets
     val per = reps?.toString() ?: seconds?.let(Measures::formatSeconds)
     return when {
@@ -207,94 +240,112 @@ private fun ExerciseRow(
     color: Color,
     onToggle: () -> Unit,
     onEdit: () -> Unit,
-    expandKey: String,
+    onDetail: () -> Unit,
 ) {
-    var expanded by rememberSaveable(expandKey) { mutableStateOf(false) }
     val exercise = prescription.exercise
-    val summary = prescription.summary()
-    val hasMore = exercise.description != null
     val done = state == ExerciseState.DONE
+    val partial = state == ExerciseState.PARTIAL
+    var menu by remember { mutableStateOf(false) }
 
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = if (done) color.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceContainer,
-        ),
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-            .animateContentSize(),
+            .combinedClickable(onClick = onDetail, onLongClick = onEdit, onLongClickLabel = "Noter ce qui a été fait")
+            .padding(start = 16.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        // Vignette : la toucher coche l'exercice.
+        Box(
+            contentAlignment = Alignment.Center,
             modifier = Modifier
-                .combinedClickable(
-                    onClick = { if (hasMore) expanded = !expanded else onToggle() },
-                    onLongClick = onEdit,
-                    onLongClickLabel = "Noter ce qui a été fait",
+                .size(48.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(
+                    when {
+                        done -> color
+                        partial -> color.copy(alpha = 0.35f)
+                        else -> MaterialTheme.colorScheme.surfaceContainerHighest
+                    },
                 )
-                .padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+                .toggleable(value = done, role = Role.Checkbox, onValueChange = { onToggle() })
+                .semantics { contentDescription = if (done) "Fait, toucher pour décocher" else "Toucher pour cocher" },
         ) {
-            TriStateCheckbox(
-                state = when (state) {
-                    ExerciseState.DONE -> ToggleableState.On
-                    ExerciseState.PARTIAL -> ToggleableState.Indeterminate
-                    ExerciseState.TODO -> ToggleableState.Off
-                },
-                onClick = onToggle,
-                colors = CheckboxDefaults.colors(checkedColor = color),
-            )
-            Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
+            if (done) {
+                Icon(Icons.Default.Check, null, tint = Color(0xFF0F0F0F))
+            } else {
                 Text(
-                    exercise.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    textDecoration = if (done) TextDecoration.LineThrough else null,
-                )
-                if (summary.isNotEmpty()) {
-                    Text(summary, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                prescription.palier?.let {
-                    Text(
-                        "Palier ${it + 1}/${prescription.levelCount}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = color,
-                    )
-                }
-                if (prescription.allOut) {
-                    val target = prescription.target?.let(prescription::maxLabel)
-                    Text(
-                        when {
-                            prescription.isTest -> "📏 Test : une seule série, à fond" + (target?.let { " · record à battre : $it" } ?: "")
-                            prescription.isBoss -> "Dernière série à fond" + (target?.let { " · objectif $it" } ?: "")
-                            else -> "Dernière série : le max possible" + (target?.let { " (au moins $it)" } ?: "")
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = BossColor,
-                    )
-                }
-                if (state == ExerciseState.PARTIAL && log != null) {
-                    Text(
-                        "Fait : ${log.doneLabel(prescription)} (partiel)",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-                log?.max?.let {
-                    Text("Max noté : ${prescription.maxLabel(it)}", style = MaterialTheme.typography.bodyMedium)
-                }
-                if (expanded && exercise.description != null) {
-                    Spacer(Modifier.height(8.dp))
-                    Text(exercise.description, style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-            if (hasMore) {
-                Icon(
-                    if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                    contentDescription = if (expanded) "Masquer la description" else "Voir la description",
+                    exerciseInitials(exercise.name),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = if (partial) MaterialTheme.colorScheme.onSurface else color,
                 )
             }
-            IconButton(onClick = onEdit) {
-                Icon(Icons.Default.Edit, contentDescription = "Noter ce qui a été fait", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                exercise.name,
+                style = MaterialTheme.typography.titleMedium,
+                textDecoration = if (done) TextDecoration.LineThrough else null,
+                color = if (done) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+            )
+            val details = listOfNotNull(
+                when {
+                    prescription.isTest -> "Une seule série, à fond"
+                    else -> prescription.summary().ifEmpty { null }
+                },
+                prescription.palier?.let { "palier ${it + 1}/${prescription.levelCount}" },
+                prescription.beforeDeload?.let { "décharge (au lieu de $it)" },
+            ).joinToString(" · ")
+            if (details.isNotEmpty()) {
+                Text(details, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if (prescription.allOut) {
+                val target = prescription.target?.let(prescription::maxLabel)
+                Text(
+                    when {
+                        prescription.isTest -> "📏 Record à battre" + (target?.let { " : $it" } ?: "")
+                        prescription.isBoss -> "Dernière série à fond" + (target?.let { " · objectif $it" } ?: "")
+                        else -> "Dernière série : le max possible" + (target?.let { " (au moins $it)" } ?: "")
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = BossColor,
+                )
+            }
+            if (partial && log != null) {
+                Text(
+                    "Fait : ${log.doneLabel(prescription)} (partiel)",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            } else if (done && log?.perSet != null) {
+                Text("Fait : ${log.doneLabel(prescription)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            log?.max?.let {
+                Text("Max noté : ${prescription.maxLabel(it)}", style = MaterialTheme.typography.bodySmall, color = color)
+            }
+        }
+        Box {
+            IconButton(onClick = { menu = true }) {
+                Icon(Icons.Default.MoreVert, contentDescription = "Options de ${exercise.name}", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                DropdownMenuItem(
+                    text = { Text(if (done) "Décocher" else "C'est fait") },
+                    leadingIcon = { Icon(Icons.Default.Check, null) },
+                    onClick = { menu = false; onToggle() },
+                )
+                DropdownMenuItem(
+                    text = { Text("Noter ce que j'ai fait") },
+                    leadingIcon = { Icon(Icons.Default.Edit, null) },
+                    onClick = { menu = false; onEdit() },
+                )
+                DropdownMenuItem(
+                    text = { Text("Voir le détail") },
+                    leadingIcon = { Icon(Icons.Default.Info, null) },
+                    onClick = { menu = false; onDetail() },
+                )
             }
         }
     }

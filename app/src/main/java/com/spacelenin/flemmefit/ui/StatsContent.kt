@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -61,7 +62,7 @@ fun LazyListScope.statsOverviewItems(stats: Stats, color: Color, showProgram: Bo
         }
         return
     }
-    item(key = "stats-totals") { Totals(stats) }
+    item(key = "stats-totals") { Totals(stats, color) }
     item(key = "stats-chart") { WeeklyChart(stats.weeks, color) }
     if (stats.exploits.isNotEmpty()) {
         item(key = "stats-exploits-title") { SectionTitle("Exploits 🏆") }
@@ -77,43 +78,45 @@ fun LazyListScope.statsOverviewItems(stats: Stats, color: Color, showProgram: Bo
     itemsIndexed(stats.history, key = { i, _ -> "h-$i" }) { _, h -> HistoryRow(h, showProgram) }
 }
 
-fun LazyListScope.statsExerciseItems(stats: Stats) {
+fun LazyListScope.statsExerciseItems(stats: Stats, color: Color) {
     if (stats.exercises.isEmpty()) return
     item(key = "stats-ex-title") { SectionTitle("Par exercice") }
-    items(stats.exercises, key = { "e-${it.key}" }) { ExerciseStatsCard(it) }
+    items(stats.exercises, key = { "e-${it.key}" }) { ExerciseStatsCard(it, color) }
 }
 
 @Composable
 private fun SectionTitle(text: String) {
-    Text(text, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp))
+    Text(text, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 6.dp))
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+/** Tuiles de chiffres, deux par ligne. */
 @Composable
-private fun Totals(stats: Stats) {
-    Card(Modifier.fillMaxWidth().padding(16.dp)) {
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(16.dp),
-        ) {
-            Tile("${stats.sessionsDone}", "séances faites")
-            Tile("${stats.totalReps}", "répétitions")
-            Tile("${stats.totalSets}", "séries")
-            Tile(formatTotalSeconds(stats.totalSeconds), "d'effort chronométré")
-            Tile("${stats.currentStreak} 🔥", "série actuelle")
-            Tile("${stats.bestStreak}", "meilleure série")
-            Tile("${stats.bossDefeated}/${stats.bossMet} 💀", "Boss vaincus")
-            Tile("${stats.exploits.size} 🏆", "exploits (max ≥ 2× le prévu)")
+private fun Totals(stats: Stats, color: Color) {
+    val tiles = listOf(
+        Triple("${stats.sessionsDone}", "séances faites", color),
+        Triple("${stats.currentStreak} 🔥", "série · record ${stats.bestStreak}", null),
+        Triple("${stats.totalReps}", "reps · ${stats.totalSets} séries", null),
+        Triple(formatTotalSeconds(stats.totalSeconds), "en durée", null),
+        Triple("${stats.bossDefeated}/${stats.bossMet}", "Boss vaincus", BossColor),
+        Triple("${stats.exploits.size}", if (stats.exploits.size > 1) "exploits" else "exploit", Color(0xFFB6F36A)),
+    )
+    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        tiles.chunked(2).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                row.forEach { (value, label, tint) ->
+                    Column(
+                        Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                    ) {
+                        Text(value, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold, color = tint ?: MaterialTheme.colorScheme.onSurface)
+                        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
         }
-    }
-}
-
-@Composable
-private fun Tile(value: String, label: String) {
-    Column(Modifier.widthIn(min = 88.dp)) {
-        Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -124,9 +127,13 @@ private fun WeeklyChart(weeks: List<WeekVolume>, color: Color) {
     val top = (weeks.maxOfOrNull { it.sets } ?: 0).coerceAtLeast(1)
     val description = weeks.joinToString { "semaine du ${it.monday.format(DayMonth)} : ${it.sets} séries" }
 
-    Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+    ) {
         Column(Modifier.padding(16.dp)) {
-            Text("Séries par semaine", style = MaterialTheme.typography.titleMedium)
+            Text("Séries par semaine", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             weeks.getOrNull(selected)?.let { w ->
                 Text(
                     "Semaine du ${w.monday.format(DayMonth)} : ${w.sets} séries" +
@@ -183,35 +190,38 @@ private fun WeeklyChart(weeks: List<WeekVolume>, color: Color) {
 }
 
 @Composable
-private fun ExerciseStatsCard(e: ExerciseStats) {
-    Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
-        Column(Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(e.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Text("${e.times} fois", style = MaterialTheme.typography.labelLarge)
-            }
-            val totals = listOfNotNull(
-                e.totalReps.takeIf { it > 0 }?.let { "$it reps" },
-                "${e.totalSets} séries",
-                e.totalSeconds.takeIf { it > 0 }?.let(::formatTotalSeconds),
-            ).joinToString(" · ")
-            Text(totals, style = MaterialTheme.typography.bodyMedium)
-            val records = listOfNotNull(
-                e.bestReps?.let { "$it reps" },
-                e.bestSeconds?.let(Measures::formatSeconds),
-            ).joinToString(" · ")
-            if (records.isNotEmpty()) Text("Record : $records", style = MaterialTheme.typography.bodyMedium)
-            if (e.firstSummary != null && e.lastSummary != null && e.firstSummary != e.lastSummary) {
-                Text("Évolution : ${e.firstSummary} → ${e.lastSummary}", style = MaterialTheme.typography.bodyMedium)
-            }
-            e.lastDate?.let {
-                Text(
-                    "Dernière fois : ${it.shortLabel()}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+private fun ExerciseStatsCard(e: ExerciseStats, color: Color) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.primaryContainer),
+        ) {
+            Text(exerciseInitials(e.name), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.ExtraBold, color = color)
         }
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(e.name, style = MaterialTheme.typography.titleMedium)
+            val line = if (e.firstSummary != null && e.lastSummary != null && e.firstSummary != e.lastSummary) {
+                "${e.firstSummary} → ${e.lastSummary}"
+            } else {
+                listOfNotNull(
+                    e.totalReps.takeIf { it > 0 }?.let { "$it reps" },
+                    "${e.totalSets} séries",
+                    e.totalSeconds.takeIf { it > 0 }?.let(::formatTotalSeconds),
+                ).joinToString(" · ")
+            }
+            Text(line, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                "${e.times} fois" + (e.lastDate?.let { " · dernière le ${it.shortLabel()}" } ?: ""),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        val record = listOfNotNull(e.bestReps?.let { "max $it" }, e.bestSeconds?.let(Measures::formatSeconds)).firstOrNull()
+        if (record != null) Text(record, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
     }
 }
 

@@ -157,7 +157,8 @@ data class Stats(
                     touched = true
                     val log = program.logOf(s.index, e)
                     val max = log?.max
-                    val sets = log?.sets ?: pr.sets ?: 1
+                    val perSet = log?.perSet
+                    val sets = if (perSet != null) perSet.count { it > 0 } else log?.sets ?: pr.sets ?: 1
                     val repsPerSet = log?.reps ?: pr.reps
                     val secPerSet = log?.seconds ?: pr.seconds
                     val maxReps = max?.takeIf { !pr.maxIsSeconds }
@@ -168,11 +169,13 @@ data class Stats(
                     }
                     // Sur une série à fond, la dernière série vaut le max noté.
                     val reps = when {
+                        perSet != null -> if (pr.maxIsSeconds) 0 else perSet.sum()
                         repsPerSet != null && maxReps != null && pr.allOut -> (sets - 1) * repsPerSet + maxReps
                         repsPerSet != null -> sets * repsPerSet
                         else -> maxReps ?: 0
                     }
                     val secs = when {
+                        perSet != null -> if (pr.maxIsSeconds) perSet.sum() else (secPerSet ?: 0) * sets
                         secPerSet != null && maxSec != null && pr.allOut -> (sets - 1) * secPerSet + maxSec
                         secPerSet != null -> sets * secPerSet
                         else -> maxSec ?: 0
@@ -180,8 +183,11 @@ data class Stats(
                     val a = acc.getOrPut(pr.key) { Acc(pr.exercise.name) }
                     a.times++
                     a.sets += sets; a.reps += reps; a.seconds += secs
-                    listOfNotNull(repsPerSet, maxReps).maxOrNull()?.let { a.bestReps = maxOf(a.bestReps ?: 0, it) }
-                    listOfNotNull(secPerSet, maxSec).maxOrNull()?.let { a.bestSeconds = maxOf(a.bestSeconds ?: 0, it) }
+                    val bestSet = perSet?.maxOrNull()?.takeIf { it > 0 }
+                    listOfNotNull(if (pr.maxIsSeconds) null else bestSet ?: repsPerSet, maxReps).maxOrNull()
+                        ?.let { a.bestReps = maxOf(a.bestReps ?: 0, it) }
+                    listOfNotNull(if (pr.maxIsSeconds) bestSet ?: secPerSet else secPerSet, maxSec).maxOrNull()
+                        ?.let { a.bestSeconds = maxOf(a.bestSeconds ?: 0, it) }
                     val summary = pr.summary().ifEmpty { null }
                     if (a.first == null) a.first = summary
                     a.last = summary
