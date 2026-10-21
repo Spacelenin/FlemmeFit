@@ -131,14 +131,13 @@
               "id": "shadow-boxing",
               "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids si possible (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes.",
               "sets": 3,
-              "duration": "2min",
+              "duration": "3min",
               "rest": "1min",
               "progression": {
-                "every": 2,
-                "duration": "15s",
-                "maxDuration": "3min",
+                "duration": "30s",
+                "maxDuration": "4min",
                 "addSets": 1,
-                "maxSets": 5
+                "maxSets": 6
               }
             },
             {
@@ -515,11 +514,11 @@
               "name": "Beat Saber",
               "id": "beatsaber",
               "description": "Cardio en VR. Choisis des musiques en Normal/Hard au début, monte en difficulté au fil des semaines. Hydrate-toi, et garde de la place autour de toi.",
-              "duration": "20min",
+              "duration": "40min",
               "progression": {
                 "every": 2,
-                "duration": "5min",
-                "maxDuration": "45min"
+                "duration": "10min",
+                "maxDuration": "90min"
               }
             },
             {
@@ -766,14 +765,13 @@
               "id": "shadow-boxing",
               "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids si possible (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes.",
               "sets": 3,
-              "duration": "2min",
+              "duration": "3min",
               "rest": "1min",
               "progression": {
-                "every": 2,
-                "duration": "15s",
-                "maxDuration": "3min",
+                "duration": "30s",
+                "maxDuration": "4min",
                 "addSets": 1,
-                "maxSets": 5
+                "maxSets": 6
               }
             },
             {
@@ -1150,11 +1148,11 @@
               "name": "Beat Saber",
               "id": "beatsaber",
               "description": "Cardio en VR. Choisis des musiques en Normal/Hard au début, monte en difficulté au fil des semaines. Hydrate-toi, et garde de la place autour de toi.",
-              "duration": "20min",
+              "duration": "40min",
               "progression": {
                 "every": 2,
-                "duration": "5min",
-                "maxDuration": "45min"
+                "duration": "10min",
+                "maxDuration": "90min"
               }
             },
             {
@@ -1401,14 +1399,13 @@
               "id": "shadow-boxing",
               "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids si possible (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes.",
               "sets": 3,
-              "duration": "2min",
+              "duration": "3min",
               "rest": "1min",
               "progression": {
-                "every": 2,
-                "duration": "15s",
-                "maxDuration": "3min",
+                "duration": "30s",
+                "maxDuration": "4min",
                 "addSets": 1,
-                "maxSets": 5
+                "maxSets": 6
               }
             },
             {
@@ -1785,11 +1782,11 @@
               "name": "Beat Saber",
               "id": "beatsaber",
               "description": "Cardio en VR. Choisis des musiques en Normal/Hard au début, monte en difficulté au fil des semaines. Hydrate-toi, et garde de la place autour de toi.",
-              "duration": "20min",
+              "duration": "40min",
               "progression": {
                 "every": 2,
-                "duration": "5min",
-                "maxDuration": "45min"
+                "duration": "10min",
+                "maxDuration": "90min"
               }
             },
             {
@@ -2043,14 +2040,13 @@
               "id": "shadow-boxing",
               "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids si possible (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes.",
               "sets": 3,
-              "duration": "2min",
+              "duration": "3min",
               "rest": "1min",
               "progression": {
-                "every": 2,
-                "duration": "15s",
-                "maxDuration": "3min",
+                "duration": "30s",
+                "maxDuration": "4min",
                 "addSets": 1,
-                "maxSets": 5
+                "maxSets": 6
               }
             },
             {
@@ -2448,11 +2444,11 @@
               "name": "Beat Saber",
               "id": "beatsaber",
               "description": "Cardio en VR. Choisis des musiques en Normal/Hard au début, monte en difficulté au fil des semaines. Hydrate-toi, et garde de la place autour de toi.",
-              "duration": "20min",
+              "duration": "40min",
               "progression": {
                 "every": 2,
-                "duration": "5min",
-                "maxDuration": "45min"
+                "duration": "10min",
+                "maxDuration": "90min"
               }
             },
             {

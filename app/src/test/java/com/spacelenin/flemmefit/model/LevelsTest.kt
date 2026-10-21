@@ -98,6 +98,16 @@ class LevelsTest {
         val gainage = s.sessionAt(1)!!.prescriptions.first { it.key == "gainage" }
         assertEquals(35, gainage.seconds)
         assertTrue(gainage.maxIsSeconds)
+        // Shadow : +30 s par séance validée jusqu'à 4 min, puis un round de plus (6 au plus).
+        val shadow = day1[2].exercise
+        assertEquals(3 to 180, Prescription.of(shadow, 0, false, false, null).let { it.sets to it.seconds })
+        assertEquals(4 to 180, Prescription.of(shadow, 3, false, false, null).let { it.sets to it.seconds })
+        assertEquals(6 to 240, Prescription.of(shadow, 11, false, false, null).let { it.sets to it.seconds })
+        assertEquals(6 to 240, Prescription.of(shadow, 20, false, false, null).let { it.sets to it.seconds })
+        // Beat Saber : de 40 à 90 min, +10 min toutes les 2 séances.
+        val beatSaber = s.sessionAt(4)!!.prescriptions.first { it.key == "beatsaber" }.exercise
+        assertEquals(40 * 60, Prescription.of(beatSaber, 0, false, false, null).seconds)
+        assertEquals(90 * 60, Prescription.of(beatSaber, 9, false, false, null).seconds)
         // Semaine 4 : décharge, et les tests sont refaits.
         val testDay = s.sessionAt(21)!!
         assertTrue(testDay.isDeload)

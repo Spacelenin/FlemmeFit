@@ -237,6 +237,11 @@ l'ordre des jours dans `days` est libre, et les espaces en trop sont retirés.
 
 Ensuite, choisis la date de début et valide.
 
+**Mettre à jour une routine** sans perdre son suivi : réimporte le nouveau JSON de la même façon et choisis
+*Mise à jour de « … »* (présélectionné quand le nom est le même). La date de début, les reports, les tests de départ
+et les cases cochées sont gardés : chaque case suit son exercice (même `id`, ou même nom, le même jour du calendrier),
+même si l'ordre a changé. Seul ce qui concerne un exercice retiré est perdu, et l'app prévient avant.
+
 ## Évolution du format
 
 - Les ajouts compatibles (nouveaux champs **optionnels**) restent en `"version": 1`.
