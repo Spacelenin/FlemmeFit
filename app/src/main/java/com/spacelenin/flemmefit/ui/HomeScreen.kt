@@ -1,6 +1,9 @@
 package com.spacelenin.flemmefit.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -96,18 +99,7 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text("FlemmeFit", fontWeight = FontWeight.ExtraBold) },
                 actions = {
-                    Box {
-                        IconButton(onClick = { menuOpen = true }) { Icon(Icons.Default.Add, "Importer un programme") }
-                        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                            DropdownMenuItem(text = { Text("Depuis un fichier") }, onClick = { menuOpen = false; importActions.fromFile() })
-                            DropdownMenuItem(text = { Text("Coller du texte") }, onClick = { menuOpen = false; importActions.fromPaste() })
-                            DropdownMenuItem(text = { Text("Programme d'exemple") }, onClick = { menuOpen = false; importActions.example(EXAMPLE_ASSET) })
-                            DropdownMenuItem(
-                                text = { Text("Routine maison (paliers)") },
-                                onClick = { menuOpen = false; importActions.example(ROUTINE_ASSET) },
-                            )
-                        }
-                    }
+                    IconButton(onClick = { menuOpen = true }) { Icon(Icons.Default.Add, "Ajouter un programme") }
                     IconButton(onClick = actions.settings) { Icon(Icons.Default.Settings, "Réglages") }
                 },
             )
@@ -117,6 +109,53 @@ fun HomeScreen(
             UpdateBanner(updater)
             if (programs.isEmpty()) EmptyHome(importActions, Modifier.weight(1f))
             else HomeContent(programs, actions, Modifier.weight(1f))
+        }
+    }
+
+    if (menuOpen) ImportSheet(importActions, onDismiss = { menuOpen = false })
+}
+
+/** Ajouter un programme : d'où vient-il ? */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ImportSheet(importActions: ImportActions, onDismiss: () -> Unit) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
+            Text(
+                "Ajouter un programme",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+            )
+            Text(
+                "Un fichier qui porte le nom d'un programme existant propose de le mettre à jour, suivi gardé.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 20.dp),
+            )
+            Spacer(Modifier.height(8.dp))
+            SheetRow("📄", "Depuis un fichier", "Un .json reçu ou téléchargé") { onDismiss(); importActions.fromFile() }
+            SheetRow("📋", "Coller du texte", "Le JSON copié depuis un message") { onDismiss(); importActions.fromPaste() }
+            SheetRow("🏠", "Routine maison", "Paliers selon tes tests de départ") { onDismiss(); importActions.example(ROUTINE_ASSET) }
+            SheetRow("💪", "Programme d'exemple", "Un full body pour essayer") { onDismiss(); importActions.example(EXAMPLE_ASSET) }
+        }
+    }
+}
+
+@Composable
+private fun SheetRow(icon: String, title: String, subtitle: String, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 20.dp, vertical = 10.dp),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.primaryContainer),
+        ) { Text(icon, style = MaterialTheme.typography.titleMedium) }
+        Spacer(Modifier.width(14.dp))
+        Column {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

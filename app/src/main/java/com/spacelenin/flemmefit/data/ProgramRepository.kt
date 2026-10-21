@@ -100,6 +100,8 @@ class ProgramRepository(dir: File) {
     /** Nouvelle version de la routine, suivi conservé. */
     fun replacePlan(id: String, plan: Plan) = updateProgram(id) { it.withPlan(plan) }
 
+    fun setColor(id: String, colorIndex: Int) = updateProgram(id) { it.copy(colorIndex = colorIndex) }
+
     fun setTests(id: String, results: Map<String, Int>) = updateProgram(id) { it.withTests(results) }
 
     companion object {

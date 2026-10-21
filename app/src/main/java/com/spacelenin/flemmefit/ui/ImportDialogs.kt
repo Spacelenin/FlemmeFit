@@ -265,6 +265,19 @@ fun TestsDialog(program: StoredProgram, current: Map<String, Int>, onSave: (Map<
                         onValueChange = { v -> results = results + (test.id to v.filter(Char::isDigit).take(4)) },
                         label = { Text(test.name) },
                         suffix = { Text(if (test.isSeconds) "s" else "reps") },
+                        // Boutons −/+ : pas besoin du clavier pour ajuster.
+                        leadingIcon = {
+                            IconButton(onClick = {
+                                val v = (results[test.id]?.toIntOrNull() ?: 0) - if (test.isSeconds) 5 else 1
+                                results = results + (test.id to v.coerceAtLeast(0).toString())
+                            }) { Text("−", style = MaterialTheme.typography.titleLarge) }
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                val v = (results[test.id]?.toIntOrNull() ?: 0) + if (test.isSeconds) 5 else 1
+                                results = results + (test.id to v.coerceAtMost(9999).toString())
+                            }) { Text("+", style = MaterialTheme.typography.titleLarge) }
+                        },
                         supportingText = {
                             val palier = levelled[test.id]?.let { e ->
                                 val i = e.levelIndexFor(results[test.id]?.toIntOrNull())

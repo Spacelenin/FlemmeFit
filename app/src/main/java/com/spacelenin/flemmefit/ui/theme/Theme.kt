@@ -68,6 +68,9 @@ private val OtherProgramColors = listOf(
     Color(0xFF6FD6CB),
 )
 
+/** Nombre de couleurs de programme au choix (la première suit le thème). */
+val ProgramColorCount get() = OtherProgramColors.size + 1
+
 @Composable
 fun programColor(index: Int): Color {
     val i = Math.floorMod(index, OtherProgramColors.size + 1)

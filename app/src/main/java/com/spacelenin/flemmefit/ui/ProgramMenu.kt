@@ -1,6 +1,20 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
+import com.spacelenin.flemmefit.ui.theme.ProgramColorCount
+import com.spacelenin.flemmefit.ui.theme.programColor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -63,6 +77,11 @@ fun ProgramMenuButton(
                 )
             }
             DropdownMenuItem(
+                text = { Text("Couleur du programme") },
+                leadingIcon = { Dot(programColor(program.colorIndex), size = 18) },
+                onClick = { open = false; dialog = DIALOG_COLOR },
+            )
+            DropdownMenuItem(
                 text = { Text("Mettre à jour la routine") },
                 leadingIcon = { Icon(Icons.Default.Refresh, null) },
                 onClick = { open = false; onUpdateRoutine() },
@@ -100,6 +119,30 @@ fun ProgramMenuButton(
                 },
             )
         }
+        DIALOG_COLOR -> AlertDialog(
+            onDismissRequest = { dialog = null },
+            title = { Text("Couleur de « ${program.plan.name} »") },
+            text = {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    (0 until ProgramColorCount).forEach { i ->
+                        val selected = i == Math.floorMod(program.colorIndex, ProgramColorCount)
+                        Box(
+                            Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(programColor(i))
+                                .then(if (selected) Modifier.border(3.dp, MaterialTheme.colorScheme.onSurface, CircleShape) else Modifier)
+                                .clickable {
+                                    repository.setColor(program.id, i)
+                                    dialog = null
+                                }
+                                .semantics { contentDescription = if (i == 0) "Couleur du thème" else "Couleur ${i + 1}" },
+                        )
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { dialog = null }) { Text("Fermer") } },
+        )
         DIALOG_DELETE -> AlertDialog(
             onDismissRequest = { dialog = null },
             title = { Text("Supprimer « ${program.plan.name} » ?") },
@@ -119,3 +162,4 @@ fun ProgramMenuButton(
 private const val DIALOG_START = "start"
 private const val DIALOG_TESTS = "tests"
 private const val DIALOG_DELETE = "delete"
+private const val DIALOG_COLOR = "color"
