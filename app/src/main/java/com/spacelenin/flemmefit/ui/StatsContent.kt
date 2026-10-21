@@ -78,7 +78,7 @@ fun LazyListScope.statsOverviewItems(stats: Stats, color: Color, showProgram: Bo
     itemsIndexed(stats.history, key = { i, _ -> "h-$i" }) { _, h -> HistoryRow(h, showProgram) }
 }
 
-fun LazyListScope.statsExerciseItems(stats: Stats) {
+fun LazyListScope.statsExerciseItems(stats: Stats, color: Color) {
     if (stats.exercises.isEmpty()) return
     item(key = "stats-ex-title") { SectionTitle("Par exercice") }
     items(stats.exercises, key = { "e-${it.key}" }) { ExerciseStatsCard(it, color) }

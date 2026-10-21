@@ -30,12 +30,12 @@ fun StatsPanes(stats: Stats, color: Color, showProgram: Boolean, modifier: Modif
             Row(Modifier.fillMaxSize()) {
                 LazyColumn(Modifier.weight(1f).fillMaxHeight()) { statsOverviewItems(stats, color, showProgram) }
                 VerticalDivider()
-                LazyColumn(Modifier.weight(1f).fillMaxHeight()) { statsExerciseItems(stats) }
+                LazyColumn(Modifier.weight(1f).fillMaxHeight()) { statsExerciseItems(stats, color) }
             }
         } else {
             LazyColumn(Modifier.fillMaxSize()) {
                 statsOverviewItems(stats, color, showProgram)
-                statsExerciseItems(stats)
+                statsExerciseItems(stats, color)
             }
         }
     }
