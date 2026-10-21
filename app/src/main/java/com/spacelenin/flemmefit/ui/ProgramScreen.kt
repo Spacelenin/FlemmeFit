@@ -76,12 +76,16 @@ fun ProgramScreen(
     /** Ouvre directement la saisie des tests de départ (juste après l'import). */
     askTests: Boolean = false,
     onTestsAsked: () -> Unit = {},
+    /** Jour à afficher en ouvrant (choisi sur le calendrier de l'accueil). */
+    openOn: LocalDate? = null,
+    /** 0 : calendrier, 1 : stats. */
+    initialTab: Int = 0,
 ) {
     val today = rememberToday()
     val schedule = remember(program, today) { ProgramSchedule(program, today) }
     val color = programColor(program.colorIndex)
 
-    val initial = remember(program.id) { initialDate(schedule, LocalDate.now()) }
+    val initial = remember(program.id) { openOn ?: initialDate(schedule, LocalDate.now()) }
     // Sauvegardés en types simples pour survivre au pliage / dépliage et à la rotation.
     var selectedEpoch by rememberSaveable(program.id) { mutableStateOf(initial.toEpochDay()) }
     var monthIndex by rememberSaveable(program.id) { mutableStateOf(YearMonth.from(initial).let { it.year * 12 + it.monthValue - 1 }) }
@@ -102,7 +106,7 @@ fun ProgramScreen(
     var logDay by rememberSaveable { mutableStateOf<Int?>(null) }
     var logExercise by rememberSaveable { mutableStateOf(0) }
     var logBoss by rememberSaveable { mutableStateOf(false) }
-    var tab by rememberSaveable { mutableStateOf(0) }
+    var tab by rememberSaveable { mutableStateOf(initialTab) }
 
     val actions = DayActions(
         onToggle = { s, i -> repository.toggleExercise(program.id, s.index, i) },

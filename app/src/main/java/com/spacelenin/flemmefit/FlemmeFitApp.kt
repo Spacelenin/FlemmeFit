@@ -1,6 +1,7 @@
 package com.spacelenin.flemmefit
 
 import android.app.Application
+import com.spacelenin.flemmefit.data.AppSettings
 import com.spacelenin.flemmefit.data.ProgramRepository
 import com.spacelenin.flemmefit.reminders.ReminderScheduler
 import com.spacelenin.flemmefit.social.SocialSync
@@ -15,10 +16,13 @@ class FlemmeFitApp : Application() {
         private set
     lateinit var social: SocialSync
         private set
+    lateinit var settings: AppSettings
+        private set
 
     override fun onCreate() {
         super.onCreate()
         repository = ProgramRepository(filesDir)
+        settings = AppSettings(this)
         updater = AppUpdater(this)
         reminders = ReminderScheduler(this)
         reminders.reschedule()

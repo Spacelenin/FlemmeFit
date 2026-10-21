@@ -63,7 +63,7 @@ private fun ago(updatedAt: Long, now: Long): String {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: () -> Unit) {
+fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() -> Unit)? = null) {
     val pseudo by social.pseudo.collectAsStateWithLifecycle()
     val friends by social.friends.collectAsStateWithLifecycle()
     val status by social.status.collectAsStateWithLifecycle()
@@ -77,7 +77,7 @@ fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: () -
         topBar = {
             TopAppBar(
                 title = { Text("Les potes") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") } },
+                navigationIcon = { onBack?.let { IconButton(onClick = it) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") } } },
                 actions = {
                     if (pseudo != null) {
                         IconButton(onClick = social::refresh) { Icon(Icons.Default.Refresh, "Actualiser") }

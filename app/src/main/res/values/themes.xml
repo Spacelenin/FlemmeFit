@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.FlemmeFit" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Toujours sombre, comme l'interface Compose : pas de flash blanc au lancement. -->
+    <style name="Theme.FlemmeFit" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#FF0F0F0F</item>
+    </style>
 </resources>

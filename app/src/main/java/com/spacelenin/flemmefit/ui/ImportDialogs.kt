@@ -224,6 +224,11 @@ fun TestsDialog(program: StoredProgram, current: Map<String, Int>, onSave: (Map<
     var results by remember { mutableStateOf(program.tests.mapValues { it.value.toString() }) }
     val tests = program.plan.tests
     val scope = rememberCoroutineScope()
+    // Premier exercice à paliers de chaque test : sert à montrer le palier atteint pendant la saisie.
+    val levelled = remember(program.plan) {
+        val exercises = program.plan.weeks.flatMap { it.days }.flatMap { it.exercises }
+        tests.associate { t -> t.id to exercises.firstOrNull { it.test == t.id && it.levels.isNotEmpty() } }
+    }
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
@@ -260,10 +265,14 @@ fun TestsDialog(program: StoredProgram, current: Map<String, Int>, onSave: (Map<
                         onValueChange = { v -> results = results + (test.id to v.filter(Char::isDigit).take(4)) },
                         label = { Text(test.name) },
                         suffix = { Text(if (test.isSeconds) "s" else "reps") },
-                        supportingText = if (test.description != null) {
-                            { Text(test.description) }
-                        } else {
-                            null
+                        supportingText = {
+                            val palier = levelled[test.id]?.let { e ->
+                                val i = e.levelIndexFor(results[test.id]?.toIntOrNull())
+                                val at = e.atLevel(i)
+                                "→ ${e.name} : palier ${i + 1}/${e.levels.size}" +
+                                    listOfNotNull(at.sets?.let { "$it ×" }, at.reps ?: at.duration).joinToString(" ", prefix = " · ")
+                            }
+                            Text(listOfNotNull(test.description, palier).joinToString("\n"))
                         },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(

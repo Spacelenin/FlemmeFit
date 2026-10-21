@@ -1,0 +1,162 @@
+package com.spacelenin.flemmefit.ui
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.spacelenin.flemmefit.data.AppSettings
+import com.spacelenin.flemmefit.model.StoredProgram
+import com.spacelenin.flemmefit.reminders.ReminderScheduler
+import com.spacelenin.flemmefit.social.SocialSync
+import com.spacelenin.flemmefit.ui.theme.AppTheme
+import com.spacelenin.flemmefit.update.AppUpdater
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsScreen(
+    settings: AppSettings,
+    reminders: ReminderScheduler,
+    updater: AppUpdater,
+    social: SocialSync,
+    programs: List<StoredProgram>,
+    onSocial: () -> Unit,
+    onBack: () -> Unit,
+) {
+    val theme by settings.theme.collectAsStateWithLifecycle()
+    val reminderSettings by reminders.settings.collectAsStateWithLifecycle()
+    val pseudo by social.pseudo.collectAsStateWithLifecycle()
+    var showReminders by remember { mutableStateOf(false) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Réglages") },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") } },
+            )
+        },
+    ) { padding ->
+        Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
+            Column(Modifier.widthIn(max = 640.dp).fillMaxWidth().verticalScroll(rememberScrollState())) {
+                Section("APPARENCE")
+                Text(
+                    "Thème : ${theme.label}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
+                    AppTheme.entries.forEach { t -> ThemeSwatch(t, selected = t == theme, onClick = { settings.setTheme(t) }) }
+                }
+
+                Section("RAPPELS")
+                SettingRow(
+                    title = "Rappels",
+                    subtitle = if (reminderSettings.enabled) {
+                        "Tous les jours d'entraînement à ${reminderSettings.dailyMinutes.asClock()}" +
+                            if (reminderSettings.eveningEnabled) ", relance à ${reminderSettings.eveningMinutes.asClock()}" else ""
+                    } else {
+                        "Désactivés"
+                    },
+                    onClick = { showReminders = true },
+                )
+
+                Section("MISES À JOUR")
+                UpdateBanner(updater)
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Version installée", style = MaterialTheme.typography.bodyLarge)
+                        Text("Build ${updater.currentVersion}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    TextButton(onClick = { updater.check() }) { Text("Vérifier") }
+                }
+
+                Section("LES POTES")
+                SettingRow(title = "Pseudo et canal", subtitle = pseudo ?: "Pas encore choisi", onClick = onSocial)
+            }
+        }
+    }
+
+    if (showReminders) RemindersDialog(reminders, programs, onDismiss = { showReminders = false })
+}
+
+@Composable
+private fun Section(title: String) {
+    Text(
+        title,
+        style = MaterialTheme.typography.labelLarge,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 4.dp),
+    )
+}
+
+@Composable
+private fun SettingRow(title: String, subtitle: String, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(onClick = onClick).padding(horizontal = 20.dp, vertical = 8.dp),
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun ThemeSwatch(theme: AppTheme, selected: Boolean, onClick: () -> Unit) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(48.dp)
+            .clip(CircleShape)
+            .background(theme.accent)
+            .then(if (selected) Modifier.border(3.dp, MaterialTheme.colorScheme.onSurface, CircleShape) else Modifier)
+            .clickable(role = Role.RadioButton, onClick = onClick)
+            .semantics {
+                contentDescription = theme.label
+                this.selected = selected
+            },
+    ) {
+        if (selected) Icon(Icons.Default.Check, null, tint = theme.onAccent)
+    }
+}

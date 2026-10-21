@@ -1,43 +1,80 @@
 package com.spacelenin.flemmefit.ui.theme
 
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 
-private val Green = Color(0xFF2E7D5B)
+/** Thèmes au choix dans les réglages ; l'orange est celui par défaut. */
+enum class AppTheme(
+    val label: String,
+    val accent: Color,
+    val onAccent: Color,
+    /** Fond teinté des cartes mises en avant. */
+    val container: Color,
+    val onContainer: Color,
+    /** Fond teinté plus discret (bandeaux, puces). */
+    val soft: Color,
+) {
+    ORANGE("Orange", Color(0xFFFF9E5E), Color(0xFF1A0E05), Color(0xFF3B2A1E), Color(0xFFFFDCC4), Color(0xFF2A1E16)),
+    VIOLET("Violet sobre", Color(0xFFB4A2E0), Color(0xFF1B1430), Color(0xFF2E2640), Color(0xFFE6DDFB), Color(0xFF221C2E)),
+    BLEU("Bleu glacier", Color(0xFF8CC8F0), Color(0xFF0A1A26), Color(0xFF1E2E3B), Color(0xFFD4ECFB), Color(0xFF16222C)),
+    VERT("Vert sauge", Color(0xFF9ED9A8), Color(0xFF0E1F12), Color(0xFF203326), Color(0xFFD6F2DB), Color(0xFF172419)),
+    ;
 
-private val LightColors = lightColorScheme(primary = Green)
-private val DarkColors = darkColorScheme(primary = Color(0xFF7FD8A8))
+    companion object {
+        fun of(name: String?) = entries.firstOrNull { it.name == name } ?: ORANGE
+    }
+}
 
-/** Une couleur par programme, pour les distinguer sur l'accueil. */
-private val ProgramColors = listOf(
-    Color(0xFF2E7D5B),
-    Color(0xFF3F6FD8),
-    Color(0xFFD9672E),
-    Color(0xFF8E44AD),
-    Color(0xFFC2185B),
-    Color(0xFF00838F),
+private fun AppTheme.colors() = darkColorScheme(
+    primary = accent,
+    onPrimary = onAccent,
+    primaryContainer = container,
+    onPrimaryContainer = onContainer,
+    secondary = onContainer,
+    onSecondary = onAccent,
+    secondaryContainer = soft,
+    onSecondaryContainer = onContainer,
+    tertiary = Color(0xFF8FE0A5),
+    onTertiary = Color(0xFF0E1F12),
+    background = Color(0xFF0F0F0F),
+    onBackground = Color(0xFFF1F1F1),
+    surface = Color(0xFF0F0F0F),
+    onSurface = Color(0xFFF1F1F1),
+    surfaceVariant = Color(0xFF272727),
+    onSurfaceVariant = Color(0xFFAAAAAA),
+    surfaceContainerLowest = Color(0xFF0A0A0A),
+    surfaceContainerLow = Color(0xFF161616),
+    surfaceContainer = Color(0xFF1A1A1A),
+    surfaceContainerHigh = Color(0xFF1E1E1E),
+    surfaceContainerHighest = Color(0xFF262626),
+    inverseSurface = Color(0xFFF1F1F1),
+    inverseOnSurface = Color(0xFF0F0F0F),
+    outline = Color(0xFF5A5A5A),
+    outlineVariant = Color(0xFF2C2C2C),
+    error = Color(0xFFE05252),
+    onError = Color(0xFF1F0808),
+    errorContainer = Color(0xFF3A1A1A),
+    onErrorContainer = Color(0xFFF4C7C7),
 )
 
-fun programColor(index: Int): Color = ProgramColors[Math.floorMod(index, ProgramColors.size)]
+/** Une couleur par programme : le premier prend celle du thème, les suivants s'en distinguent. */
+private val OtherProgramColors = listOf(
+    Color(0xFF7FD1FF),
+    Color(0xFF9ED9A8),
+    Color(0xFFF2C14E),
+    Color(0xFFF08BB4),
+    Color(0xFF6FD6CB),
+)
 
 @Composable
-fun FlemmeFitTheme(content: @Composable () -> Unit) {
-    val dark = isSystemInDarkTheme()
-    val colors = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        dark -> DarkColors
-        else -> LightColors
-    }
-    MaterialTheme(colorScheme = colors, content = content)
+fun programColor(index: Int): Color {
+    val i = Math.floorMod(index, OtherProgramColors.size + 1)
+    return if (i == 0) MaterialTheme.colorScheme.primary else OtherProgramColors[i - 1]
+}
+
+@Composable
+fun FlemmeFitTheme(theme: AppTheme = AppTheme.ORANGE, content: @Composable () -> Unit) {
+    MaterialTheme(colorScheme = theme.colors(), content = content)
 }

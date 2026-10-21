@@ -52,7 +52,8 @@ import com.spacelenin.flemmefit.model.Session
 import java.time.LocalDate
 
 /** Rouge « Boss », indépendant du thème pour rester reconnaissable. */
-val BossColor = Color(0xFFC62828)
+val BossColor = Color(0xFFE05252)
+val DeloadColor = Color(0xFF8FE0A5)
 
 class DayActions(
     val onToggle: (session: Session, exerciseIndex: Int) -> Unit,

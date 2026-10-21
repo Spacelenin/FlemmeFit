@@ -49,6 +49,8 @@ fun MonthCalendar(
     today: LocalDate,
     onSelect: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
+    /** Autres programmes : un point de leur couleur les jours où ils ont une séance. */
+    others: List<Pair<ProgramSchedule, Color>> = emptyList(),
 ) {
     Column(modifier.widthIn(max = 520.dp).fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -94,6 +96,7 @@ fun MonthCalendar(
                                 selected = selected,
                                 today = today,
                                 onSelect = onSelect,
+                                others = others,
                             )
                         }
                     }
@@ -111,12 +114,14 @@ private fun DayCell(
     selected: LocalDate,
     today: LocalDate,
     onSelect: (LocalDate) -> Unit,
+    others: List<Pair<ProgramSchedule, Color>>,
 ) {
+    val otherColors = others.filter { (s, _) -> s.sessionOn(date) != null }.map { it.second }
     val session = schedule.sessionOn(date)
     val status = session?.let { schedule.status(it) }
     val scheme = MaterialTheme.colorScheme
     val (background, content) = when (status) {
-        SessionStatus.DONE -> color to Color.White
+        SessionStatus.DONE -> color to Color(0xFF0F0F0F)
         SessionStatus.PARTIAL -> color.copy(alpha = 0.35f) to scheme.onSurface
         SessionStatus.MISSED -> scheme.errorContainer to scheme.onErrorContainer
         SessionStatus.PENDING, null -> Color.Transparent to
@@ -142,7 +147,13 @@ private fun DayCell(
             .clip(CircleShape)
             .then(if (date == selected) Modifier.border(2.dp, scheme.onSurface, CircleShape) else Modifier)
             .background(background)
-            .then(if (status == SessionStatus.PENDING) Modifier.border(1.5.dp, color, CircleShape) else Modifier)
+            .then(
+                if (status == SessionStatus.PENDING) {
+                    Modifier.border(1.5.dp, if (session?.isBoss == true) BossColor else if (session?.isDeload == true) DeloadColor else color, CircleShape)
+                } else {
+                    Modifier
+                },
+            )
             .clickable { onSelect(date) }
             .semantics { contentDescription = label },
     ) {
@@ -157,6 +168,11 @@ private fun DayCell(
                 Text("💀", style = MaterialTheme.typography.labelSmall)
             } else if (date == today) {
                 Spacer(Modifier.size(4.dp).clip(CircleShape).background(content))
+            }
+            if (otherColors.isNotEmpty()) {
+                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                    otherColors.forEach { Spacer(Modifier.size(5.dp).clip(CircleShape).background(it)) }
+                }
             }
         }
     }
