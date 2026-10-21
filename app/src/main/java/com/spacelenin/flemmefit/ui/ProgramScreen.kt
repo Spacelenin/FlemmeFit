@@ -80,6 +80,8 @@ fun ProgramScreen(
     openOn: LocalDate? = null,
     /** 0 : calendrier, 1 : stats. */
     initialTab: Int = 0,
+    /** Réimporter la routine pour la mettre à jour. */
+    onUpdateRoutine: () -> Unit = {},
 ) {
     val today = rememberToday()
     val schedule = remember(program, today) { ProgramSchedule(program, today) }
@@ -97,15 +99,15 @@ fun ProgramScreen(
         monthIndex = date.year * 12 + date.monthValue - 1
     }
 
-    var menuOpen by remember { mutableStateOf(false) }
-    var confirmDelete by remember { mutableStateOf(false) }
-    var pickStart by remember { mutableStateOf(false) }
     var editTests by remember { mutableStateOf(askTests) }
     var postponeIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     // Exercice en cours de saisie : index de jour, index d'exercice, et s'il s'agit du max de Boss.
     var logDay by rememberSaveable { mutableStateOf<Int?>(null) }
     var logExercise by rememberSaveable { mutableStateOf(0) }
     var logBoss by rememberSaveable { mutableStateOf(false) }
+    // Exercice dont le détail est ouvert : index de jour et d'exercice.
+    var detailDay by rememberSaveable { mutableStateOf<Int?>(null) }
+    var detailExercise by rememberSaveable { mutableStateOf(0) }
     var tab by rememberSaveable { mutableStateOf(initialTab) }
 
     val actions = DayActions(
@@ -118,6 +120,7 @@ fun ProgramScreen(
         },
         onEditLog = { s, i -> logDay = s.index; logExercise = i; logBoss = false },
         onBossCheck = { s, i -> logDay = s.index; logExercise = i; logBoss = true },
+        onDetail = { s, i -> detailDay = s.index; detailExercise = i },
     )
 
     Scaffold(
@@ -129,26 +132,13 @@ fun ProgramScreen(
                 },
                 actions = {
                     IconButton(onClick = { select(today) }) { Icon(Icons.Default.DateRange, "Aujourd'hui") }
-                    IconButton(onClick = { menuOpen = true }) { Icon(Icons.Default.MoreVert, "Plus d'options") }
-                    DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                        DropdownMenuItem(
-                            text = { Text("Changer la date de début") },
-                            leadingIcon = { Icon(Icons.Default.Edit, null) },
-                            onClick = { menuOpen = false; pickStart = true },
-                        )
-                        if (program.plan.tests.isNotEmpty()) {
-                            DropdownMenuItem(
-                                text = { Text("Tests de départ") },
-                                leadingIcon = { Icon(Icons.Default.Star, null) },
-                                onClick = { menuOpen = false; editTests = true },
-                            )
-                        }
-                        DropdownMenuItem(
-                            text = { Text("Supprimer le programme") },
-                            leadingIcon = { Icon(Icons.Default.Delete, null) },
-                            onClick = { menuOpen = false; confirmDelete = true },
-                        )
-                    }
+                    ProgramMenuButton(
+                        program = program,
+                        repository = repository,
+                        onUpdateRoutine = onUpdateRoutine,
+                        onDeleted = onBack,
+                        onStartChanged = ::select,
+                    )
                 },
             )
         },
@@ -234,6 +224,20 @@ fun ProgramScreen(
                 },
                 onDismiss = close,
             )
+        } else if (prescription.sets != null && prescription.perSetPlanned != null) {
+            SetsLogSheet(
+                prescription = prescription,
+                existing = program.logOf(dayIndex, logExercise),
+                onSave = { log, complete ->
+                    repository.saveLog(program.id, dayIndex, logExercise, log, complete)
+                    close()
+                },
+                onClear = {
+                    repository.saveLog(program.id, dayIndex, logExercise, ExerciseLog(), false)
+                    close()
+                },
+                onDismiss = close,
+            )
         } else {
             LogDialog(
                 prescription = prescription,
@@ -249,6 +253,29 @@ fun ProgramScreen(
                 onDismiss = close,
             )
         }
+    }
+
+    detailDay?.let { dayIndex ->
+        val session = schedule.sessionAt(dayIndex)
+        val prescription = session?.prescriptions?.getOrNull(detailExercise) ?: return@let
+        val done = program.isDone(dayIndex, detailExercise)
+        ExerciseDetailSheet(
+            prescription = prescription,
+            plan = program.plan,
+            testResults = remember(schedule) { schedule.currentTestResults() },
+            color = if (session.isBoss) BossColor else color,
+            done = done,
+            onLog = {
+                detailDay = null
+                actions.onEditLog(session, detailExercise)
+            },
+            onDone = {
+                detailDay = null
+                if (prescription.allOut && !done) actions.onBossCheck(session, detailExercise)
+                else actions.onToggle(session, detailExercise)
+            },
+            onDismiss = { detailDay = null },
+        )
     }
 
     postponeIndex?.let { index ->
@@ -273,22 +300,6 @@ fun ProgramScreen(
         )
     }
 
-    if (confirmDelete) {
-        AlertDialog(
-            onDismissRequest = { confirmDelete = false },
-            title = { Text("Supprimer « ${program.plan.name} » ?") },
-            text = { Text("Le programme et toute sa progression seront effacés.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    confirmDelete = false
-                    onBack()
-                    repository.deleteProgram(program.id)
-                }) { Text("Supprimer") }
-            },
-            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Annuler") } },
-        )
-    }
-
     if (editTests) {
         TestsDialog(
             program = program,
@@ -305,16 +316,6 @@ fun ProgramScreen(
         )
     }
 
-    if (pickStart) {
-        DateSelectDialog(
-            initial = program.start,
-            onSelect = { date ->
-                repository.changeStartDate(program.id, date)
-                select(date)
-            },
-            onDismiss = { pickStart = false },
-        )
-    }
 }
 
 /** Aujourd'hui si on est dans le programme, sinon son début ou sa fin. */

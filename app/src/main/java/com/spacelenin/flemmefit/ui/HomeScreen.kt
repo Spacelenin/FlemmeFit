@@ -78,6 +78,8 @@ class HomeActions(
     /** Repart de zéro avec la même routine, à partir d'aujourd'hui. */
     val restart: (StoredProgram) -> Unit,
     val settings: () -> Unit,
+    /** Bouton ⋮ d'un programme (date, tests, mise à jour, suppression). */
+    val menu: @Composable (StoredProgram) -> Unit,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -297,7 +299,9 @@ private fun TodayCard(
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
                 )
+                actions.menu(program)
             }
 
             val next = progress.nextSession

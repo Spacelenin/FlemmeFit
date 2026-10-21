@@ -139,6 +139,7 @@ fun AppRoot(
                     onTestsAsked = { askTestsFor = null },
                     openOn = openEpoch?.let(LocalDate::ofEpochDay),
                     initialTab = openTab,
+                    onUpdateRoutine = importActions.fromFile,
                 )
             }
         }
@@ -167,6 +168,7 @@ fun AppRoot(
                             postpone = repository::postpone,
                             restart = { restarting = it },
                             settings = { showSettings = true },
+                            menu = { p -> ProgramMenuButton(p, repository, onUpdateRoutine = importActions.fromFile) },
                         ),
                         importActions = importActions,
                         updater = updater,
