@@ -83,6 +83,49 @@ data class StoredProgram(
 
     fun withStartDate(date: LocalDate) = copy(startDate = date.toString())
 
+    /**
+     * Remplace la routine en gardant le suivi : chaque case cochée ou saisie suit son exercice
+     * (même clé, même jour du calendrier), même si l'ordre des exercices a changé.
+     * Ce qui ne correspond plus à rien dans la nouvelle routine est perdu (voir [planUpdateLoss]).
+     */
+    fun withPlan(newPlan: Plan): StoredProgram {
+        val moved = remap(newPlan)
+        return copy(
+            plan = newPlan,
+            done = done.mapNotNull { moved[it] }.toSet(),
+            logs = logs.mapNotNull { (k, v) -> moved[k]?.let { it to v } }.toMap(),
+            tests = tests.filterKeys { id -> newPlan.tests.any { it.id == id } },
+        )
+    }
+
+    /** Nombre de cases cochées ou saisies qui ne trouveraient plus leur exercice dans [newPlan]. */
+    fun planUpdateLoss(newPlan: Plan): Int {
+        val moved = remap(newPlan)
+        return (done + logs.keys).count { it !in moved }
+    }
+
+    /** Ancienne clé de suivi → nouvelle clé, pour les exercices retrouvés dans [newPlan]. */
+    private fun remap(newPlan: Plan): Map<String, String> {
+        val result = HashMap<String, String>()
+        (done + logs.keys).mapNotNull { key ->
+            val day = key.substringBefore(':').toIntOrNull() ?: return@mapNotNull null
+            val ex = key.substringAfter(':').toIntOrNull() ?: return@mapNotNull null
+            Triple(key, day, ex)
+        }.groupBy { it.second }.forEach { (dayIndex, entries) ->
+            val oldExercises = plan.dayAt(dayIndex)?.exercises ?: return@forEach
+            val newExercises = newPlan.dayAt(dayIndex)?.exercises ?: return@forEach
+            // Un même exercice peut apparaître deux fois dans une séance : on les apparie dans l'ordre.
+            val used = HashSet<Int>()
+            for (e in oldExercises.indices) {
+                val key = oldExercises[e].key
+                val target = newExercises.indices.firstOrNull { it !in used && newExercises[it].key == key } ?: continue
+                used += target
+                entries.firstOrNull { it.third == e }?.let { result[it.first] = doneKey(dayIndex, target) }
+            }
+        }
+        return result
+    }
+
     fun withTests(results: Map<String, Int>) = copy(tests = results.filterKeys { id -> plan.tests.any { it.id == id } })
 
     /** Tests de départ pas encore renseignés. */

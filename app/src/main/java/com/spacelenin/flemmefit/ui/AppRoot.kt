@@ -155,7 +155,16 @@ fun AppRoot(
         is ParseResult.Failure -> ImportErrorDialog(result.errors, onDismiss = ::clearImport)
         is ParseResult.Success -> ImportConfirmDialog(
             plan = result.plan,
+            programs = state.programs,
             onDismiss = ::clearImport,
+            onUpdate = { id ->
+                clearImport()
+                repository.replacePlan(id, result.plan)
+                if (result.plan.tests.any { t -> state.programs.first { it.id == id }.tests[t.id] == null }) askTestsFor = id
+                showStats = false
+                showSocial = false
+                openId = id
+            },
             onConfirm = { start ->
                 clearImport()
                 val id = repository.addProgram(result.plan, start)

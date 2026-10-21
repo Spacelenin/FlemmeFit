@@ -56,6 +56,13 @@ data class Plan(
             ?: if (weeks.any { w -> w.days.any { d -> d.exercises.any { it.progression != null } } }) DEFAULT_DELOAD_EVERY else 0
 
     fun test(id: String?): PlanTest? = id?.let { t -> tests.firstOrNull { it.id == t } }
+
+    /** Séance prévue à l'index de jour [dayIndex] (répétitions comprises, sans tenir compte des reports). */
+    fun dayAt(dayIndex: Int): PlanDay? {
+        if (dayIndex < 0 || weeks.isEmpty()) return null
+        val week = weeks[(dayIndex / DAYS_PER_WEEK) % weeks.size]
+        return week.days.firstOrNull { it.day == dayIndex % DAYS_PER_WEEK + 1 }
+    }
 }
 
 /** Un test « à fond » (max de répétitions, ou durée tenue) fait au départ puis refait en cours de route. */

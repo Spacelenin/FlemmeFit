@@ -97,6 +97,9 @@ class ProgramRepository(dir: File) {
 
     fun changeStartDate(id: String, date: LocalDate) = updateProgram(id) { it.withStartDate(date) }
 
+    /** Nouvelle version de la routine, suivi conservé. */
+    fun replacePlan(id: String, plan: Plan) = updateProgram(id) { it.withPlan(plan) }
+
     fun setTests(id: String, results: Map<String, Int>) = updateProgram(id) { it.withTests(results) }
 
     companion object {

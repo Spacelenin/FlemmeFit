@@ -13,6 +13,7 @@ et une progression.
 - **Jours Boss 💀** aléatoires toutes les 3 à 4 semaines : séance renforcée et série à fond, on note son max.
 - **Tests et paliers 📏** (démarrage objectif, façon 100 pompes) : un test à fond choisit le palier de départ, refait en
   cours de route pour passer au palier suivant. Exemple : `examples/routine-maison.json`.
+- **Mise à jour d'une routine** en la réimportant : le suivi (cases cochées, saisies, tests, date) est gardé.
 - **Repousser** une séance d'un jour : tout le reste du programme est décalé (annulable).
 - **Stats** par programme et globales : reps, séries, temps, records, évolution par exercice, volume par semaine,
   Boss vaincus, historique.
