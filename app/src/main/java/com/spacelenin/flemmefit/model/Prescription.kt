@@ -23,6 +23,8 @@ data class Prescription(
     val palier: Int? = null,
     val levelCount: Int = 0,
     private val secondsMax: Boolean? = null,
+    /** Semaine de décharge : ce qui aurait été demandé sans elle (« 4 × 3 »). */
+    val beforeDeload: String? = null,
 ) {
     val key get() = exercise.key
     val repsLabel: String? get() = reps?.toString() ?: exercise.reps
@@ -47,10 +49,17 @@ data class Prescription(
     ).joinToString(" · ")
 
     /** Une saisie atteint-elle le prévu ? Ce qui n'est pas chiffré ne bloque pas. */
-    fun isMetBy(log: ExerciseLog): Boolean =
-        (sets == null || (log.sets ?: sets) >= sets) &&
+    fun isMetBy(log: ExerciseLog): Boolean {
+        val perSet = log.perSet
+        val planned = if (maxIsSeconds) seconds else reps
+        if (perSet != null && planned != null) return perSet.count { it >= planned } >= (sets ?: 1)
+        return (sets == null || (log.sets ?: sets) >= sets) &&
             (reps == null || (log.reps ?: reps) >= reps) &&
             (seconds == null || (log.seconds ?: seconds) >= seconds)
+    }
+
+    /** Ce qui est prévu pour une série : répétitions, ou secondes pour un exercice en durée. */
+    val perSetPlanned: Int? get() = if (maxIsSeconds) seconds else reps
 
     companion object {
         /** Un test : une série à fond, objectif = dernier résultat + 1. */
@@ -120,6 +129,11 @@ data class Prescription(
                 }
             }
 
+            val beforeDeload = if (deload) {
+                listOfNotNull(sets?.let { "$it ×" }, reps?.toString() ?: seconds?.let(Measures::formatSeconds)).joinToString(" ").ifEmpty { null }
+            } else {
+                null
+            }
             if (deload) {
                 val s = sets
                 if (s != null && s >= 2) {
@@ -139,7 +153,7 @@ data class Prescription(
             return Prescription(
                 exercise, sets, reps, seconds, load,
                 allOut = boss || exercise.amrap, target = target, level = level, isBoss = boss,
-                palier = palier, levelCount = exercise.levels.size,
+                palier = palier, levelCount = exercise.levels.size, beforeDeload = beforeDeload,
             )
         }
     }

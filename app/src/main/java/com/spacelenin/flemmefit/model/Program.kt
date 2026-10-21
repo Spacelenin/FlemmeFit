@@ -21,8 +21,19 @@ data class ExerciseLog(
     val seconds: Int? = null,
     /** Max de la série à fond : répétitions, ou secondes pour un exercice en durée. */
     val max: Int? = null,
+    /** Détail série par série (répétitions, ou secondes pour un exercice en durée) ; 0 = série pas faite. */
+    val perSet: List<Int>? = null,
 ) {
-    val isEmpty get() = sets == null && reps == null && seconds == null && max == null
+    val isEmpty get() = sets == null && reps == null && seconds == null && max == null && perSet == null
+
+    companion object {
+        /** Saisie série par série : les séries faites, et la dernière comme max si elle était à fond. */
+        fun ofSets(values: List<Int>, allOut: Boolean) = ExerciseLog(
+            sets = values.count { it > 0 },
+            max = values.lastOrNull()?.takeIf { allOut && it > 0 },
+            perSet = values,
+        )
+    }
 }
 
 /**
