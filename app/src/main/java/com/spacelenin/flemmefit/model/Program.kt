@@ -62,6 +62,10 @@ data class StoredProgram(
     val bursts: List<Int> = emptyList(),
     /** Choix « avec / sans poids » dit pour un exercice d'un jour, mêmes clés que [done]. */
     val weights: Map<String, Boolean> = emptyMap(),
+    /** « J'ai fait autre chose » : activités en plus, par date ISO. Affichées, jamais comptées. */
+    val extras: Map<String, List<String>> = emptyMap(),
+    /** Ressenti de fin de séance, par index de jour : 0 dur, 1 bien, 2 en forme. */
+    val feelings: Map<String, Int> = emptyMap(),
 ) {
     val start: LocalDate get() = LocalDate.parse(startDate)
 
@@ -86,6 +90,22 @@ data class StoredProgram(
         val newLogs = if (log.isEmpty) logs - key else logs + (key to log)
         return copy(done = if (complete) done + key else done - key, logs = newLogs)
     }
+
+    fun extrasOn(date: LocalDate): List<String> = extras[date.toString()].orEmpty()
+
+    fun withExtra(date: LocalDate, text: String): StoredProgram {
+        val clean = text.trim().take(MAX_EXTRA_LENGTH).ifEmpty { return this }
+        return copy(extras = extras + (date.toString() to extrasOn(date) + clean))
+    }
+
+    fun withoutExtra(date: LocalDate, index: Int): StoredProgram {
+        val left = extrasOn(date).filterIndexed { i, _ -> i != index }
+        return copy(extras = if (left.isEmpty()) extras - date.toString() else extras + (date.toString() to left))
+    }
+
+    fun feelingOf(dayIndex: Int): Int? = feelings[dayIndex.toString()]
+
+    fun withFeeling(dayIndex: Int, feeling: Int) = copy(feelings = feelings + (dayIndex.toString() to feeling.coerceIn(0, 2)))
 
     fun weightsChoice(dayIndex: Int, exerciseIndex: Int): Boolean? = weights[doneKey(dayIndex, exerciseIndex)]
 
@@ -162,5 +182,8 @@ data class StoredProgram(
 
     companion object {
         fun doneKey(dayIndex: Int, exerciseIndex: Int) = "$dayIndex:$exerciseIndex"
+        const val MAX_EXTRA_LENGTH = 80
+        /** Ressentis, du plus dur au plus facile. */
+        val FEELINGS = listOf("😫", "🙂", "💪")
     }
 }

@@ -7,6 +7,13 @@ import com.spacelenin.flemmefit.data.ProgramRepository
 import com.spacelenin.flemmefit.reminders.ReminderScheduler
 import com.spacelenin.flemmefit.social.SocialSync
 import com.spacelenin.flemmefit.update.AppUpdater
+import com.spacelenin.flemmefit.widget.TodayWidget
+import android.util.Log
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class FlemmeFitApp : Application() {
     lateinit var repository: ProgramRepository
@@ -33,5 +40,11 @@ class FlemmeFitApp : Application() {
         reminders.reschedule()
         social = SocialSync(this, repository)
         social.publishIfNeeded()
+        // Le widget suit le suivi : chaque exercice coché le met à jour.
+        widgetScope.launch {
+            repository.state.collect { TodayWidget.refresh(this@FlemmeFitApp) }
+        }
     }
+
+    private val widgetScope = CoroutineScope(SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, e -> Log.e("FlemmeFit", "Widget", e) })
 }

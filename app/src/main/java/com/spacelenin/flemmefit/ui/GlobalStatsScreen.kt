@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.spacelenin.flemmefit.model.Badges
 import com.spacelenin.flemmefit.model.Progress
 import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.Stats
@@ -36,6 +37,7 @@ fun GlobalStatsScreen(programs: List<StoredProgram>) {
     val schedules = remember(programs, today) { programs.map { ProgramSchedule(it, today) } }
     val stats = remember(schedules) { Stats.merge(schedules.map(Stats::of), today) }
     val tests = remember(schedules) { schedules.flatMap { it.testProgress() } }
+    val badges = remember(stats) { Badges.of(stats) }
     val color = MaterialTheme.colorScheme.primary
     val several = programs.size > 1
 
@@ -58,6 +60,7 @@ fun GlobalStatsScreen(programs: List<StoredProgram>) {
                         }
                     }
                 }
+                statsBadgeItems(badges, color)
             },
         )
     }

@@ -106,6 +106,12 @@ class ProgramRepository(dir: File) {
     fun saveLog(id: String, dayIndex: Int, exerciseIndex: Int, log: ExerciseLog, complete: Boolean) =
         updateProgram(id) { it.saveLog(dayIndex, exerciseIndex, log, complete) }
 
+    fun addExtra(id: String, date: LocalDate, text: String) = updateProgram(id) { it.withExtra(date, text) }
+
+    fun removeExtra(id: String, date: LocalDate, index: Int) = updateProgram(id) { it.withoutExtra(date, index) }
+
+    fun setFeeling(id: String, dayIndex: Int, feeling: Int) = updateProgram(id) { it.withFeeling(dayIndex, feeling) }
+
     fun setWeights(id: String, dayIndex: Int, exerciseIndex: Int, on: Boolean) =
         updateProgram(id) { it.withWeights(dayIndex, exerciseIndex, on) }
 

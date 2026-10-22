@@ -1,6 +1,18 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -10,7 +22,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.spacelenin.flemmefit.data.ProgramRepository
 import com.spacelenin.flemmefit.model.ExerciseLog
 import com.spacelenin.flemmefit.model.ProgramSchedule
@@ -44,6 +60,18 @@ fun rememberDayActions(
     var burstAsk by rememberSaveable(program.id) { mutableStateOf<Int?>(null) }
     var postponeIndex by rememberSaveable(program.id) { mutableStateOf<Int?>(null) }
     var guidedDay by rememberSaveable(program.id) { mutableStateOf<Int?>(null) }
+    var extraFor by rememberSaveable(program.id) { mutableStateOf<Long?>(null) }
+    // Ressenti : demandé quand la séance du jour vient d'être terminée (après le mode séance s'il est ouvert).
+    var feelingFor by rememberSaveable(program.id) { mutableStateOf<Int?>(null) }
+    val todaySession = schedule.sessionOn(today)
+    val todayComplete = todaySession != null && schedule.doneCount(todaySession) == todaySession.exerciseCount
+    var wasComplete by remember(program.id, todaySession?.index) { mutableStateOf(todayComplete) }
+    LaunchedEffect(todayComplete) {
+        if (todayComplete && !wasComplete && todaySession != null && program.feelingOf(todaySession.index) == null) {
+            feelingFor = todaySession.index
+        }
+        wasComplete = todayComplete
+    }
     val timer = LocalWorkoutTimer.current
 
     LaunchedEffect(startGuided) {
@@ -67,6 +95,8 @@ fun rememberDayActions(
         onBurst = { s, on -> if (on) burstAsk = s.index else repository.undoBurst(program.id, s.index) },
         onGuided = { s -> guidedDay = s.index },
         onWeights = { s, i, on -> repository.setWeights(program.id, s.index, i, on) },
+        onAddExtra = { date -> extraFor = date.toEpochDay() },
+        onRemoveExtra = { date, i -> repository.removeExtra(program.id, date, i) },
     )
 
     logDay?.let { dayIndex ->
@@ -152,6 +182,26 @@ fun rememberDayActions(
         )
     }
 
+    extraFor?.let { epoch ->
+        ExtraDialog(
+            onSave = { text ->
+                repository.addExtra(program.id, LocalDate.ofEpochDay(epoch), text)
+                extraFor = null
+            },
+            onDismiss = { extraFor = null },
+        )
+    }
+
+    feelingFor?.takeIf { guidedDay == null }?.let { index ->
+        FeelingDialog(
+            onPick = { f ->
+                repository.setFeeling(program.id, index, f)
+                feelingFor = null
+            },
+            onSkip = { feelingFor = null },
+        )
+    }
+
     burstAsk?.let { index ->
         BurstDialog(
             onConfirm = {
@@ -185,4 +235,63 @@ fun rememberDayActions(
     }
 
     return actions
+}
+
+/** « J'ai fait autre chose » : une activité en plus, notée telle quelle. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ExtraDialog(onSave: (String) -> Unit, onDismiss: () -> Unit) {
+    var text by rememberSaveable { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("J'ai fait autre chose") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    "Ça s'affiche sur le calendrier, sans toucher à ta série, à la progression ni aux stats.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("Marche", "Vélo", "Course", "Natation", "Étirements", "Foot", "Escalade").forEach { idea ->
+                        SuggestionChip(onClick = { text = if (text.isBlank()) idea else "$text, $idea" }, label = { Text(idea) })
+                    }
+                }
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it.take(StoredProgram.MAX_EXTRA_LENGTH) },
+                    placeholder = { Text("Marche 40 min…") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        },
+        confirmButton = { TextButton(enabled = text.isNotBlank(), onClick = { onSave(text) }) { Text("Ajouter") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Annuler") } },
+    )
+}
+
+/** Ressenti juste après la séance, à passer si on veut. */
+@Composable
+private fun FeelingDialog(onPick: (Int) -> Unit, onSkip: () -> Unit) {
+    val labels = listOf("Dur", "Bien", "En forme")
+    AlertDialog(
+        onDismissRequest = onSkip,
+        title = { Text("Séance finie ! Comment c'était ?") },
+        text = {
+            Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
+                StoredProgram.FEELINGS.forEachIndexed { i, emoji ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.clip(RoundedCornerShape(16.dp)).clickable { onPick(i) }.padding(12.dp),
+                    ) {
+                        Text(emoji, style = MaterialTheme.typography.displaySmall)
+                        Text(labels[i], style = MaterialTheme.typography.labelLarge)
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onSkip) { Text("Passer") } },
+    )
 }

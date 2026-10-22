@@ -117,6 +117,7 @@ private fun DayCell(
     others: List<Pair<ProgramSchedule, Color>>,
 ) {
     val otherColors = others.filter { (s, _) -> s.sessionOn(date) != null }.map { it.second }
+    val hasExtra = schedule.program.extrasOn(date).isNotEmpty()
     val session = schedule.sessionOn(date)
     val status = session?.let { schedule.status(it) }
     val scheme = MaterialTheme.colorScheme
@@ -137,6 +138,7 @@ private fun DayCell(
             null -> {}
         }
         if (session?.isBoss == true) append(", jour Boss")
+        if (hasExtra) append(", activité en plus")
     }
 
     Box(
@@ -168,6 +170,9 @@ private fun DayCell(
                 Text("💀", style = MaterialTheme.typography.labelSmall)
             } else if (date == today) {
                 Spacer(Modifier.size(4.dp).clip(CircleShape).background(content))
+            }
+            if (hasExtra) {
+                Text("✚", style = MaterialTheme.typography.labelSmall, color = DeloadColor, lineHeight = MaterialTheme.typography.labelSmall.fontSize)
             }
             if (otherColors.isNotEmpty()) {
                 Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {

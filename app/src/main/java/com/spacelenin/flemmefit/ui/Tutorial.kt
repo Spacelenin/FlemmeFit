@@ -44,7 +44,8 @@ private val Pages = listOf(
         listOf(
             "En haut : la carte du jour. « C'est parti » lance le mode séance, « Décaler » la reporte d'un jour (tout le reste suit).",
             "En dessous : le mois. Touche un jour pour ouvrir sa page : la séance, les exercices et ses actions. Les flèches passent au jour d'avant ou d'après.",
-            "Plusieurs programmes ? Un sélecteur apparaît en haut, les autres sont des points de couleur sur le calendrier.",
+            "Jours sans séance = jours off 😴 : ils ne cassent pas ta série. « J'ai fait autre chose » (marche, vélo…) les note sur le calendrier ✚, sans rien compter.",
+            "Widget : appui long sur l'écran d'accueil du téléphone › Widgets › FlemmeFit, pour voir ta séance et ta série sans ouvrir l'appli.",
             "Le ⋮ de la carte : date de début, tests, couleur, mise à jour de la routine, suppression.",
         ),
     ),
@@ -54,7 +55,8 @@ private val Pages = listOf(
             "« C'est parti » ou « Démarrer la séance » : le mode séance te guide exercice par exercice, série par série, avec le repos décompté. Tout s'enregistre tout seul.",
             "Touche la vignette d'un exercice pour le marquer comme fait, touche son nom pour le détail (chiffres, consigne, niveaux).",
             "Appui long ou ⋮ › « Saisir mes séries » : tu règles chaque série. En dessous du prévu, l'exercice est incomplet et la progression attend.",
-            "Dans le détail ou le ⋮ : ⏱ chrono (séries et repos enchaînés, avec bips au volume média et vibrations) et minuteur de repos. L'écran reste allumé tant qu'il tourne.",
+            "Dans le détail ou le ⋮ : ⏱ chrono (séries et repos enchaînés) et minuteur de repos. Écran verrouillé ? Une notification décompte et sonne à la fin.",
+            "Séance finie : dis comment c'était (😫 🙂 💪), ou passe.",
             "Besoin de souffler plus ? Réglages › Séance › Repos en plus : jusqu'au double du repos prévu, pour tous les exercices.",
             "Les séances à venir ne se marquent pas : on note ce qui est fait, le jour même.",
             "🏋️ Boxe et Beat Saber : dis le jour même si tu fais avec ou sans poids. Avec, la progression monte un peu moins vite, jusqu'au même plafond.",
@@ -87,7 +89,7 @@ private val Pages = listOf(
     TutorialPage(
         "👥", "Le reste",
         listOf(
-            "Stats : le bilan du programme, les courbes de tests, puis tous les chiffres (séances, jours d'affilée, volume, exploits).",
+            "Stats : le bilan, les badges 🏅 (10, 50, 100, 500, 1 000, 10 000 pompes, séances, Boss…), les courbes de tests et tous les chiffres.",
             "Potes : classement entre amis avec un pseudo (séances, Boss vaincus, exploits).",
             "Réglages (roue dentée) : thème, rappels, sauvegarde (un fichier réécrit tout seul, si tu en choisis un), mises à jour, et ce tuto dans Aide.",
             "Routine modifiée ? Réimporte le fichier : l'appli propose de mettre à jour le programme en gardant ton suivi.",
