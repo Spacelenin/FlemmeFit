@@ -132,6 +132,15 @@ object Social {
             .sortedByDescending { it.updatedAt }
             .take(MAX_FRIENDS)
 
+    /**
+     * Les cartes à montrer : pas celles qui portent mon pseudo (mes anciennes installations, chacune avec son
+     * identifiant), ni celles qui n'ont pas bougé depuis [FORGET_AFTER_MS] (appli désinstallée, réinstallée…).
+     */
+    fun visible(cards: List<FriendCard>, myPseudo: String?, now: Long): List<FriendCard> {
+        val mine = myPseudo?.trim()?.lowercase()
+        return cards.filter { now - it.updatedAt <= FORGET_AFTER_MS && it.pseudo.trim().lowercase() != mine }
+    }
+
     /** Classement : score décroissant, puis avancée du jour. */
     fun ranking(cards: List<FriendCard>, today: LocalDate): List<FriendCard> = cards.sortedWith(
         compareByDescending<FriendCard> { it.score }
@@ -139,4 +148,5 @@ object Social {
     )
 
     const val MAX_FRIENDS = 50
+    const val FORGET_AFTER_MS = 14L * 24 * 3600 * 1000
 }

@@ -56,7 +56,9 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
     private val _topic = MutableStateFlow(prefs.getString(KEY_TOPIC, null) ?: DEFAULT_TOPIC)
     val topic: StateFlow<String> = _topic.asStateFlow()
 
-    private val _friends = MutableStateFlow(Social.decodeAll(prefs.getString(KEY_CACHE, null) ?: "[]"))
+    private val _friends = MutableStateFlow(
+        Social.visible(Social.decodeAll(prefs.getString(KEY_CACHE, null) ?: "[]"), _pseudo.value, System.currentTimeMillis()),
+    )
     /** Cartes reçues (la mienne exclue), dernière version connue de chacun. */
     val friends: StateFlow<List<FriendCard>> = _friends.asStateFlow()
 
@@ -78,6 +80,7 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
         val clean = value.trim().take(FriendCard.PSEUDO_MAX).ifEmpty { return }
         prefs.edit().putString(KEY_PSEUDO, clean).apply()
         _pseudo.value = clean
+        _friends.value = Social.visible(_friends.value, clean, System.currentTimeMillis())
         scope.launch { publish(force = true) }
     }
 
@@ -103,7 +106,7 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
                 publish(force = false)
                 val fresh = Social.parsePoll(httpGet("$BASE/${encoded()}/json?poll=1&since=12h"))
                     .filter { it.id != myId }
-                val merged = Social.merge(_friends.value, fresh)
+                val merged = Social.visible(Social.merge(_friends.value, fresh), _pseudo.value, System.currentTimeMillis())
                 prefs.edit().putString(KEY_CACHE, Social.encodeAll(merged)).apply()
                 _friends.value = merged
                 Status.Idle

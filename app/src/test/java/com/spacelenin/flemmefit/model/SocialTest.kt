@@ -68,4 +68,14 @@ class SocialTest {
         assertEquals(3, merged.first { it.id == "a" }.sessionsDone)
         assertEquals(listOf("b", "a"), Social.ranking(merged, start).map { it.id })
     }
+
+    @Test
+    fun `my old installs and forgotten cards are hidden`() {
+        val now = 100L * 24 * 3600 * 1000
+        val oldMe = FriendCard(id = "x", pseudo = " Lenin ", date = "2026-10-19", updatedAt = now - 1000)
+        val friend = FriendCard(id = "b", pseudo = "Al", date = "2026-10-19", updatedAt = now - 1000)
+        val gone = FriendCard(id = "c", pseudo = "Zed", date = "2026-09-01", updatedAt = now - Social.FORGET_AFTER_MS - 1)
+        assertEquals(listOf("b"), Social.visible(listOf(oldMe, friend, gone), "lenin", now).map { it.id })
+        assertEquals(listOf("x", "b"), Social.visible(listOf(oldMe, friend, gone), null, now).map { it.id })
+    }
 }

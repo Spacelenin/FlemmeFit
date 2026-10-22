@@ -79,7 +79,7 @@ fun AppRoot(
     // Page d'un jour ouverte depuis le calendrier : programme et date.
     var dayProgramId by rememberSaveable { mutableStateOf<String?>(null) }
     var dayEpoch by rememberSaveable { mutableStateOf(0L) }
-    // Onglet du bas : 0 accueil, 1 stats, 2 potes.
+    // Onglet du bas : 0 accueil, 1 stats, 2 exos, 3 potes.
     var tab by rememberSaveable { mutableStateOf(0) }
     var showSettings by rememberSaveable { mutableStateOf(false) }
     var restarting by remember { mutableStateOf<StoredProgram?>(null) }
