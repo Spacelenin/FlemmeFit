@@ -71,6 +71,7 @@ fun SettingsScreen(
 ) {
     val theme by settings.theme.collectAsStateWithLifecycle()
     val restBonus by settings.restBonus.collectAsStateWithLifecycle()
+    val countersUnlocked by settings.countersUnlocked.collectAsStateWithLifecycle()
     val reminderSettings by reminders.settings.collectAsStateWithLifecycle()
     val pseudo by social.pseudo.collectAsStateWithLifecycle()
     var showReminders by remember { mutableStateOf(false) }
@@ -112,6 +113,12 @@ fun SettingsScreen(
                             label = { Text(if (percent == 0) "Prévu" else "+$percent %") },
                         )
                     }
+                }
+
+                if (countersUnlocked) {
+                    Section("COMPTEURS 🔓")
+                    val counters = remember(programs) { countersOf(programs, java.time.LocalDate.now()) }
+                    counters.forEach { CounterRow(it) }
                 }
 
                 Section("RAPPELS")

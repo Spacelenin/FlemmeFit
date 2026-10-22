@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spacelenin.flemmefit.data.AppSettings
 import com.spacelenin.flemmefit.data.BackupManager
 import com.spacelenin.flemmefit.data.ProgramRepository
+import com.spacelenin.flemmefit.model.Counter
 import com.spacelenin.flemmefit.model.ParseResult
 import com.spacelenin.flemmefit.model.PlanParser
 import com.spacelenin.flemmefit.model.ProgramSchedule
@@ -251,6 +252,31 @@ fun AppRoot(
             // Au-dessus de la barre du bas, sur tous les écrans.
             TimerOverlay(timer, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 88.dp))
         }
+    }
+
+    // Compteurs cachés : dévoilés le jour où l'un d'eux passe le cap, une seule fois.
+    val countersUnlocked by settings.countersUnlocked.collectAsStateWithLifecycle()
+    val counters = remember(state.programs, countersUnlocked) {
+        if (countersUnlocked) emptyList() else countersOf(state.programs, LocalDate.now())
+    }
+    var unlockedBy by remember { mutableStateOf<Counter?>(null) }
+    LaunchedEffect(counters) {
+        if (!countersUnlocked && Counter.unlocked(counters)) {
+            settings.unlockCounters()
+            unlockedBy = Counter.milestone(counters)
+        }
+    }
+    // Pas au milieu d'une séance : le message attend qu'elle soit finie.
+    unlockedBy?.takeIf { !guard.active }?.let { milestone ->
+        CountersUnlockedDialog(
+            milestone = milestone,
+            onSee = {
+                unlockedBy = null
+                dayProgramId = null
+                showSettings = true
+            },
+            onDismiss = { unlockedBy = null },
+        )
     }
 
     val changelog by updater.changelog.collectAsStateWithLifecycle()

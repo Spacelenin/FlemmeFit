@@ -137,6 +137,8 @@ data class Exercise(
     val retest: Boolean = false,
     /** Se fait au choix avec ou sans petits poids, à dire le jour même. */
     val weights: WeightsOption? = null,
+    /** Compteur caché où s'additionne ce qui est fait (« Pompes ») : regroupe plusieurs exercices. */
+    val counter: String? = null,
 ) {
     /** Clé de regroupement : stable entre jours et entre programmes. */
     val key: String get() = (id ?: name).trim().lowercase()
