@@ -59,6 +59,8 @@ class AppUpdater(private val context: Context) {
 
     /** Vérification automatique au plus toutes les [AUTO_CHECK_INTERVAL_MS], silencieuse en cas d'erreur. */
     fun autoCheck() {
+        // Une version déjà trouvée reste affichée : inutile de redemander.
+        if (_state.value !is State.Idle) return
         val last = prefs.getLong(KEY_LAST_CHECK, 0)
         if (System.currentTimeMillis() - last < AUTO_CHECK_INTERVAL_MS) return
         check(silent = true)
@@ -217,6 +219,6 @@ class AppUpdater(private val context: Context) {
         private const val APK_FILE = "update.apk"
         private const val KEY_LAST_CHECK = "lastCheck"
         private const val KEY_DISMISSED = "dismissedVersion"
-        private const val AUTO_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000L
+        private const val AUTO_CHECK_INTERVAL_MS = 10 * 60 * 1000L
     }
 }
