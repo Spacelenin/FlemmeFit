@@ -120,6 +120,19 @@ fun AppRoot(
         }
     }
 
+    // La routine intégrée a évolué : les programmes qui la suivent passent à la nouvelle version, suivi gardé.
+    LaunchedEffect(Unit) {
+        val text = try {
+            withContext(Dispatchers.IO) { context.assets.open(ROUTINE_ASSET).bufferedReader().use { it.readText() } }
+        } catch (_: Exception) {
+            null
+        }
+        val latest = (text?.let(PlanParser::parse) as? ParseResult.Success)?.plan ?: return@LaunchedEffect
+        repository.state.value.programs
+            .filter { it.plan.name == latest.name && it.plan.version < latest.version }
+            .forEach { repository.replacePlan(it.id, latest) }
+    }
+
     LaunchedEffect(incoming) {
         incoming?.let {
             load(it)

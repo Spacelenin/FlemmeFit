@@ -89,6 +89,7 @@ Ce sont des **textes libres** (tu peux écrire `"12"`, `"8-10"`, `"max"`, `"10 p
 | `levels`      | tableau | non        | voir plus bas | Paliers choisis d'après le résultat de `test`. |
 | `amrap`       | booléen | non (défaut `false`) | `true` | Dernière série : le **max possible** (« au moins » le prévu), noté en cochant. |
 | `retest`      | booléen | non (défaut `false`) | `true` | L'exercice **est** le test : une série à fond, son résultat devient la nouvelle référence. |
+| `weights`     | objet  | non         | `{ "default": true, "factor": 0.85 }` | Exercice faisable **avec ou sans petits poids**, à dire le jour même dans l'app. `default` : choix proposé tant que rien n'est dit (ensuite, le dernier choix). `factor` (0 à 1, défaut `0.85`) : avec poids, chaque cran de progression ne vaut que cette part du pas. Même plafond, atteint plus tard ; arrondi vers le bas (minute au-delà de 10 min, 5 s en dessous). |
 
 Affichage dans l'app : `sets × reps · load · repos rest`, par ex. **4 × 8-10 · 60 kg · repos 90s**.
 

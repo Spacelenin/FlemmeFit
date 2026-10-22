@@ -54,6 +54,7 @@ private val Pages = listOf(
             "Appui long ou ⋮ › « Saisir mes séries » : tu règles chaque série. En dessous du prévu, l'exercice est incomplet et la progression attend.",
             "Dans le détail ou le ⋮ : ⏱ chrono (séries et repos enchaînés, avec bips et vibrations) et minuteur de repos. L'écran reste allumé tant qu'il tourne.",
             "Les séances à venir ne se marquent pas : on note ce qui est fait, le jour même.",
+            "🏋️ Boxe et Beat Saber : dis le jour même si tu fais avec ou sans poids. Avec, la progression monte un peu moins vite, jusqu'au même plafond.",
         ),
     ),
     TutorialPage(

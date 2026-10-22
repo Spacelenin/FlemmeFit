@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -68,6 +69,8 @@ fun ExerciseDetailSheet(
     onLog: () -> Unit,
     onDone: () -> Unit,
     onDismiss: () -> Unit,
+    /** Choix du jour avec / sans poids, si l'exercice le propose. */
+    onWeights: (Boolean) -> Unit = {},
 ) {
     val exercise = prescription.exercise
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
@@ -86,6 +89,16 @@ fun ExerciseDetailSheet(
                 )
             }
             Text(exercise.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold)
+            prescription.weighted?.let { on ->
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    WeightsChip(on, enabled = !locked, onChange = onWeights)
+                    Text(
+                        if (on) "Avec poids, la progression monte un peu moins vite." else "Avec ou sans poids, dis-le le jour même.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
 
             val facts = listOfNotNull(
                 prescription.sets?.let { it.toString() to "séries" },
@@ -316,6 +329,19 @@ fun SetsLogSheet(
             }
         }
     }
+}
+
+/** Interrupteur du jour « avec / sans poids ». */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WeightsChip(on: Boolean, enabled: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+    FilterChip(
+        selected = on,
+        enabled = enabled,
+        onClick = { onChange(!on) },
+        label = { Text(if (on) "🏋️ Avec poids" else "Sans poids") },
+        modifier = modifier,
+    )
 }
 
 /** Initiales d'un exercice pour sa vignette (« Pompes lentes » → « PL »). */

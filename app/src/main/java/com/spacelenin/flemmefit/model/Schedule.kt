@@ -136,6 +136,8 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     private val testResults = HashMap(program.tests)
     private val levelOf = HashMap<String, Int>()
     private val levelSince = HashMap<String, Int>()
+    // Dernier choix « avec / sans poids » dit pour chaque exercice : proposé par défaut ensuite.
+    private val lastWeights = HashMap<String, Boolean>()
 
     private fun ensure(dayIndex: Int) {
         val limit = totalDays?.let { minOf(dayIndex, it - 1) } ?: dayIndex
@@ -154,8 +156,13 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         val weeksBefore = if (deloadEvery > 0) week - week / deloadEvery else week
         val burst = !boss && !deload && i in program.bursts
 
-        val prescriptions = day.exercises.map { ex ->
-            if (ex.retest) return@map Prescription.test(ex, plan.test(ex.test), ex.test?.let(testResults::get))
+        val prescriptions = day.exercises.mapIndexed { e, ex ->
+            val weighted = ex.weights?.let { w ->
+                val said = program.weightsChoice(i, e)
+                if (said != null) lastWeights[ex.key] = said
+                said ?: lastWeights[ex.key] ?: w.default
+            } ?: false
+            if (ex.retest) return@mapIndexed Prescription.test(ex, plan.test(ex.test), ex.test?.let(testResults::get))
             val palier = if (ex.levels.isEmpty()) null else ex.levelIndexFor(ex.test?.let(testResults::get))
             // Nouveau palier : la progression repart de son départ.
             if (palier != null && levelOf[ex.key] != palier) {
@@ -179,6 +186,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             val level = (steps + (bonus[ex.key] ?: 0)).coerceAtLeast(0) + extra
             Prescription.of(
                 palier?.let(ex::atLevel) ?: ex, level, deload, boss = boss, lastMax = lastMax[ex.key], palier = palier, burst = burst,
+                weighted = weighted,
             )
         }
         resolved[i] = Session(i, week / plan.weeks.size + 1, cycleWeek + 1, day, planWeek.label, date, boss, deload, prescriptions, burst)

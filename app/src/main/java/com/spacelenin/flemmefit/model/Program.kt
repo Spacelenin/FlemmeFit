@@ -60,6 +60,8 @@ data class StoredProgram(
     val tests: Map<String, Int> = emptyMap(),
     /** Jours (index) passés en Burst : séance renforcée, une par semaine au plus. */
     val bursts: List<Int> = emptyList(),
+    /** Choix « avec / sans poids » dit pour un exercice d'un jour, mêmes clés que [done]. */
+    val weights: Map<String, Boolean> = emptyMap(),
 ) {
     val start: LocalDate get() = LocalDate.parse(startDate)
 
@@ -84,6 +86,10 @@ data class StoredProgram(
         val newLogs = if (log.isEmpty) logs - key else logs + (key to log)
         return copy(done = if (complete) done + key else done - key, logs = newLogs)
     }
+
+    fun weightsChoice(dayIndex: Int, exerciseIndex: Int): Boolean? = weights[doneKey(dayIndex, exerciseIndex)]
+
+    fun withWeights(dayIndex: Int, exerciseIndex: Int, on: Boolean) = copy(weights = weights + (doneKey(dayIndex, exerciseIndex) to on))
 
     fun burst(dayIndex: Int) = if (dayIndex in bursts) this else copy(bursts = (bursts + dayIndex).sorted())
 
@@ -111,6 +117,7 @@ data class StoredProgram(
             plan = newPlan,
             done = done.mapNotNull { moved[it] }.toSet(),
             logs = logs.mapNotNull { (k, v) -> moved[k]?.let { it to v } }.toMap(),
+            weights = weights.mapNotNull { (k, v) -> moved[k]?.let { it to v } }.toMap(),
             tests = tests.filterKeys { id -> newPlan.tests.any { it.id == id } },
         )
     }
@@ -124,7 +131,7 @@ data class StoredProgram(
     /** Ancienne clé de suivi → nouvelle clé, pour les exercices retrouvés dans [newPlan]. */
     private fun remap(newPlan: Plan): Map<String, String> {
         val result = HashMap<String, String>()
-        (done + logs.keys).mapNotNull { key ->
+        (done + logs.keys + weights.keys).mapNotNull { key ->
             val day = key.substringBefore(':').toIntOrNull() ?: return@mapNotNull null
             val ex = key.substringAfter(':').toIntOrNull() ?: return@mapNotNull null
             Triple(key, day, ex)

@@ -137,6 +137,7 @@ fun ProgramScreen(
         onDetail = { s, i -> detailDay = s.index; detailExercise = i },
         onBurst = { s, on -> if (on) burstAsk = s.index else repository.undoBurst(program.id, s.index) },
         onGuided = { s -> guidedDay = s.index },
+        onWeights = { s, i, on -> repository.setWeights(program.id, s.index, i, on) },
     )
 
     Scaffold(
@@ -293,6 +294,7 @@ fun ProgramScreen(
                 else actions.onToggle(session, detailExercise)
             },
             onDismiss = { detailDay = null },
+            onWeights = { repository.setWeights(program.id, dayIndex, detailExercise, it) },
         )
     }
 
@@ -305,6 +307,7 @@ fun ProgramScreen(
             session = session,
             color = if (session.isBoss) BossColor else color,
             onSave = { i, log, complete -> repository.saveLog(program.id, dayIndex, i, log, complete) },
+            onWeights = { i, on -> repository.setWeights(program.id, dayIndex, i, on) },
             onClose = { guidedDay = null },
         )
     }

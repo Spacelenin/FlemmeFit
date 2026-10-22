@@ -1,6 +1,8 @@
 package com.spacelenin.flemmefit.model
 
 import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.roundToInt
 
 /** Ce qui est demandé pour un exercice lors d'une séance précise (progression, décharge et Boss appliqués). */
 data class Prescription(
@@ -25,6 +27,8 @@ data class Prescription(
     private val secondsMax: Boolean? = null,
     /** Semaine de décharge : ce qui aurait été demandé sans elle (« 4 × 3 »). */
     val beforeDeload: String? = null,
+    /** Exercice au choix avec ou sans poids : le choix du jour. Null si l'exercice ne le propose pas. */
+    val weighted: Boolean? = null,
 ) {
     val key get() = exercise.key
     val repsLabel: String? get() = reps?.toString() ?: exercise.reps
@@ -46,6 +50,7 @@ data class Prescription(
         durationLabel?.takeIf { sets == null || repsLabel != null },
         loadLabel,
         exercise.rest?.let { "repos $it" },
+        if (weighted == true) "avec poids" else null,
     ).joinToString(" · ")
 
     /** Une saisie atteint-elle le prévu ? Ce qui n'est pas chiffré ne bloque pas. */
@@ -82,6 +87,8 @@ data class Prescription(
             palier: Int? = null,
             /** Burst : sans progression, une série de plus (les crans en plus sont déjà dans [level]). */
             burst: Boolean = false,
+            /** Avec poids : chaque cran ne vaut qu'une part du pas (voir [WeightsOption]). */
+            weighted: Boolean = false,
         ): Prescription {
             val baseReps = Measures.reps(exercise.reps)
             val baseSeconds = Measures.seconds(exercise.duration)
@@ -89,6 +96,8 @@ data class Prescription(
             var reps = baseReps
             var seconds = baseSeconds
             var load = Measures.load(exercise.load)
+            val withWeights = weighted && exercise.weights != null
+            val factor = if (withWeights) exercise.weights?.factor ?: WeightsOption.DEFAULT_FACTOR else 1.0
 
             exercise.progression?.let { p ->
                 val repStep = p.reps
@@ -105,30 +114,40 @@ data class Prescription(
                     return true
                 }
 
+                // Avec poids, les pas sont fractionnaires : on cumule en décimal, on arrondit à la fin.
+                var repsD = reps?.toDouble()
+                var secondsD = seconds?.toDouble()
                 repeat(level.coerceAtLeast(0)) {
-                    val r = reps
+                    val r = repsD
                     if (repStep != null && r != null) {
-                        reps = when {
-                            p.maxReps == null || r + repStep <= p.maxReps -> r + repStep
-                            tryAddSets() -> baseReps
-                            else -> p.maxReps
+                        val next = r + repStep * factor
+                        repsD = when {
+                            p.maxReps == null || next <= p.maxReps -> next
+                            // Avec poids, on touche d'abord le plafond avant d'ajouter une série.
+                            withWeights && r < p.maxReps -> p.maxReps.toDouble()
+                            tryAddSets() -> baseReps?.toDouble()
+                            else -> p.maxReps.toDouble()
                         }
                     }
-                    val s = seconds
+                    val s = secondsD
                     if (secStep != null && s != null) {
-                        seconds = when {
-                            maxSeconds == null || s + secStep <= maxSeconds -> s + secStep
+                        val next = s + secStep * factor
+                        secondsD = when {
+                            maxSeconds == null || next <= maxSeconds -> next
+                            withWeights && s < maxSeconds -> maxSeconds.toDouble()
                             // Les séries ne s'ajoutent qu'une fois par cran : les reps sont prioritaires.
-                            repStep == null && tryAddSets() -> baseSeconds
-                            else -> maxSeconds
+                            repStep == null && tryAddSets() -> baseSeconds?.toDouble()
+                            else -> maxSeconds.toDouble()
                         }
                     }
                     val l = load
                     if (loadStep != null && l != null) {
-                        val next = l.value + loadStep.value
+                        val next = l.value + loadStep.value * factor
                         load = l.copy(value = if (maxLoad != null) minOf(next, maxLoad.value) else next)
                     }
                 }
+                reps = repsD?.let { if (withWeights) floor(it).toInt() else it.roundToInt() }
+                seconds = secondsD?.let { if (withWeights) floorSeconds(it) else it.roundToInt() }
             }
 
             if (burst && exercise.progression == null) sets = sets?.plus(1)
@@ -158,7 +177,14 @@ data class Prescription(
                 exercise, sets, reps, seconds, load,
                 allOut = boss || exercise.amrap, target = target, level = level, isBoss = boss,
                 palier = palier, levelCount = exercise.levels.size, beforeDeload = beforeDeload,
+                weighted = if (exercise.weights != null) weighted else null,
             )
+        }
+
+        /** Durée avec poids, arrondie vers le bas : à la minute au-delà de 10 min, aux 5 s en dessous. */
+        private fun floorSeconds(value: Double): Int {
+            val unit = if (value >= 600) 60 else 5
+            return (floor(value / unit) * unit).toInt()
         }
     }
 }

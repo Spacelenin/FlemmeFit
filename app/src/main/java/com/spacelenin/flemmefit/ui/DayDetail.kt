@@ -81,6 +81,8 @@ class DayActions(
     val onBurst: (session: Session, on: Boolean) -> Unit,
     /** Lancer le mode séance (série par série, repos décompté). */
     val onGuided: (session: Session) -> Unit,
+    /** Choix du jour avec / sans poids. */
+    val onWeights: (session: Session, exerciseIndex: Int, on: Boolean) -> Unit,
 )
 
 /** Détail du jour sélectionné, sous forme d'éléments de liste pour s'insérer dans n'importe quelle LazyColumn. */
@@ -135,6 +137,7 @@ fun LazyListScope.dayDetailItems(
                 },
                 onEdit = { actions.onEditLog(session, i) },
                 onDetail = { actions.onDetail(session, i) },
+                onWeights = { actions.onWeights(session, i, it) },
             )
         }
     }
@@ -269,6 +272,7 @@ private fun ExerciseRow(
     onToggle: () -> Unit,
     onEdit: () -> Unit,
     onDetail: () -> Unit,
+    onWeights: (Boolean) -> Unit,
 ) {
     val exercise = prescription.exercise
     val done = state == ExerciseState.DONE
@@ -337,6 +341,7 @@ private fun ExerciseRow(
             if (details.isNotEmpty()) {
                 Text(details, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+            prescription.weighted?.let { on -> WeightsChip(on, enabled = !locked && !done, onChange = onWeights) }
             if (prescription.allOut) {
                 val target = prescription.target?.let(prescription::maxLabel)
                 Text(
