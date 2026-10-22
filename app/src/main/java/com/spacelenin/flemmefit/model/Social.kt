@@ -133,12 +133,16 @@ object Social {
             .take(MAX_FRIENDS)
 
     /**
-     * Les cartes à montrer : pas celles qui portent mon pseudo (mes anciennes installations, chacune avec son
-     * identifiant), ni celles qui n'ont pas bougé depuis [FORGET_AFTER_MS] (appli désinstallée, réinstallée…).
+     * Les cartes à montrer. Chaque réinstallation crée un nouvel identifiant : un même pseudo ne garde que sa carte
+     * la plus récente, et le mien n'apparaît pas en double de moi-même. Une carte qui n'a pas bougé depuis
+     * [FORGET_AFTER_MS] est oubliée.
      */
     fun visible(cards: List<FriendCard>, myPseudo: String?, now: Long): List<FriendCard> {
-        val mine = myPseudo?.trim()?.lowercase()
-        return cards.filter { now - it.updatedAt <= FORGET_AFTER_MS && it.pseudo.trim().lowercase() != mine }
+        fun key(pseudo: String) = pseudo.trim().lowercase()
+        val mine = myPseudo?.let(::key)
+        return cards.filter { now - it.updatedAt <= FORGET_AFTER_MS && key(it.pseudo) != mine }
+            .groupBy { key(it.pseudo) }.map { (_, same) -> same.maxBy { it.updatedAt } }
+            .sortedByDescending { it.updatedAt }
     }
 
     /** Classement : score décroissant, puis avancée du jour. */

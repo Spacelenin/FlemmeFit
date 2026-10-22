@@ -77,5 +77,8 @@ class SocialTest {
         val gone = FriendCard(id = "c", pseudo = "Zed", date = "2026-09-01", updatedAt = now - Social.FORGET_AFTER_MS - 1)
         assertEquals(listOf("b"), Social.visible(listOf(oldMe, friend, gone), "lenin", now).map { it.id })
         assertEquals(listOf("x", "b"), Social.visible(listOf(oldMe, friend, gone), null, now).map { it.id })
+        // Chez les autres : un même pseudo ne garde que sa carte la plus récente.
+        val newMe = oldMe.copy(id = "y", pseudo = "LENIN", updatedAt = now)
+        assertEquals(listOf("y", "b"), Social.visible(listOf(oldMe, friend, newMe), "Al2", now).map { it.id })
     }
 }
