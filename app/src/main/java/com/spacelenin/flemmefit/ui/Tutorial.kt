@@ -80,6 +80,15 @@ private val Pages = listOf(
         ),
     ),
     TutorialPage(
+        "🎲", "Variantes et exos perso",
+        listOf(
+            "Certains jours tirés au sort, une variante plus dure (diamant, pike, une main, cossack…) remplace une partie des séries de son exo de base.",
+            "Tu es prévenu en haut de la séance et au moment des séries. Pas chaud ? « Pas aujourd'hui » la replace plus tard dans le cycle.",
+            "Sa dernière série au max recale ton taux (1 pompe pike ≈ 10 pompes…) : la dose suit ton vrai niveau. Courbes dans Stats.",
+            "Onglet Exos : ajoute tes propres exos. Dans une famille, ils deviennent des variantes ; dans « Autre », l'appli les place 2 fois par semaine.",
+        ),
+    ),
+    TutorialPage(
         "💀", "Boss et Burst",
         listOf(
             "Boss : une séance surprise toutes les 3-4 semaines, dévoilée la veille. Chiffres de la semaine suivante et dernière série à fond.",
@@ -90,6 +99,7 @@ private val Pages = listOf(
         "👥", "Le reste",
         listOf(
             "Stats : le bilan, les badges 🏅 (10, 50, 100, 500, 1 000, 10 000 pompes, séances, Boss…), les courbes de tests et tous les chiffres.",
+            "Exos : tes exos perso et les variantes de la routine, avec ton taux pour chacune.",
             "Potes : classement entre amis avec un pseudo (séances, Boss vaincus, exploits).",
             "Réglages (roue dentée) : thème, rappels, sauvegarde (un fichier réécrit tout seul, si tu en choisis un), mises à jour, et ce tuto dans Aide.",
             "Routine modifiée ? Réimporte le fichier : l'appli propose de mettre à jour le programme en gardant ton suivi.",
@@ -103,7 +113,7 @@ fun TutorialOfferDialog(onYes: () -> Unit, onNo: () -> Unit) {
     AlertDialog(
         onDismissRequest = onNo,
         title = { Text("Un petit tour de l'appli ?") },
-        text = { Text("Six écrans pour comprendre l'accueil, le mode séance, la progression, les niveaux, les Boss et le Burst. Toujours dispo dans Réglages › Aide.") },
+        text = { Text("Sept écrans pour comprendre l'accueil, le mode séance, la progression, les niveaux, les variantes, les Boss et le Burst. Toujours dispo dans Réglages › Aide.") },
         confirmButton = { TextButton(onClick = onYes) { Text("Oui, montre-moi") } },
         dismissButton = { TextButton(onClick = onNo) { Text("Non merci") } },
     )

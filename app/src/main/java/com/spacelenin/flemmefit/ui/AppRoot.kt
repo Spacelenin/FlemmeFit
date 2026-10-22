@@ -207,7 +207,7 @@ fun AppRoot(
                         updater = updater,
                         social = social,
                         programs = state.programs,
-                        onSocial = { showSettings = false; tab = 2 },
+                        onSocial = { showSettings = false; tab = 3 },
                         onTutorial = { showTutorial = true },
                         onBack = { showSettings = false },
                     )
@@ -217,7 +217,8 @@ fun AppRoot(
                     MainTabs(tab = tab, onTab = { tab = it }) {
                         when (tab) {
                             1 -> GlobalStatsScreen(programs = state.programs)
-                            2 -> SocialScreen(social = social, repository = repository)
+                            2 -> MyExercisesScreen(programs = state.programs, repository = repository)
+                            3 -> SocialScreen(social = social, repository = repository)
                             else -> HomeScreen(
                                 programs = state.programs,
                                 repository = repository,

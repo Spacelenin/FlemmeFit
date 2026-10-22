@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -29,6 +30,7 @@ private data class Destination(val label: String, val icon: ImageVector)
 private val Destinations = listOf(
     Destination("Accueil", Icons.Default.Home),
     Destination("Stats", Icons.AutoMirrored.Filled.List),
+    Destination("Exos", Icons.Default.Star),
     Destination("Potes", Icons.Default.Person),
 )
 

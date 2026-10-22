@@ -1,7 +1,7 @@
 {
   "format": "flemmefit",
   "version": 1,
-  "revision": 3,
+  "revision": 4,
   "name": "Routine maison",
   "description": "5 séances par semaine (jours 4 et 7 : repos, ou rien selon la fatigue). Paliers inspirés de 100pompes, 50tractions, musclesabdominaux et musclesdesjambes : un test de départ choisit ton palier, la dernière série va souvent au max, et la 4e semaine allège tout de moitié et refait les tests pour passer au palier suivant. Échauffement et étirements d'après echauffez-vous et etirez-vous.",
   "repeat": "forever",
@@ -37,6 +37,116 @@
       "name": "Squat sur une jambe",
       "unit": "reps",
       "description": "Sur ta moins bonne jambe. Se tenir à un appui est permis, mais compte 0 si tu ne descends pas sous les genoux."
+    }
+  ],
+  "families": [
+    {
+      "id": "pompes",
+      "name": "Pompes",
+      "exercises": [
+        "pompes",
+        "pompes-lentes"
+      ],
+      "test": "pompes",
+      "counter": "Pompes"
+    },
+    {
+      "id": "tractions",
+      "name": "Tractions",
+      "exercises": [
+        "tractions-table"
+      ],
+      "test": "tractions",
+      "counter": "Tractions"
+    },
+    {
+      "id": "abdos",
+      "name": "Abdos",
+      "exercises": [
+        "abdos-bras-tendus",
+        "abdos"
+      ],
+      "test": "abdos",
+      "counter": "Abdos"
+    },
+    {
+      "id": "gainage",
+      "name": "Gainage",
+      "exercises": [
+        "gainage"
+      ],
+      "test": "gainage",
+      "counter": "Gainage"
+    },
+    {
+      "id": "jambes",
+      "name": "Jambes",
+      "exercises": [
+        "squat-une-jambe"
+      ],
+      "test": "squat",
+      "counter": "Squats"
+    }
+  ],
+  "variants": [
+    {
+      "id": "pompes-diamant",
+      "name": "Pompes diamant",
+      "family": "pompes",
+      "ratio": 3.3,
+      "from": 15,
+      "description": "Mains collées sous la poitrine, pouces et index qui forment un losange. Coudes le long du corps, descends jusqu'à toucher les mains avec le sternum.",
+      "easy": "sur les genoux."
+    },
+    {
+      "id": "pompes-pike",
+      "name": "Pompes pike",
+      "family": "pompes",
+      "ratio": 10,
+      "from": 25,
+      "description": "Fesses en l'air, corps en V inversé, jambes tendues, pieds proches des mains. Descends la tête vers le sol devant les mains, coudes vers l'arrière : ce sont les épaules qui bossent.",
+      "easy": "pieds plus loin des mains, le V plus ouvert."
+    },
+    {
+      "id": "pompes-une-main",
+      "name": "Pompes à une main",
+      "family": "pompes",
+      "ratio": 5,
+      "from": 40,
+      "description": "Pieds bien écartés, main sous l'épaule, l'autre dans le dos. Le buste reste face au sol sans tourner. Les reps sont par bras.",
+      "easy": "main posée sur une table, puis une chaise, puis une marche à mesure que ça devient facile."
+    },
+    {
+      "id": "cossack-squat",
+      "name": "Cossack squat",
+      "family": "jambes",
+      "ratio": 0.625,
+      "description": "Pieds très écartés, descends sur une jambe en gardant l'autre tendue sur le côté, pointe du pied vers le haut, talon au sol. Une rep = un côté puis l'autre."
+    },
+    {
+      "id": "squat-saute",
+      "name": "Squats sautés",
+      "family": "jambes",
+      "ratio": 0.625,
+      "description": "Squat classique jusqu'aux cuisses parallèles au sol, puis saute le plus haut possible. Réception souple, genoux dans l'axe, et enchaîne."
+    },
+    {
+      "id": "battements",
+      "name": "Battements de jambes gainés",
+      "family": "abdos",
+      "ratio": 0.5,
+      "unit": "seconds",
+      "description": "Sur le dos, bras tendus au-dessus de la tête, jambes tendues un peu levées : petits battements rythmés comme en nageant, bas du dos collé au sol, tout gainé."
+    },
+    {
+      "id": "gainage-bras-plies",
+      "name": "Gainage bras pliés",
+      "family": "gainage",
+      "ratio": 3,
+      "from": 45,
+      "unit": "seconds",
+      "description": "En position de pompe, descends à mi-chemin et tiens là, coudes le long du corps, corps droit.",
+      "easy": "sur les genoux."
     }
   ],
   "weeks": [

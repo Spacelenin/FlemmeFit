@@ -37,6 +37,7 @@ fun GlobalStatsScreen(programs: List<StoredProgram>) {
     val schedules = remember(programs, today) { programs.map { ProgramSchedule(it, today) } }
     val stats = remember(schedules) { Stats.merge(schedules.map(Stats::of), today) }
     val tests = remember(schedules) { schedules.flatMap { it.testProgress() } }
+    val variants = remember(schedules) { schedules.flatMap { it.variantProgress() } }
     val badges = remember(stats) { Badges.of(stats) }
     val color = MaterialTheme.colorScheme.primary
     val several = programs.size > 1
@@ -48,6 +49,7 @@ fun GlobalStatsScreen(programs: List<StoredProgram>) {
             showProgram = several,
             modifier = Modifier.padding(padding),
             tests = tests,
+            variants = variants,
             header = {
                 schedules.forEachIndexed { i, schedule ->
                     item(key = "summary-$i") {

@@ -27,7 +27,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.spacelenin.flemmefit.model.TestPoint
 import com.spacelenin.flemmefit.model.TestProgress
+import com.spacelenin.flemmefit.model.VariantProgress
+import com.spacelenin.flemmefit.model.Variants
 import java.time.format.DateTimeFormatter
 
 private val TestDay = DateTimeFormatter.ofPattern("d/MM")
@@ -76,7 +79,7 @@ private fun TestCard(t: TestProgress, color: Color) {
                     color = color,
                 )
             }
-            if (t.points.size > 1) TestCurve(t, color)
+            if (t.points.size > 1) TestCurve(t.points, t::format, color)
 
             t.toNextLevel?.let { missing ->
                 Text(
@@ -104,23 +107,65 @@ private fun TestCard(t: TestProgress, color: Color) {
     }
 }
 
+/** Les variantes déjà faites : leurs max et le taux perso qui en sort. */
+fun LazyListScope.statsVariantItems(variants: List<VariantProgress>, color: Color) {
+    val shown = variants.filter { it.points.isNotEmpty() }
+    if (shown.isEmpty()) return
+    item(key = "variants-title") {
+        Text(
+            "Variantes 🎲",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.ExtraBold,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 6.dp),
+        )
+    }
+    itemsIndexed(shown, key = { i, v -> "variant-$i-${v.variant.id}" }) { _, v -> VariantCard(v, color) }
+}
+
+@Composable
+private fun VariantCard(v: VariantProgress, color: Color) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row {
+                Column(Modifier.weight(1f)) {
+                    Text(v.variant.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(v.familyName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Text(v.format(v.points.last().value), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold, color = color)
+            }
+            if (v.points.size > 1) TestCurve(v.points, v::format, color)
+            v.ratio?.let { r ->
+                Text(
+                    "Ton taux : ${v.ratioLabel(r)}" + (v.startRatio?.takeIf { v.ratio != it }?.let { " (départ ${Variants.decimal(it)})" } ?: ""),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        }
+    }
+}
+
 /** Courbe simple : un point par test, régulièrement espacés, valeur au-dessus. */
 @Composable
-private fun TestCurve(t: TestProgress, color: Color) {
-    // Les 8 derniers tests : au-delà, les étiquettes ne tiennent plus.
-    val points = t.points.takeLast(8)
+private fun TestCurve(all: List<TestPoint>, format: (Int) -> String, color: Color) {
+    // Les 8 derniers points : au-delà, les étiquettes ne tiennent plus.
+    val points = all.takeLast(8)
     val values = points.map { it.value }
     val top = values.max()
     val bottom = values.min()
     val span = (top - bottom).coerceAtLeast(1)
     val track = MaterialTheme.colorScheme.outlineVariant
-    val description = points.joinToString { "${it.date.format(TestDay)} : ${t.format(it.value)}" }
+    val description = points.joinToString { "${it.date.format(TestDay)} : ${format(it.value)}" }
 
     Column {
         Row(Modifier.fillMaxWidth()) {
             points.forEach { p ->
                 Text(
-                    t.format(p.value),
+                    format(p.value),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = if (p.value == top) FontWeight.Bold else FontWeight.Normal,
                     textAlign = TextAlign.Center,

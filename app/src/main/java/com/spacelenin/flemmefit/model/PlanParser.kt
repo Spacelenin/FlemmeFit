@@ -94,6 +94,29 @@ object PlanParser {
             }
         }
 
+        val familyIds = mutableSetOf<String>()
+        plan.families.forEachIndexed { f, family ->
+            val at = "families[$f]"
+            if (family.id.isBlank()) add("$at.id ne doit pas être vide.")
+            else if (family.id == CustomExercise.OTHER) add("$at.id : \"${CustomExercise.OTHER}\" est réservé.")
+            else if (!familyIds.add(family.id)) add("$at.id : la famille \"${family.id}\" apparaît deux fois.")
+            if (family.name.isBlank()) add("$at.name ne doit pas être vide.")
+            if (family.exercises.isEmpty()) add("$at.exercises doit contenir au moins un id d'exercice.")
+            if (family.test != null && family.test !in testIds) add("$at.test : aucun test \"${family.test}\" dans \"tests\".")
+        }
+        val variantIds = mutableSetOf<String>()
+        plan.variants.forEachIndexed { v, variant ->
+            val at = "variants[$v]"
+            if (variant.id.isBlank()) add("$at.id ne doit pas être vide.")
+            else if (!variantIds.add(variant.id)) add("$at.id : la variante \"${variant.id}\" apparaît deux fois.")
+            if (variant.name.isBlank()) add("$at.name ne doit pas être vide.")
+            if (variant.family !in familyIds) add("$at.family : aucune famille \"${variant.family}\" dans \"families\".")
+            if (variant.ratio != null && variant.ratio <= 0.0) add("$at.ratio doit être positif (reçu ${variant.ratio}).")
+            if (variant.unit != PlanTest.UNIT_REPS && variant.unit != PlanTest.UNIT_SECONDS) {
+                add("$at.unit doit valoir \"reps\" ou \"seconds\" (reçu \"${variant.unit}\").")
+            }
+        }
+
         plan.weeks.forEachIndexed { w, week ->
             val seen = mutableSetOf<Int>()
             week.days.forEachIndexed { d, day ->
@@ -173,6 +196,8 @@ object PlanParser {
         name = plan.name.trim(),
         description = plan.description.clean(),
         tests = plan.tests.map { it.copy(id = it.id.trim(), name = it.name.trim(), description = it.description.clean()) },
+        families = plan.families.map { f -> f.copy(id = f.id.trim(), name = f.name.trim(), exercises = f.exercises.map { it.trim().lowercase() }) },
+        variants = plan.variants.map { it.copy(id = it.id.trim(), name = it.name.trim(), family = it.family.trim(), description = it.description.clean(), easy = it.easy.clean()) },
         weeks = plan.weeks.map { week ->
             week.copy(
                 label = week.label.clean(),

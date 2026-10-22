@@ -74,7 +74,7 @@ fun GuidedSession(
     HoldSession()
     // Les exercices à faire, figés à l'ouverture : en valider un ne décale pas la suite.
     val queue = remember(session.index) {
-        (0 until session.exerciseCount).filter { !schedule.program.isDone(session.index, it) }
+        session.order.filter { !schedule.program.isDone(session.index, it) }
     }
     /** Séries déjà faites d'un exercice commencé (mode séance quitté ou appli fermée en route). */
     fun doneSets(exerciseIndex: Int?): List<Int> {
@@ -293,6 +293,13 @@ private fun SetContent(
             style = MaterialTheme.typography.titleMedium,
             color = color,
         )
+        // Jour variante : rappelé au moment des séries concernées.
+        val reminder = p.variant?.let { "🎲 Variante, à la place de ta série max de ${it.baseName.lowercase()}" }
+            ?: p.replacedBy?.let { "🎲 Pas de série max ici : elle laisse place à ${it.lowercase()}" }
+        reminder?.let {
+            Spacer(Modifier.height(8.dp))
+            Text(it, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = BurstColor, textAlign = TextAlign.Center)
+        }
         // Le choix se fait avant de commencer : en cours de chrono, les chiffres ne bougent plus.
         p.weighted?.let { on ->
             Spacer(Modifier.height(8.dp))

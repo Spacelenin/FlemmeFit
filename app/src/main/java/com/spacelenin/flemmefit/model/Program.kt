@@ -66,6 +66,10 @@ data class StoredProgram(
     val extras: Map<String, List<String>> = emptyMap(),
     /** Ressenti de fin de séance, par index de jour : 0 dur, 1 bien, 2 en forme. */
     val feelings: Map<String, Int> = emptyMap(),
+    /** Exercices ajoutés par l'utilisateur : variantes perso, ou « Autre ». */
+    val custom: List<CustomExercise> = emptyList(),
+    /** Jours variante refusés (« Pas aujourd'hui ») : la variante est replacée plus tard dans le cycle. */
+    val variantSkips: Set<Int> = emptySet(),
 ) {
     val start: LocalDate get() = LocalDate.parse(startDate)
 
@@ -110,6 +114,13 @@ data class StoredProgram(
     fun weightsChoice(dayIndex: Int, exerciseIndex: Int): Boolean? = weights[doneKey(dayIndex, exerciseIndex)]
 
     fun withWeights(dayIndex: Int, exerciseIndex: Int, on: Boolean) = copy(weights = weights + (doneKey(dayIndex, exerciseIndex) to on))
+
+    fun skipVariant(dayIndex: Int) = copy(variantSkips = variantSkips + dayIndex)
+
+    fun addCustom(exercise: CustomExercise) = copy(custom = custom + exercise)
+
+    fun updateCustom(id: String, transform: (CustomExercise) -> CustomExercise) =
+        copy(custom = custom.map { if (it.id == id) transform(it) else it })
 
     fun burst(dayIndex: Int) = if (dayIndex in bursts) this else copy(bursts = (bursts + dayIndex).sorted())
 
@@ -158,6 +169,10 @@ data class StoredProgram(
         }.groupBy { it.second }.forEach { (dayIndex, entries) ->
             val oldExercises = plan.dayAt(dayIndex)?.exercises ?: return@forEach
             val newExercises = newPlan.dayAt(dayIndex)?.exercises ?: return@forEach
+            // Variante et exercice perso du jour viennent après ceux de la routine : ils suivent leur rang.
+            entries.filter { it.third >= oldExercises.size }.forEach {
+                result[it.first] = doneKey(dayIndex, newExercises.size + it.third - oldExercises.size)
+            }
             // Un même exercice peut apparaître deux fois dans une séance : on les apparie dans l'ordre.
             val used = HashSet<Int>()
             for (e in oldExercises.indices) {

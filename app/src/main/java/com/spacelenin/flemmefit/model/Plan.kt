@@ -49,6 +49,10 @@ data class Plan(
     val boss: Boolean = true,
     /** Tests de départ : leur résultat choisit le palier des exercices qui s'y rattachent. */
     val tests: List<PlanTest> = emptyList(),
+    /** Familles d'exercices : les exercices de base dont une série peut laisser place à une variante. */
+    val families: List<PlanFamily> = emptyList(),
+    /** Variantes plus dures, glissées au hasard à la place d'une partie des séries de leur famille. */
+    val variants: List<Variant> = emptyList(),
     val weeks: List<PlanWeek>,
 ) {
     val isForever get() = repeat == REPEAT_FOREVER
@@ -58,6 +62,8 @@ data class Plan(
             ?: if (weeks.any { w -> w.days.any { d -> d.exercises.any { it.progression != null } } }) DEFAULT_DELOAD_EVERY else 0
 
     fun test(id: String?): PlanTest? = id?.let { t -> tests.firstOrNull { it.id == t } }
+
+    fun family(id: String?): PlanFamily? = id?.let { f -> families.firstOrNull { it.id == f } }
 
     /** Séance prévue à l'index de jour [dayIndex] (répétitions comprises, sans tenir compte des reports). */
     fun dayAt(dayIndex: Int): PlanDay? {
@@ -82,6 +88,40 @@ data class PlanTest(
         const val UNIT_REPS = "reps"
         const val UNIT_SECONDS = "seconds"
     }
+}
+
+/** Une famille d'exercices (« Pompes ») : ses exercices de base, son test, son compteur. */
+@Serializable
+data class PlanFamily(
+    val id: String,
+    val name: String,
+    /** Clés des exercices de base : un jour variante, une partie de leurs séries laisse place à la variante. */
+    val exercises: List<String>,
+    /** Test de la famille : il sert d'étalon aux variantes. */
+    val test: String? = null,
+    /** Compteur caché où s'ajoutent les variantes, en équivalent. */
+    val counter: String? = null,
+)
+
+/**
+ * Variante d'une famille. Une rep (ou une seconde) de la variante vaut [ratio] unités du test de la famille :
+ * le max estimé est le résultat du test divisé par [ratio]. Le taux se recale ensuite sur ce qui est fait.
+ */
+@Serializable
+data class Variant(
+    val id: String,
+    val name: String,
+    val family: String,
+    val description: String? = null,
+    /** Null : inconnu, le premier bloc sert à le mesurer. */
+    val ratio: Double? = null,
+    /** "reps" ou "seconds". */
+    val unit: String = PlanTest.UNIT_REPS,
+    /** Vraie version à partir de ce résultat au test ; en dessous, la version facile ([easy]). */
+    val from: Int? = null,
+    val easy: String? = null,
+) {
+    val isSeconds get() = unit == PlanTest.UNIT_SECONDS
 }
 
 /**

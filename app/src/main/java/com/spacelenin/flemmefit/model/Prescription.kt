@@ -29,6 +29,10 @@ data class Prescription(
     val beforeDeload: String? = null,
     /** Exercice au choix avec ou sans poids : le choix du jour. Null si l'exercice ne le propose pas. */
     val weighted: Boolean? = null,
+    /** Bloc variante (jour variante), ou exercice perso. */
+    val variant: VariantInfo? = null,
+    /** Exercice de base un jour variante : la variante qui prend la place de sa série max. */
+    val replacedBy: String? = null,
 ) {
     val key get() = exercise.key
     val repsLabel: String? get() = reps?.toString() ?: exercise.reps

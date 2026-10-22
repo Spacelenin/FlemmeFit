@@ -2,6 +2,7 @@ package com.spacelenin.flemmefit.model
 
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 /** Une séance placée dans le calendrier, avec ce qui y est demandé. */
@@ -20,11 +21,22 @@ data class Session(
     val prescriptions: List<Prescription>,
     /** Séance renforcée à la demande (Burst). */
     val isBurst: Boolean = false,
+    /** Ordre d'affichage (index dans [prescriptions]) : la variante suit son exercice de base. */
+    val order: List<Int> = prescriptions.indices.toList(),
+    /** Jour variante : le bloc variante, et l'exercice de base dont il remplace la série max. */
+    val variantIndex: Int? = null,
+    val variantBaseIndex: Int? = null,
+    /** Exercice perso « Autre » du jour. */
+    val otherIndex: Int? = null,
 ) {
-    val exerciseCount get() = day.exercises.size
+    /** Exercices de la routine, puis variante et exercice perso du jour. */
+    val exerciseCount get() = prescriptions.size
     /** Semaine du programme depuis le début (0-based), répétitions comprises. */
     val programWeek get() = index / DAYS_PER_WEEK
 }
+
+private const val VARIANT_SALT = 0x5EED1L
+private const val OTHER_SALT = 0x5EED2L
 
 /** Crans de progression ajoutés par un Burst. */
 const val BURST_STEPS = 2
@@ -139,6 +151,100 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     // Dernier choix « avec / sans poids » dit pour chaque exercice : proposé par défaut ensuite.
     private val lastWeights = HashMap<String, Boolean>()
 
+    // --- Variantes et exercices perso ---
+
+    private val variantCycleWeeks = if (deloadEvery > 0) deloadEvery else VARIANT_CYCLE_WEEKS
+    private val variants: List<Pair<Variant, CustomExercise?>> = plan.variants.map { it to null } +
+        program.custom.filter { !it.isOther && plan.family(it.family) != null }.map { it.asVariant() to it }
+    private val others = program.custom.filter { it.isOther }
+    private val variantLeft = HashMap<String, Int>()
+    private val variantPicked = HashMap<String, Int>()
+    // Part des passages voulus qui tient dans les séances de la famille sur le cycle.
+    private val familyScale = HashMap<String, Double>()
+    private var variantCycle = -1
+    private val otherLeft = HashMap<String, Int>()
+    private var otherWeek = -1
+    // Taux perso de chaque variante, recalé à chaque max noté, et ces max.
+    private val ratios = HashMap<String, Double>()
+    private val variantPoints = HashMap<String, MutableList<TestPoint>>()
+
+    private fun baseIndex(day: PlanDay, v: Variant): Int? {
+        val family = plan.family(v.family) ?: return null
+        return day.exercises.indexOfFirst { !it.retest && it.key in family.exercises }.takeIf { it >= 0 }
+    }
+
+    /** Séances de [from] (inclus) à [end] (exclu), hors semaines allégées, qui remplissent [has]. */
+    private fun slotsLeft(from: Int, end: Int, has: (PlanDay) -> Boolean): Int {
+        val stop = totalDays?.let { minOf(end, it) } ?: end
+        return (from until stop).count { j -> !isDeloadWeek(j / DAYS_PER_WEEK) && plan.dayAt(j)?.let(has) == true }
+    }
+
+    /**
+     * Tirage d'une séance : chaque candidat a une urgence (passages restants / séances restantes où il peut tomber).
+     * Urgence pleine : il tombe forcément ; sinon au hasard, au prorata. Ne dépend que de cette séance et des
+     * précédentes : un changement (exo ajouté, mis en pause, séance refusée) ne touche jamais le passé.
+     */
+    private fun <T> draw(dayIndex: Int, salt: Long, candidates: List<Pair<T, Double>>, picked: (T) -> Int = { 0 }): T? {
+        // Plusieurs urgents : celui qui est le moins passé ce cycle d'abord.
+        val urgent = candidates.filter { it.second >= 1.0 }
+            .minWithOrNull(compareBy<Pair<T, Double>> { picked(it.first) }.thenByDescending { it.second })
+        if (urgent != null) return urgent.first
+        val r = Random(seed xor (dayIndex * 104729L) xor salt).nextDouble()
+        var acc = 0.0
+        for ((c, u) in candidates) {
+            acc += u
+            if (r < acc) return c
+        }
+        return null
+    }
+
+    private fun drawVariant(i: Int, day: PlanDay, date: LocalDate): Pair<Variant, CustomExercise?>? {
+        val cycle = i / DAYS_PER_WEEK / variantCycleWeeks
+        if (cycle != variantCycle) {
+            variantCycle = cycle
+            variantLeft.clear()
+            variantPicked.clear()
+            familyScale.clear()
+        }
+        val end = (cycle + 1) * variantCycleWeeks * DAYS_PER_WEEK
+        fun wanted(v: Variant) = Variants.quota(v, plan.family(v.family)?.test?.let(testResults::get))
+        val candidates = variants.mapNotNull { pick ->
+            val (v, custom) = pick
+            if (custom != null && !custom.activeOn(date)) return@mapNotNull null
+            if (baseIndex(day, v) == null) return@mapNotNull null
+            val left = variantLeft.getOrPut(v.id) {
+                // Plus de passages voulus que de séances : chacun réduit d'autant, au moins un.
+                val scale = familyScale.getOrPut(v.family) {
+                    val demand = variants.filter { (o, c) -> o.family == v.family && (c == null || c.activeOn(date)) }.sumOf { wanted(it.first) }
+                    val slots = slotsLeft(i, end) { baseIndex(it, v) != null }
+                    if (demand == 0) 1.0 else minOf(1.0, slots.toDouble() / demand)
+                }
+                (wanted(v) * scale).roundToInt().coerceAtLeast(1)
+            }
+            if (left <= 0) return@mapNotNull null
+            pick to left.toDouble() / slotsLeft(i, end) { baseIndex(it, v) != null }.coerceAtLeast(1)
+        }
+        if (i in program.variantSkips) return null
+        return draw(i, VARIANT_SALT, candidates) { variantPicked[it.first.id] ?: 0 }?.also {
+            variantLeft[it.first.id] = variantLeft.getValue(it.first.id) - 1
+            variantPicked[it.first.id] = (variantPicked[it.first.id] ?: 0) + 1
+        }
+    }
+
+    private fun drawOther(i: Int, date: LocalDate): CustomExercise? {
+        val week = i / DAYS_PER_WEEK
+        if (week != otherWeek) {
+            otherWeek = week
+            otherLeft.clear()
+        }
+        val slots = slotsLeft(i, (week + 1) * DAYS_PER_WEEK) { true }.coerceAtLeast(1)
+        val candidates = others.filter { it.activeOn(date) }.mapNotNull { o ->
+            val left = otherLeft.getOrPut(o.id) { OTHER_PER_WEEK }
+            if (left <= 0) null else o to left.toDouble() / slots
+        }
+        return draw(i, OTHER_SALT, candidates)?.also { otherLeft[it.id] = otherLeft.getValue(it.id) - 1 }
+    }
+
     private fun ensure(dayIndex: Int) {
         val limit = totalDays?.let { minOf(dayIndex, it - 1) } ?: dayIndex
         while (builtUpTo < limit) build(++builtUpTo)
@@ -156,13 +262,13 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         val weeksBefore = if (deloadEvery > 0) week - week / deloadEvery else week
         val burst = !boss && !deload && i in program.bursts
 
-        val prescriptions = day.exercises.mapIndexed { e, ex ->
+        fun prescribe(e: Int, ex: Exercise): Prescription {
             val weighted = ex.weights?.let { w ->
                 val said = program.weightsChoice(i, e)
                 if (said != null) lastWeights[ex.key] = said
                 said ?: lastWeights[ex.key] ?: w.default
             } ?: false
-            if (ex.retest) return@mapIndexed Prescription.test(ex, plan.test(ex.test), ex.test?.let(testResults::get))
+            if (ex.retest) return Prescription.test(ex, plan.test(ex.test), ex.test?.let(testResults::get))
             val palier = if (ex.levels.isEmpty()) null else ex.levelIndexFor(ex.test?.let(testResults::get))
             // Nouveau palier : la progression repart de son départ.
             if (palier != null && levelOf[ex.key] != palier) {
@@ -184,16 +290,64 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 else -> 0
             }
             val level = (steps + (bonus[ex.key] ?: 0)).coerceAtLeast(0) + extra
-            Prescription.of(
+            return Prescription.of(
                 palier?.let(ex::atLevel) ?: ex, level, deload, boss = boss, lastMax = lastMax[ex.key], palier = palier, burst = burst,
                 weighted = weighted,
             )
         }
-        resolved[i] = Session(i, week / plan.weeks.size + 1, cycleWeek + 1, day, planWeek.label, date, boss, deload, prescriptions, burst)
+        val prescriptions = day.exercises.mapIndexed(::prescribe).toMutableList()
+        val n = prescriptions.size
+
+        // Jour variante et exercice perso : tirés pour chaque séance, dévoilés le jour même.
+        val variantPick = if (deload) null else drawVariant(i, day, date)
+        val otherPick = if (deload) null else drawOther(i, date)
+        val shown = !date.isAfter(today)
+        var variantIndex: Int? = null
+        var variantBase: Int? = null
+        var otherIndex: Int? = null
+        if (shown && variantPick != null) {
+            val (v, custom) = variantPick
+            val b = baseIndex(day, v)!!
+            val family = plan.family(v.family)!!
+            val base = prescriptions[b]
+            prescriptions[b] = base.copy(
+                sets = base.sets?.let(Variants::baseSets),
+                allOut = base.isBoss,
+                target = base.target.takeIf { base.isBoss },
+                replacedBy = v.name,
+            )
+            variantBase = b
+            variantIndex = prescriptions.size
+            prescriptions += Variants.block(
+                v, family, base.exercise, family.test?.let(testResults::get), ratios[v.id] ?: v.ratio, v.ratio,
+                custom = custom != null, testSeconds = plan.test(family.test)?.isSeconds == true,
+            )
+        }
+        if (shown && otherPick != null) {
+            otherIndex = prescriptions.size
+            prescriptions += prescribe(otherIndex, otherPick.asExercise())
+        }
+        val order = (0 until n).toMutableList()
+        variantIndex?.let { order.add(order.indexOf(variantBase!!) + 1, it) }
+        // L'exercice perso passe avant le dernier de la séance (les étirements).
+        otherIndex?.let { if (n >= 2) order.add(order.indexOf(n - 1), it) else order.add(it) }
+        resolved[i] = Session(
+            i, week / plan.weeks.size + 1, cycleWeek + 1, day, planWeek.label, date, boss, deload, prescriptions, burst,
+            order = order, variantIndex = variantIndex, variantBaseIndex = variantBase, otherIndex = otherIndex,
+        )
 
         prescriptions.forEachIndexed { e, pr ->
             val key = pr.key
             val max = program.logOf(i, e)?.max
+            if (e == variantIndex) {
+                val v = variantPick!!.first
+                val test = plan.family(v.family)?.test?.let(testResults::get)
+                if (max != null && max > 0) {
+                    variantPoints.getOrPut(v.id) { ArrayList() } += TestPoint(date, max)
+                    if (pr.variant?.full == true && test != null && test > 0) ratios[v.id] = Variants.learn(ratios[v.id] ?: v.ratio, test, max)
+                }
+                return@forEachIndexed
+            }
             if (pr.isTest) {
                 val test = pr.exercise.test
                 if (max != null && test != null) testResults[test] = max
@@ -204,6 +358,28 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             lastMax[key] = max
             adjustBonus(pr, max)
         }
+    }
+
+    /** Variantes (de la routine et perso) : leurs max notés et leur taux. */
+    fun variantProgress(): List<VariantProgress> {
+        ensure(lastIndexOnOrBefore(today))
+        return variants.filter { (_, c) -> c == null || !c.deleted }.map { (v, c) ->
+            val test = plan.test(plan.family(v.family)?.test)
+            VariantProgress(
+                v, plan.family(v.family)?.name ?: v.family, variantPoints[v.id].orEmpty().toList(), ratios[v.id] ?: v.ratio, v.ratio, c != null,
+                testName = test?.name, testSeconds = test?.isSeconds == true,
+            )
+        }
+    }
+
+    /**
+     * « Pas aujourd'hui » : seulement le jour même, tant que rien n'est noté sur l'exercice de base, la variante
+     * ou l'exercice perso (qui changerait de place).
+     */
+    fun canSkipVariant(session: Session): Boolean {
+        if (session.variantIndex == null || session.date != today) return false
+        return listOfNotNull(session.variantBaseIndex, session.variantIndex, session.otherIndex)
+            .none { program.isDone(session.index, it) || program.logOf(session.index, it) != null }
     }
 
     /** Dernier résultat connu de chaque test : celui de départ, ou celui du dernier test refait. */
