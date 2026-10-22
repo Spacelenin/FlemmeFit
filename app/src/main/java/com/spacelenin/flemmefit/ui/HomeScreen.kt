@@ -81,7 +81,7 @@ class ImportActions(
 
 /** Ce que l'accueil peut demander au reste de l'appli. */
 class HomeActions(
-    /** Ouvre le détail d'un programme : bilan, tests et stats. */
+    /** Bilan, tests et stats (l'onglet Stats). */
     val open: (id: String) -> Unit,
     /** Ouvre la page d'un jour (sa séance). */
     val openDay: (id: String, date: LocalDate) -> Unit,

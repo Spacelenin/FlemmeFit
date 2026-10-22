@@ -69,7 +69,6 @@ fun AppRoot(
     val timer = remember { WorkoutTimer() }
     val restBonus by settings.restBonus.collectAsStateWithLifecycle()
 
-    var openId by rememberSaveable { mutableStateOf<String?>(null) }
     // Programme tout juste importé dont il faut demander les tests de départ.
     var askTestsFor by rememberSaveable { mutableStateOf<String?>(null) }
     // Programme affiché sur l'accueil, et jour à y montrer (notification, import).
@@ -87,22 +86,21 @@ fun AppRoot(
     val pseudo by social.pseudo.collectAsStateWithLifecycle()
     // « Plus tard » : on redemande au prochain lancement.
     var pseudoSkipped by rememberSaveable { mutableStateOf(false) }
-    /** Détail d'un programme : bilan, tests et stats. */
-    fun open(id: String) {
+    /** Bilan, tests et stats : l'onglet Stats. */
+    fun openStats() {
         showSettings = false
-        openId = id
+        dayProgramId = null
+        tab = 1
     }
 
     fun openDay(id: String, date: LocalDate) {
         showSettings = false
-        openId = null
         dayEpoch = date.toEpochDay()
         dayProgramId = id
     }
 
     /** Montre un programme sur l'accueil, au mois du jour indiqué. */
     fun showOnHome(id: String, date: LocalDate = LocalDate.now()) {
-        openId = null
         dayProgramId = null
         showSettings = false
         tab = 0
@@ -182,7 +180,6 @@ fun AppRoot(
         },
     )
 
-    val program = state.programs.find { it.id == openId }
     val dayProgram = state.programs.find { it.id == dayProgramId }
     CompositionLocalProvider(LocalWorkoutTimer provides timer, LocalRestBonus provides restBonus) {
         Box(Modifier.fillMaxSize()) {
@@ -196,17 +193,6 @@ fun AppRoot(
                             date = LocalDate.ofEpochDay(dayEpoch),
                             onDate = { dayEpoch = it.toEpochDay() },
                             onBack = { dayProgramId = null },
-                        )
-                    }
-                }
-                program != null -> {
-                    BackHandler { openId = null }
-                    key(program.id) {
-                        ProgramScreen(
-                            program = program,
-                            repository = repository,
-                            onBack = { openId = null },
-                            onUpdateRoutine = importActions.fromFile,
                         )
                     }
                 }
@@ -238,7 +224,7 @@ fun AppRoot(
                                 focus = homeFocus?.let(LocalDate::ofEpochDay),
                                 onFocusConsumed = { homeFocus = null },
                                 actions = HomeActions(
-                                    open = ::open,
+                                    open = { openStats() },
                                     openDay = ::openDay,
                                     restart = { restarting = it },
                                     settings = { showSettings = true },
