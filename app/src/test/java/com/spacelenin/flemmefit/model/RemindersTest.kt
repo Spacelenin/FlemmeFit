@@ -54,8 +54,7 @@ class RemindersTest {
         val line = Reminders.friendsDone(friends, start)
         assertEquals("Bob a déjà fini sa séance.", line)
         assertEquals(null, Reminders.friendsDone(friends.take(2).drop(1), start))
-        assertTrue(Reminders.daily(listOf(program()), start, line).single().text.endsWith(line!!))
-        assertTrue(Reminders.evening(listOf(program()), start, line).single().text.endsWith(line))
+        assertEquals("👥 Les potes", Reminders.friendsMessage(line!!).title)
         val many = (1..5).map { card("id$it", "P$it", 2, 2) }
         assertTrue(Reminders.friendsDone(many, start)!!.contains("et 3 autres"))
     }

@@ -54,7 +54,7 @@ object Reminders {
 
     /**
      * « Bob et Al ont déjà fini leur séance. » : les potes qui ont tout fait aujourd'hui, null si personne.
-     * Ajouté aux rappels quand la séance n'est pas finie.
+     * Envoyé en notification à part, à côté d'un rappel de séance pas finie.
      */
     fun friendsDone(friends: List<FriendCard>, today: LocalDate): String? {
         val names = friends.filter { it.isToday(today) && it.todayTotal > 0 && it.todayDone >= it.todayTotal }
@@ -68,10 +68,13 @@ object Reminders {
         }
     }
 
-    private fun String.plusFriends(line: String?) = if (line == null) this else "$this $line"
+    /** La notification des potes, à part du rappel pour que tout le texte s'affiche. */
+    fun friendsMessage(line: String) = ReminderMessage(FRIENDS_ID, "👥 Les potes", line)
+
+    const val FRIENDS_ID = "potes"
 
     /** Rappel du jour : séance prévue et pas finie, sinon annonce du Boss du lendemain. */
-    fun daily(programs: List<StoredProgram>, today: LocalDate, friendsDone: String? = null): List<ReminderMessage> = programs.mapNotNull { p ->
+    fun daily(programs: List<StoredProgram>, today: LocalDate): List<ReminderMessage> = programs.mapNotNull { p ->
         val schedule = ProgramSchedule(p, today)
         val session = schedule.sessionOn(today)
         val name = p.plan.name
@@ -80,7 +83,7 @@ object Reminders {
                 val titre = session.day.title ?: "la séance"
                 val text = if (session.isBoss) pick(bossToday, p.id, today, 1)
                 else pick(daily, p.id, today, 0).fill("titre" to titre, "exos" to session.exerciseCount)
-                ReminderMessage(p.id, if (session.isBoss) "💀 Boss : $titre" else "💪 $name : $titre", text.plusFriends(friendsDone))
+                ReminderMessage(p.id, if (session.isBoss) "💀 Boss : $titre" else "💪 $name : $titre", text)
             }
             schedule.sessionOn(today.plusDays(1))?.isBoss == true ->
                 ReminderMessage(p.id, "$name : Boss demain", pick(bossTomorrow, p.id, today, 2))
@@ -89,7 +92,7 @@ object Reminders {
     }
 
     /** Relance du soir : séance du jour pas finie. */
-    fun evening(programs: List<StoredProgram>, today: LocalDate, friendsDone: String? = null): List<ReminderMessage> = programs.mapNotNull { p ->
+    fun evening(programs: List<StoredProgram>, today: LocalDate): List<ReminderMessage> = programs.mapNotNull { p ->
         val schedule = ProgramSchedule(p, today)
         val session = schedule.sessionOn(today) ?: return@mapNotNull null
         val remaining = session.exerciseCount - schedule.doneCount(session)
@@ -97,6 +100,6 @@ object Reminders {
         val streak = schedule.progress().streak
         val text = pick(evening, p.id, today, 3).fill("reste" to remaining) +
             if (streak > 0) " Tes $streak 🔥 d'affilée sautent à minuit." else ""
-        ReminderMessage(p.id, "⏰ ${p.plan.name} : ${session.day.title ?: "séance"} pas finie", text.plusFriends(friendsDone))
+        ReminderMessage(p.id, "⏰ ${p.plan.name} : ${session.day.title ?: "séance"} pas finie", text)
     }
 }
