@@ -1,6 +1,7 @@
 {
   "format": "flemmefit",
   "version": 1,
+  "revision": 2,
   "name": "Routine maison",
   "description": "5 séances par semaine (jours 4 et 7 : repos, ou rien selon la fatigue). Paliers inspirés de 100pompes, 50tractions, musclesabdominaux et musclesdesjambes : un test de départ choisit ton palier, la dernière série va souvent au max, et la 4e semaine allège tout de moitié et refait les tests pour passer au palier suivant. Échauffement et étirements d'après echauffez-vous et etirez-vous.",
   "repeat": "forever",
@@ -129,7 +130,7 @@
             {
               "name": "Shadow boxing léger",
               "id": "shadow-boxing",
-              "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids si possible (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes.",
+              "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids par défaut (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes. Sans poids ce jour-là ? Dis-le sur l'exercice.",
               "sets": 3,
               "duration": "3min",
               "rest": "1min",
@@ -138,6 +139,10 @@
                 "maxDuration": "4min",
                 "addSets": 1,
                 "maxSets": 6
+              },
+              "weights": {
+                "default": true,
+                "factor": 0.85
               }
             },
             {
@@ -513,12 +518,16 @@
             {
               "name": "Beat Saber",
               "id": "beatsaber",
-              "description": "Cardio en VR. Choisis des musiques en Normal/Hard au début, monte en difficulté au fil des semaines. Hydrate-toi, et garde de la place autour de toi.",
+              "description": "Cardio en VR. Choisis des musiques en Normal/Hard au début, monte en difficulté au fil des semaines. Hydrate-toi, et garde de la place autour de toi. Avec des petits poids aux poignets si tu veux : dis-le sur l'exercice, la durée monte alors un peu moins vite.",
               "duration": "40min",
               "progression": {
                 "every": 2,
                 "duration": "10min",
                 "maxDuration": "90min"
+              },
+              "weights": {
+                "default": false,
+                "factor": 0.85
               }
             },
             {
@@ -763,7 +772,7 @@
             {
               "name": "Shadow boxing léger",
               "id": "shadow-boxing",
-              "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids si possible (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes.",
+              "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids par défaut (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes. Sans poids ce jour-là ? Dis-le sur l'exercice.",
               "sets": 3,
               "duration": "3min",
               "rest": "1min",
@@ -772,6 +781,10 @@
                 "maxDuration": "4min",
                 "addSets": 1,
                 "maxSets": 6
+              },
+              "weights": {
+                "default": true,
+                "factor": 0.85
               }
             },
             {
@@ -1147,12 +1160,16 @@
             {
               "name": "Beat Saber",
               "id": "beatsaber",
-              "description": "Cardio en VR. Choisis des musiques en Normal/Hard au début, monte en difficulté au fil des semaines. Hydrate-toi, et garde de la place autour de toi.",
+              "description": "Cardio en VR. Choisis des musiques en Normal/Hard au début, monte en difficulté au fil des semaines. Hydrate-toi, et garde de la place autour de toi. Avec des petits poids aux poignets si tu veux : dis-le sur l'exercice, la durée monte alors un peu moins vite.",
               "duration": "40min",
               "progression": {
                 "every": 2,
                 "duration": "10min",
                 "maxDuration": "90min"
+              },
+              "weights": {
+                "default": false,
+                "factor": 0.85
               }
             },
             {
@@ -1397,7 +1414,7 @@
             {
               "name": "Shadow boxing léger",
               "id": "shadow-boxing",
-              "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids si possible (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes.",
+              "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids par défaut (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes. Sans poids ce jour-là ? Dis-le sur l'exercice.",
               "sets": 3,
               "duration": "3min",
               "rest": "1min",
@@ -1406,6 +1423,10 @@
                 "maxDuration": "4min",
                 "addSets": 1,
                 "maxSets": 6
+              },
+              "weights": {
+                "default": true,
+                "factor": 0.85
               }
             },
             {
@@ -1781,12 +1802,16 @@
             {
               "name": "Beat Saber",
               "id": "beatsaber",
-              "description": "Cardio en VR. Choisis des musiques en Normal/Hard au début, monte en difficulté au fil des semaines. Hydrate-toi, et garde de la place autour de toi.",
+              "description": "Cardio en VR. Choisis des musiques en Normal/Hard au début, monte en difficulté au fil des semaines. Hydrate-toi, et garde de la place autour de toi. Avec des petits poids aux poignets si tu veux : dis-le sur l'exercice, la durée monte alors un peu moins vite.",
               "duration": "40min",
               "progression": {
                 "every": 2,
                 "duration": "10min",
                 "maxDuration": "90min"
+              },
+              "weights": {
+                "default": false,
+                "factor": 0.85
               }
             },
             {
@@ -2038,7 +2063,7 @@
             {
               "name": "Shadow boxing léger",
               "id": "shadow-boxing",
-              "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids si possible (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes.",
+              "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids par défaut (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes. Sans poids ce jour-là ? Dis-le sur l'exercice.",
               "sets": 3,
               "duration": "3min",
               "rest": "1min",
@@ -2047,6 +2072,10 @@
                 "maxDuration": "4min",
                 "addSets": 1,
                 "maxSets": 6
+              },
+              "weights": {
+                "default": true,
+                "factor": 0.85
               }
             },
             {
@@ -2443,12 +2472,16 @@
             {
               "name": "Beat Saber",
               "id": "beatsaber",
-              "description": "Cardio en VR. Choisis des musiques en Normal/Hard au début, monte en difficulté au fil des semaines. Hydrate-toi, et garde de la place autour de toi.",
+              "description": "Cardio en VR. Choisis des musiques en Normal/Hard au début, monte en difficulté au fil des semaines. Hydrate-toi, et garde de la place autour de toi. Avec des petits poids aux poignets si tu veux : dis-le sur l'exercice, la durée monte alors un peu moins vite.",
               "duration": "40min",
               "progression": {
                 "every": 2,
                 "duration": "10min",
                 "maxDuration": "90min"
+              },
+              "weights": {
+                "default": false,
+                "factor": 0.85
               }
             },
             {

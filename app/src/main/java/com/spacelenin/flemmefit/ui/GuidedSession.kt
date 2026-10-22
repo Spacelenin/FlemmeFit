@@ -68,6 +68,7 @@ fun GuidedSession(
     session: Session,
     color: Color,
     onSave: (exerciseIndex: Int, log: ExerciseLog, complete: Boolean) -> Unit,
+    onWeights: (exerciseIndex: Int, on: Boolean) -> Unit,
     onClose: () -> Unit,
 ) {
     // Les exercices à faire, figés à l'ouverture : en valider un ne décale pas la suite.
@@ -232,6 +233,7 @@ fun GuidedSession(
                                 finishSet(if (r == null) 0 else (r.elapsedMs(SystemClock.elapsedRealtime()) / 1000).toInt())
                             },
                             onSetDone = { finishSet(if (guided.needsValue(set)) value else 0) },
+                            onWeights = { on -> exerciseIndex?.let { onWeights(it, on) } },
                             modifier = Modifier.weight(1f),
                         )
                         TextButton(
@@ -260,6 +262,7 @@ private fun SetContent(
     onStart: (seconds: Int?) -> Unit,
     onStop: () -> Unit,
     onSetDone: () -> Unit,
+    onWeights: (Boolean) -> Unit,
     modifier: Modifier,
 ) {
     val p = guided.prescription
@@ -275,6 +278,11 @@ private fun SetContent(
             style = MaterialTheme.typography.titleMedium,
             color = color,
         )
+        // Le choix se fait avant de commencer : en cours de chrono, les chiffres ne bougent plus.
+        p.weighted?.let { on ->
+            Spacer(Modifier.height(8.dp))
+            WeightsChip(on, enabled = running == null, onChange = onWeights)
+        }
         if (guided.isAllOut(set)) {
             Text(
                 (if (p.isTest) "📏 À fond" else "Série à fond") + (p.target?.let { " · objectif ${fmt(it)}" } ?: ""),

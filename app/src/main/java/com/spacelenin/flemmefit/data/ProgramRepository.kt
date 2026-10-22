@@ -106,6 +106,9 @@ class ProgramRepository(dir: File) {
     fun saveLog(id: String, dayIndex: Int, exerciseIndex: Int, log: ExerciseLog, complete: Boolean) =
         updateProgram(id) { it.saveLog(dayIndex, exerciseIndex, log, complete) }
 
+    fun setWeights(id: String, dayIndex: Int, exerciseIndex: Int, on: Boolean) =
+        updateProgram(id) { it.withWeights(dayIndex, exerciseIndex, on) }
+
     fun burst(id: String, dayIndex: Int) = updateProgram(id) { it.burst(dayIndex) }
 
     fun undoBurst(id: String, dayIndex: Int) = updateProgram(id) { it.undoBurst(dayIndex) }

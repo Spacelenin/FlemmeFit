@@ -37,6 +37,8 @@ const val DEFAULT_DELOAD_EVERY = 4
 data class Plan(
     val format: String = PLAN_FORMAT_ID,
     val version: Int,
+    /** Révision de la routine elle-même (la version, elle, est celle du format). Sert à mettre à jour la routine intégrée. */
+    val revision: Int = 0,
     val name: String,
     val description: String? = null,
     @Serializable(with = RepeatSerializer::class)
@@ -133,6 +135,8 @@ data class Exercise(
     val amrap: Boolean = false,
     /** Cet exercice est le test lui-même : une série à fond dont le résultat devient la nouvelle référence. */
     val retest: Boolean = false,
+    /** Se fait au choix avec ou sans petits poids, à dire le jour même. */
+    val weights: WeightsOption? = null,
 ) {
     /** Clé de regroupement : stable entre jours et entre programmes. */
     val key: String get() = (id ?: name).trim().lowercase()
@@ -151,6 +155,21 @@ data class Exercise(
             rest = l.rest ?: rest,
             description = listOfNotNull(description, l.note).joinToString("\n\n").ifEmpty { null },
         )
+    }
+}
+
+/**
+ * Exercice faisable avec ou sans poids. Avec poids, chaque cran de progression ne vaut que [factor] du pas :
+ * même plafond, atteint plus tard.
+ */
+@Serializable
+data class WeightsOption(
+    /** Choix proposé tant que l'utilisateur n'a rien dit. */
+    val default: Boolean = false,
+    val factor: Double = DEFAULT_FACTOR,
+) {
+    companion object {
+        const val DEFAULT_FACTOR = 0.85
     }
 }
 

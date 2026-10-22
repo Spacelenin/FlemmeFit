@@ -107,6 +107,9 @@ object PlanParser {
                         add("$at.exercises[$e].sets doit être entre 1 et $MAX_SETS (reçu ${ex.sets}).")
                     }
                     if (ex.id != null && ex.id.isBlank()) add("$at.exercises[$e].id ne doit pas être vide.")
+                    ex.weights?.let { w ->
+                        if (w.factor <= 0.0 || w.factor > 1.0) add("$at.exercises[$e].weights.factor doit être entre 0 et 1 (reçu ${w.factor}).")
+                    }
                     addAll(validateLevels(ex, testIds, "$at.exercises[$e]"))
                     ex.progression?.let { p ->
                         // Avec des paliers, chaque palier doit pouvoir progresser.
