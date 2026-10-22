@@ -7,6 +7,7 @@ import com.spacelenin.flemmefit.model.ExerciseLog
 import com.spacelenin.flemmefit.model.Plan
 import com.spacelenin.flemmefit.model.PlanParser
 import com.spacelenin.flemmefit.model.StoredProgram
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -25,7 +26,8 @@ import java.util.UUID
 class ProgramRepository(dir: File) {
 
     private val file = AtomicFile(File(dir, "state.json"))
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    // Filet de sécurité : une erreur imprévue en arrière-plan est journalisée au lieu de faire planter l'appli.
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineExceptionHandler { _, e -> Log.e(TAG, "Erreur en arrière-plan", e) })
     private val writeLock = Mutex()
 
     private val _state = MutableStateFlow(load())

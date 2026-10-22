@@ -69,6 +69,9 @@ fun AppRoot(
     var restarting by remember { mutableStateOf<StoredProgram?>(null) }
     var showTutorial by rememberSaveable { mutableStateOf(false) }
     val tutorialOffered by settings.tutorialOffered.collectAsStateWithLifecycle()
+    val pseudo by social.pseudo.collectAsStateWithLifecycle()
+    // « Plus tard » : on redemande au prochain lancement.
+    var pseudoSkipped by rememberSaveable { mutableStateOf(false) }
     fun open(id: String, date: LocalDate? = null, programTab: Int = 0) {
         openEpoch = date?.toEpochDay()
         openTab = programTab
@@ -121,8 +124,12 @@ fun AppRoot(
         fromPaste = { pasting = true },
         example = { asset ->
             scope.launch {
-                pendingText = withContext(Dispatchers.IO) {
-                    context.assets.open(asset).bufferedReader().use { it.readText() }
+                try {
+                    pendingText = withContext(Dispatchers.IO) {
+                        context.assets.open(asset).bufferedReader().use { it.readText() }
+                    }
+                } catch (e: Exception) {
+                    readError = "Programme d'exemple illisible : ${e.message.orEmpty()}"
                 }
             }
         },
@@ -182,8 +189,13 @@ fun AppRoot(
         }
     }
 
-    // Premier programme : on propose le tuto une fois, après les éventuels tests de départ.
-    if (!tutorialOffered && state.programs.isNotEmpty() && askTestsFor == null && parsed == null) {
+    val calm = askTestsFor == null && parsed == null && !pasting
+    // Pas encore de pseudo : on le demande dès l'ouverture, pour apparaître chez les potes sans y penser.
+    if (pseudo == null && !pseudoSkipped && calm) {
+        PseudoPromptDialog(onSave = social::setPseudo, onLater = { pseudoSkipped = true })
+    }
+    // Premier programme : on propose le tuto une fois, après les éventuels tests de départ et le pseudo.
+    if (!tutorialOffered && state.programs.isNotEmpty() && calm && (pseudo != null || pseudoSkipped)) {
         TutorialOfferDialog(
             onYes = {
                 settings.markTutorialOffered()
