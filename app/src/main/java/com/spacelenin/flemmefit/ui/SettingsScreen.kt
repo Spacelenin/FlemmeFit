@@ -29,6 +29,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -120,12 +123,6 @@ fun SettingsScreen(
                     }
                 }
 
-                if (countersUnlocked) {
-                    Section("COMPTEURS 🔓")
-                    val counters = remember(programs) { countersOf(programs, java.time.LocalDate.now()) }
-                    counters.forEach { CounterRow(it) }
-                }
-
                 Section("RAPPELS")
                 SettingRow(
                     title = "Rappels",
@@ -157,22 +154,43 @@ fun SettingsScreen(
                 Section("AIDE")
                 SettingRow(title = "Comment marche l'appli", subtitle = "Le petit tour en six écrans", onClick = onTutorial)
 
+                // Juste au-dessus du champ secret : ouvrir les compteurs les montre là où on regarde.
+                if (countersUnlocked) {
+                    Section("COMPTEURS 🔓")
+                    val counters = remember(programs) { countersOf(programs, java.time.LocalDate.now()) }
+                    if (counters.isEmpty()) {
+                        Text(
+                            "Rien à compter pour l'instant : chaque exercice fait viendra s'ajouter ici.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+                        )
+                    }
+                    counters.forEach { CounterRow(it) }
+                }
+
                 // Un champ sans rien autour. Le bon mot ouvre (ou referme) les compteurs.
                 var word by remember { mutableStateOf("") }
                 val context = LocalContext.current
                 OutlinedTextField(
                     value = word,
                     onValueChange = { text ->
-                        if (Counter.isSecretWord(text)) {
+                        // On agit quand le mot apparaît, sans vider le champ : le clavier renverrait le mot
+                        // en cours de frappe, et ça refermerait aussitôt ce qui vient de s'ouvrir.
+                        val before = Counter.isSecretWord(word)
+                        word = text.take(20)
+                        if (!before && Counter.isSecretWord(word)) {
                             val on = !countersUnlocked
                             settings.setCountersByHand(on)
-                            word = ""
                             Toast.makeText(context, if (on) "🔓" else "🔒", Toast.LENGTH_SHORT).show()
-                        } else {
-                            word = text.take(20)
                         }
                     },
                     singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.None,
+                        autoCorrectEnabled = false,
+                        keyboardType = KeyboardType.Password,
+                    ),
                     modifier = Modifier.align(Alignment.CenterHorizontally).width(160.dp).padding(top = 32.dp, bottom = 24.dp),
                 )
             }
