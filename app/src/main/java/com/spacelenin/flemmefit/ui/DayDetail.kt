@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -78,6 +79,8 @@ class DayActions(
     val onDetail: (session: Session, exerciseIndex: Int) -> Unit,
     /** Passer la séance du jour en Burst (ou l'annuler). */
     val onBurst: (session: Session, on: Boolean) -> Unit,
+    /** Lancer le mode séance (série par série, repos décompté). */
+    val onGuided: (session: Session) -> Unit,
 )
 
 /** Détail du jour sélectionné, sous forme d'éléments de liste pour s'insérer dans n'importe quelle LazyColumn. */
@@ -190,9 +193,15 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
         Text("${(ratio * 100).toInt()} %", style = MaterialTheme.typography.labelLarge)
     }
     Spacer(Modifier.height(8.dp))
+    val allDone = done == total
+    val locked = schedule.isLocked(session)
+    if (!locked && !allDone && session.date == schedule.today) {
+        Button(onClick = { actions.onGuided(session) }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+            Text(if (done == 0) "▶ Démarrer la séance" else "▶ Reprendre la séance", style = MaterialTheme.typography.titleMedium)
+        }
+        Spacer(Modifier.height(8.dp))
+    }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        val allDone = done == total
-        val locked = schedule.isLocked(session)
         if (!locked) {
             AssistChip(
                 onClick = { actions.onSetAll(session, !allDone) },

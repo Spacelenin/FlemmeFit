@@ -195,10 +195,10 @@ fun TimerOverlay(timer: WorkoutTimer, modifier: Modifier = Modifier) {
     }
 }
 
-private fun clock(seconds: Int) = "%d:%02d".format(seconds / 60, seconds % 60)
+internal fun clock(seconds: Int) = "%d:%02d".format(seconds / 60, seconds % 60)
 
 /** Vibrations et bips du minuteur. Le son suit le volume des notifications (rien en silencieux). */
-private class TimerFeedback(context: Context) {
+internal class TimerFeedback(context: Context) {
     private val vibrator: Vibrator? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         context.getSystemService(VibratorManager::class.java)?.defaultVibrator
     } else {

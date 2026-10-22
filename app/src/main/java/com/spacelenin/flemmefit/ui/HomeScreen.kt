@@ -79,6 +79,8 @@ class ImportActions(
 class HomeActions(
     /** Ouvre un programme, sur un jour donné ou sur un onglet (0 calendrier, 1 stats). */
     val open: (id: String, date: LocalDate?, tab: Int) -> Unit,
+    /** Ouvre la séance du jour en mode séance. */
+    val start: (id: String) -> Unit,
     val postpone: (id: String, dayIndex: Int) -> Unit,
     /** Passe la séance du jour en Burst. */
     val burst: (id: String, dayIndex: Int) -> Unit,
@@ -388,7 +390,7 @@ private fun TodayCard(
                         OutlinedButton(onClick = { actions.restart(program) }) { Text("Recommencer") }
                     }
                     session != null -> {
-                        Button(onClick = { actions.open(program.id, today, 0) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)) {
+                        Button(onClick = { actions.start(program.id) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)) {
                             Text(if (schedule.doneCount(session) == 0) "C'est parti" else "Continuer")
                         }
                         if (schedule.canBurst(session)) {

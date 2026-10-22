@@ -69,6 +69,8 @@ fun AppRoot(
     var openId by rememberSaveable { mutableStateOf<String?>(null) }
     // Programme tout juste importé dont il faut demander les tests de départ.
     var askTestsFor by rememberSaveable { mutableStateOf<String?>(null) }
+    // Programme à ouvrir directement en mode séance.
+    var guidedFor by rememberSaveable { mutableStateOf<String?>(null) }
     // Jour et onglet demandés en ouvrant un programme depuis l'accueil.
     var openEpoch by rememberSaveable { mutableStateOf<Long?>(null) }
     var openTab by rememberSaveable { mutableStateOf(0) }
@@ -160,6 +162,8 @@ fun AppRoot(
                             openOn = openEpoch?.let(LocalDate::ofEpochDay),
                             initialTab = openTab,
                             onUpdateRoutine = importActions.fromFile,
+                            startGuided = guidedFor == program.id,
+                            onGuidedStarted = { guidedFor = null },
                         )
                     }
                 }
@@ -186,6 +190,10 @@ fun AppRoot(
                                 programs = state.programs,
                                 actions = HomeActions(
                                     open = ::open,
+                                    start = { id ->
+                                        guidedFor = id
+                                        open(id, LocalDate.now())
+                                    },
                                     postpone = repository::postpone,
                                     burst = repository::burst,
                                     restart = { restarting = it },
