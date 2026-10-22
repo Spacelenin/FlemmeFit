@@ -39,7 +39,6 @@ fun UpdateBanner(updater: AppUpdater, modifier: Modifier = Modifier, floating: B
     val context = LocalContext.current
     var askPermission by remember { mutableStateOf<ReleaseInfo?>(null) }
 
-    LaunchedEffect(Unit) { updater.autoCheck() }
     // « À jour » ou une erreur de vérification s'effacent d'eux-mêmes.
     LaunchedEffect(state) {
         val s = state
@@ -55,18 +54,36 @@ fun UpdateBanner(updater: AppUpdater, modifier: Modifier = Modifier, floating: B
 
     when (val s = state) {
         is State.Available -> if (s.release.versionCode != dismissed) {
-            BannerCard(modifier, floating) {
-                Text("Nouvelle version disponible", style = MaterialTheme.typography.titleMedium)
-                Text(
-                    "${s.release.name} (tu as le build ${updater.currentVersion})",
-                    style = MaterialTheme.typography.bodyMedium,
+            if (floating) {
+                // Sur l'accueil : une vraie proposition, par-dessus l'écran.
+                AlertDialog(
+                    onDismissRequest = { updater.dismiss(s.release) },
+                    title = { Text("Nouvelle version disponible") },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text("${s.release.name} (tu as le build ${updater.currentVersion})", style = MaterialTheme.typography.bodyMedium)
+                            s.release.notes?.let {
+                                Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 8, overflow = TextOverflow.Ellipsis)
+                            }
+                        }
+                    },
+                    confirmButton = { TextButton(onClick = { install(s.release) }) { Text("Installer") } },
+                    dismissButton = { TextButton(onClick = { updater.dismiss(s.release) }) { Text("Plus tard") } },
                 )
-                s.release.notes?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 4, overflow = TextOverflow.Ellipsis)
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = { install(s.release) }) { Text("Installer") }
-                    TextButton(onClick = { updater.dismiss(s.release) }) { Text("Plus tard") }
+            } else {
+                BannerCard(modifier, floating) {
+                    Text("Nouvelle version disponible", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "${s.release.name} (tu as le build ${updater.currentVersion})",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    s.release.notes?.let {
+                        Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 4, overflow = TextOverflow.Ellipsis)
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(onClick = { install(s.release) }) { Text("Installer") }
+                        TextButton(onClick = { updater.dismiss(s.release) }) { Text("Plus tard") }
+                    }
                 }
             }
         }
