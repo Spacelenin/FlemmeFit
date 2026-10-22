@@ -48,11 +48,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.rememberLazyListState
-import kotlinx.coroutines.launch
 import com.spacelenin.flemmefit.data.ProgramRepository
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -86,8 +81,10 @@ class ImportActions(
 
 /** Ce que l'accueil peut demander au reste de l'appli. */
 class HomeActions(
-    /** Ouvre le détail d'un programme : bilan, tests et stats. */
+    /** Bilan, tests et stats (l'onglet Stats). */
     val open: (id: String) -> Unit,
+    /** Ouvre la page d'un jour (sa séance). */
+    val openDay: (id: String, date: LocalDate) -> Unit,
     /** Repart de zéro avec la même routine, à partir d'aujourd'hui. */
     val restart: (StoredProgram) -> Unit,
     val settings: () -> Unit,
@@ -195,28 +192,20 @@ private fun HomeContent(
     val color = programColor(program.colorIndex)
     val others = programs.filter { it.id != program.id }.map { schedules.getValue(it.id) to programColor(it.colorIndex) }
 
-    // Jour choisi sur le calendrier : sa séance s'affiche en dessous, sans changer d'écran.
     val initial = remember(program.id) { initialDate(schedule, today) }
-    var selectedEpoch by rememberSaveable(program.id) { mutableStateOf(initial.toEpochDay()) }
     var monthIndex by rememberSaveable(program.id) { mutableStateOf(initial.year * 12 + initial.monthValue - 1) }
-    val selected = LocalDate.ofEpochDay(selectedEpoch)
     val month = YearMonth.of(monthIndex / 12, monthIndex % 12 + 1)
-    val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
     var editTests by remember { mutableStateOf(false) }
-
-    fun select(date: LocalDate) {
-        selectedEpoch = date.toEpochDay()
-        monthIndex = date.year * 12 + date.monthValue - 1
-        scope.launch { listState.animateScrollToItem(DAY_ITEM) }
-    }
+    // Le calendrier se place sur le mois demandé (début d'un programme importé, notification).
     LaunchedEffect(focus) {
         focus?.let {
-            select(it)
+            monthIndex = it.year * 12 + it.monthValue - 1
             onFocusConsumed()
         }
     }
-    val dayActions = rememberDayActions(program, schedule, repository, color, onSelect = ::select)
+    val openDay: (LocalDate) -> Unit = { actions.openDay(program.id, it) }
+    // Les boutons de la carte du jour (mode séance, Burst, décalage) ouvrent leurs fenêtres ici.
+    val dayActions = rememberDayActions(program, schedule, repository, color, onSelect = {})
 
     val switcher: @Composable () -> Unit = {
         if (programs.size > 1) {
@@ -244,7 +233,7 @@ private fun HomeContent(
             others = programs.filter { it.id != program.id }.map { it to schedules.getValue(it.id) },
             actions = actions,
             dayActions = dayActions,
-            onShow = ::select,
+            onShow = openDay,
             modifier = Modifier.padding(horizontal = 16.dp),
         )
     }
@@ -285,9 +274,9 @@ private fun HomeContent(
                 color = color,
                 month = month,
                 onMonthChange = { monthIndex = it.year * 12 + it.monthValue - 1 },
-                selected = selected,
+                selected = today,
                 today = today,
-                onSelect = ::select,
+                onSelect = openDay,
                 others = others,
             )
             Text(
@@ -302,27 +291,29 @@ private fun HomeContent(
     }
 
     BoxWithConstraints(modifier.fillMaxSize()) {
-        val wide = maxWidth >= TwoPaneMinWidth
-        // Toujours DAY_ITEM éléments avant la séance du jour choisi, pour pouvoir y défiler.
-        val top: LazyListScope.() -> Unit = {
-            item(key = "switcher") { switcher() }
-            item(key = "today") { todayCard() }
-            item(key = "notices") { Column(verticalArrangement = Arrangement.spacedBy(12.dp)) { notices() } }
-            item(key = "calendar") { if (!wide) calendar() else Spacer(Modifier.height(0.dp)) }
-        }
-        if (wide) {
-            // Fold déplié : la séance (du jour ou choisie) à gauche, le mois à droite.
+        if (maxWidth >= TwoPaneMinWidth) {
+            // Fold déplié : la carte du jour à gauche, le mois à droite.
             Row(Modifier.fillMaxSize()) {
-                LazyColumn(state = listState, verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.weight(1f).fillMaxHeight()) {
-                    top()
-                    dayDetailItems(schedule, selected, color, dayActions)
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()).padding(vertical = 8.dp),
+                ) {
+                    switcher()
+                    todayCard()
+                    notices()
                 }
                 Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())) { calendar() }
             }
         } else {
-            LazyColumn(state = listState, verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxSize()) {
-                top()
-                dayDetailItems(schedule, selected, color, dayActions)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 8.dp),
+            ) {
+                switcher()
+                todayCard()
+                notices()
+                calendar()
+                Spacer(Modifier.height(8.dp))
             }
         }
     }
@@ -340,9 +331,6 @@ private fun HomeContent(
     }
 }
 
-/** Index du premier élément de la séance choisie dans la liste de l'accueil. */
-private const val DAY_ITEM = 4
-
 /** Aujourd'hui si on est dans le programme, sinon son début ou sa fin. */
 private fun initialDate(schedule: ProgramSchedule, today: LocalDate): LocalDate = when {
     today.isBefore(schedule.startDate) -> schedule.startDate
@@ -359,7 +347,7 @@ private fun TodayCard(
     others: List<Pair<StoredProgram, ProgramSchedule>>,
     actions: HomeActions,
     dayActions: DayActions,
-    /** Montre un jour sur le calendrier et sa séance en dessous. */
+    /** Ouvre la page d'un jour. */
     onShow: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
 ) {

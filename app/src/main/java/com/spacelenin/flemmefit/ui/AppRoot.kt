@@ -69,12 +69,14 @@ fun AppRoot(
     val timer = remember { WorkoutTimer() }
     val restBonus by settings.restBonus.collectAsStateWithLifecycle()
 
-    var openId by rememberSaveable { mutableStateOf<String?>(null) }
     // Programme tout juste importé dont il faut demander les tests de départ.
     var askTestsFor by rememberSaveable { mutableStateOf<String?>(null) }
     // Programme affiché sur l'accueil, et jour à y montrer (notification, import).
     var homeProgramId by rememberSaveable { mutableStateOf<String?>(null) }
     var homeFocus by rememberSaveable { mutableStateOf<Long?>(null) }
+    // Page d'un jour ouverte depuis le calendrier : programme et date.
+    var dayProgramId by rememberSaveable { mutableStateOf<String?>(null) }
+    var dayEpoch by rememberSaveable { mutableStateOf(0L) }
     // Onglet du bas : 0 accueil, 1 stats, 2 potes.
     var tab by rememberSaveable { mutableStateOf(0) }
     var showSettings by rememberSaveable { mutableStateOf(false) }
@@ -84,15 +86,22 @@ fun AppRoot(
     val pseudo by social.pseudo.collectAsStateWithLifecycle()
     // « Plus tard » : on redemande au prochain lancement.
     var pseudoSkipped by rememberSaveable { mutableStateOf(false) }
-    /** Détail d'un programme : bilan, tests et stats. */
-    fun open(id: String) {
+    /** Bilan, tests et stats : l'onglet Stats. */
+    fun openStats() {
         showSettings = false
-        openId = id
+        dayProgramId = null
+        tab = 1
     }
 
-    /** Montre un programme sur l'accueil, au jour indiqué. */
+    fun openDay(id: String, date: LocalDate) {
+        showSettings = false
+        dayEpoch = date.toEpochDay()
+        dayProgramId = id
+    }
+
+    /** Montre un programme sur l'accueil, au mois du jour indiqué. */
     fun showOnHome(id: String, date: LocalDate = LocalDate.now()) {
-        openId = null
+        dayProgramId = null
         showSettings = false
         tab = 0
         homeProgramId = id
@@ -122,7 +131,8 @@ fun AppRoot(
 
     LaunchedEffect(openRequest) {
         openRequest?.let { id ->
-            if (state.programs.any { it.id == id }) showOnHome(id)
+            // Notification de rappel : directement la séance du jour.
+            if (state.programs.any { it.id == id }) openDay(id, LocalDate.now())
             onOpenRequestConsumed()
         }
     }
@@ -170,18 +180,19 @@ fun AppRoot(
         },
     )
 
-    val program = state.programs.find { it.id == openId }
+    val dayProgram = state.programs.find { it.id == dayProgramId }
     CompositionLocalProvider(LocalWorkoutTimer provides timer, LocalRestBonus provides restBonus) {
         Box(Modifier.fillMaxSize()) {
             when {
-                program != null -> {
-                    BackHandler { openId = null }
-                    key(program.id) {
-                        ProgramScreen(
-                            program = program,
+                dayProgram != null -> {
+                    BackHandler { dayProgramId = null }
+                    key(dayProgram.id) {
+                        DayScreen(
+                            program = dayProgram,
                             repository = repository,
-                            onBack = { openId = null },
-                            onUpdateRoutine = importActions.fromFile,
+                            date = LocalDate.ofEpochDay(dayEpoch),
+                            onDate = { dayEpoch = it.toEpochDay() },
+                            onBack = { dayProgramId = null },
                         )
                     }
                 }
@@ -213,7 +224,8 @@ fun AppRoot(
                                 focus = homeFocus?.let(LocalDate::ofEpochDay),
                                 onFocusConsumed = { homeFocus = null },
                                 actions = HomeActions(
-                                    open = ::open,
+                                    open = { openStats() },
+                                    openDay = ::openDay,
                                     restart = { restarting = it },
                                     settings = { showSettings = true },
                                     menu = { p ->
