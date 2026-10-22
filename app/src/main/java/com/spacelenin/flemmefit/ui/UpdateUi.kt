@@ -4,6 +4,9 @@ import android.app.Activity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -135,4 +138,23 @@ private fun BannerCard(modifier: Modifier, content: @Composable () -> Unit) {
             content()
         }
     }
+}
+
+/** Juste après une mise à jour : ce qui a changé, une seule fois. */
+@Composable
+fun ChangelogDialog(updater: AppUpdater) {
+    val release by updater.changelog.collectAsStateWithLifecycle()
+    val r = release ?: return
+    AlertDialog(
+        onDismissRequest = updater::markChangelogSeen,
+        title = { Text("Quoi de neuf · build ${r.versionCode}") },
+        text = {
+            Text(
+                r.notes.orEmpty(),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()),
+            )
+        },
+        confirmButton = { TextButton(onClick = updater::markChangelogSeen) { Text("Super") } },
+    )
 }

@@ -32,4 +32,11 @@ class ReleaseTest {
         assertNull(Releases.parseLatest("""{"message":"Not Found"}"""))
         assertNull(Releases.parseLatest("<html>"))
     }
+
+    @Test
+    fun `release notes drop commit signatures`() {
+        val body = "Mise à jour obligatoire\n\n- Installer ou quitter\n\nCo-Authored-By: X <x@y>\nClaude-Session: https://claude.ai/code/abc\n\n🤖 Generated with Claude Code\n\nhttps://claude.ai/code/session_1"
+        assertEquals("Mise à jour obligatoire\n\n- Installer ou quitter", Releases.cleanNotes(body))
+        assertNull(Releases.cleanNotes("Co-Authored-By: X"))
+    }
 }

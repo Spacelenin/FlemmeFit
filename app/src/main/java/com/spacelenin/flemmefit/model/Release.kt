@@ -35,6 +35,13 @@ object Releases {
         val digest: String? = null,
     )
 
+    /** Lignes techniques des messages de commit (signatures, liens de session) : sans intérêt dans l'appli. */
+    private val noise = Regex("""^(Co-Authored-By:|Claude-Session:|🤖|https://claude\.ai/)""", RegexOption.IGNORE_CASE)
+
+    fun cleanNotes(body: String): String? =
+        body.lines().filterNot { noise.containsMatchIn(it.trim()) }.joinToString("\n")
+            .replace(Regex("\n{3,}"), "\n\n").trim().takeIf { it.isNotEmpty() }
+
     private val tagPattern = Regex("""^build-(\d+)$""")
 
     /** Lit la réponse de `GET /repos/{owner}/{repo}/releases/latest`. null si elle ne contient pas d'APK utilisable. */
@@ -52,7 +59,7 @@ object Releases {
         return ReleaseInfo(
             versionCode = code,
             name = release.name ?: release.tagName,
-            notes = release.body?.trim()?.takeIf { it.isNotEmpty() },
+            notes = release.body?.let(::cleanNotes),
             apkUrl = apk.url,
             apkSize = apk.size,
             sha256 = apk.digest?.takeIf { it.startsWith("sha256:") }?.removePrefix("sha256:")?.lowercase(),

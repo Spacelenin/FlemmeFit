@@ -58,7 +58,9 @@ class MainActivity : ComponentActivity() {
     /** À chaque retour au premier plan (lancement compris) : y a-t-il une nouvelle version ? */
     override fun onStart() {
         super.onStart()
-        (application as FlemmeFitApp).updater.autoCheck()
+        val updater = (application as FlemmeFitApp).updater
+        updater.loadChangelogIfUpdated()
+        updater.autoCheck()
     }
 
     override fun onNewIntent(intent: Intent) {
