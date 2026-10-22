@@ -48,6 +48,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spacelenin.flemmefit.model.Measures
 import com.spacelenin.flemmefit.model.TimerPhase
 import com.spacelenin.flemmefit.model.TimerRun
+import com.spacelenin.flemmefit.timer.AppVisibility
+import com.spacelenin.flemmefit.timer.TimerAlarm
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -114,10 +116,22 @@ fun HoldSession() {
 /** Réglage « repos en plus », en % du repos prévu. */
 val LocalRestBonus = staticCompositionLocalOf { 0 }
 
+/**
+ * Garde la notification et les alarmes du minuteur à jour : elles prennent le relais quand l'appli n'est
+ * plus à l'écran (téléphone verrouillé, autre appli).
+ */
+@Composable
+fun TimerNotification(run: TimerRun?) {
+    val context = LocalContext.current.applicationContext
+    LaunchedEffect(run) { TimerAlarm.update(context, run) }
+    DisposableEffect(Unit) { onDispose { TimerAlarm.clear(context) } }
+}
+
 /** Le minuteur en cours, posé en bas de l'écran. L'écran reste allumé tant qu'il tourne. */
 @Composable
 fun TimerOverlay(timer: WorkoutTimer, modifier: Modifier = Modifier) {
     val run by timer.run.collectAsStateWithLifecycle()
+    TimerNotification(run)
     val current = run ?: return
     HoldSession()
     val context = LocalContext.current
@@ -245,18 +259,24 @@ internal class TimerFeedback(context: Context) {
         null
     }
 
+    // Appli cachée : ce sont les notifications qui préviennent, pas de double bip.
+    private val shown get() = AppVisibility.foreground
+
     fun tick() {
+        if (!shown) return
         tones?.startTone(ToneGenerator.TONE_PROP_BEEP, 120)
         vibrate(longArrayOf(0, 60))
     }
 
     /** Fin d'une étape : on enchaîne sur un repos, ou on repart. */
     fun phaseEnded(toRest: Boolean) {
+        if (!shown) return
         tones?.startTone(ToneGenerator.TONE_PROP_BEEP2, 300)
         vibrate(if (toRest) longArrayOf(0, 250) else longArrayOf(0, 250, 120, 250))
     }
 
     fun finished() {
+        if (!shown) return
         tones?.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 600)
         vibrate(longArrayOf(0, 400, 150, 400, 150, 400))
     }

@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
@@ -58,6 +59,7 @@ import com.spacelenin.flemmefit.model.Measures
 import com.spacelenin.flemmefit.model.Prescription
 import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.Session
+import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.model.TimerPlans
 import java.time.LocalDate
 
@@ -83,6 +85,9 @@ class DayActions(
     val onGuided: (session: Session) -> Unit,
     /** Choix du jour avec / sans poids. */
     val onWeights: (session: Session, exerciseIndex: Int, on: Boolean) -> Unit,
+    /** « J'ai fait autre chose » : ajouter une activité en plus à un jour, ou la retirer. */
+    val onAddExtra: (date: LocalDate) -> Unit,
+    val onRemoveExtra: (date: LocalDate, index: Int) -> Unit,
 )
 
 /** Détail du jour sélectionné, sous forme d'éléments de liste pour s'insérer dans n'importe quelle LazyColumn. */
@@ -102,7 +107,7 @@ fun LazyListScope.dayDetailItems(
                     Spacer(Modifier.height(4.dp))
                     Text(
                         when {
-                            schedule.isInProgram(date) -> "Repos 😴"
+                            schedule.isInProgram(date) -> "Jour off 😴"
                             date.isBefore(schedule.startDate) -> "Pas encore commencé"
                             else -> "Programme terminé 🎉"
                         },
@@ -111,7 +116,7 @@ fun LazyListScope.dayDetailItems(
                     )
                     Text(
                         when {
-                            schedule.isInProgram(date) -> "Rien de prévu ce jour-là. Profites-en."
+                            schedule.isInProgram(date) -> "Rien de prévu. Il ne compte pas : ta série 🔥 reste intacte."
                             date.isBefore(schedule.startDate) -> "Le programme commence le ${schedule.startDate.shortLabel()}."
                             else -> "Programme terminé le ${schedule.endDate?.shortLabel()}."
                         },
@@ -122,7 +127,10 @@ fun LazyListScope.dayDetailItems(
             }
         }
     }
-    if (session == null) return
+    if (session == null) {
+        extraItems(schedule, date, color, actions)
+        return
+    }
     session.prescriptions.forEachIndexed { i, prescription ->
         item(key = "ex-${session.index}-$i") {
             ExerciseRow(
@@ -141,6 +149,7 @@ fun LazyListScope.dayDetailItems(
             )
         }
     }
+    extraItems(schedule, date, color, actions)
     item(key = "day-footer") {
         Text(
             if (schedule.isLocked(session)) "Séance à venir : elle se fera le jour même."
@@ -151,6 +160,33 @@ fun LazyListScope.dayDetailItems(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
         )
         Spacer(Modifier.height(24.dp))
+    }
+}
+
+/** « J'ai fait autre chose » : ce qui a été fait en plus ce jour-là. Affiché, jamais compté. */
+private fun LazyListScope.extraItems(schedule: ProgramSchedule, date: LocalDate, color: Color, actions: DayActions) {
+    if (date.isAfter(schedule.today)) return
+    val extras = schedule.program.extrasOn(date)
+    item(key = "extras") {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            if (extras.isNotEmpty()) {
+                Text("EN PLUS", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                extras.forEachIndexed { i, extra ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("✚", color = DeloadColor, modifier = Modifier.padding(end = 10.dp))
+                        Text(extra, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                        IconButton(onClick = { actions.onRemoveExtra(date, i) }) {
+                            Icon(Icons.Default.Close, "Retirer $extra", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+            AssistChip(
+                onClick = { actions.onAddExtra(date) },
+                label = { Text("J'ai fait autre chose") },
+                leadingIcon = { Text("✚", color = color) },
+            )
+        }
     }
 }
 
@@ -185,6 +221,9 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
     Text(session.title(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
+    schedule.program.feelingOf(session.index)?.let { f ->
+        Text("Ressenti : ${StoredProgram.FEELINGS[f]}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
     session.day.notes?.let {
         Spacer(Modifier.height(4.dp))
         Text(it, style = MaterialTheme.typography.bodyMedium)

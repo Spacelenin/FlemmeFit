@@ -98,6 +98,8 @@ fun GuidedSession(
 
     val context = LocalContext.current
     val feedback = remember { TimerFeedback(context) }
+    // Repos ou série au temps : la notification prend le relais si le téléphone est verrouillé.
+    TimerNotification(run?.let { it.copy(title = prescription?.exercise?.name ?: it.title) })
     DisposableEffect(Unit) { onDispose(feedback::release) }
 
     fun startRest(seconds: Int?) {

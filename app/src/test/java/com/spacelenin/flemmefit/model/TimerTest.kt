@@ -83,4 +83,15 @@ class TimerTest {
         assertEquals(listOf(180, 90, 180), shadow.map { it.seconds })
         assertEquals(135, GuidedExercise(pushups, restBonus = 50).restSeconds)
     }
+
+    @Test
+    fun `upcoming ends chain countdowns and stop at a count-up or a pause`() {
+        val run = TimerRun("Shadow", listOf(TimerPhase("S1", 180), TimerPhase("Repos", 60, rest = true), TimerPhase("S2", 180), TimerPhase("À fond", null)), phaseStart = 0)
+        assertEquals(listOf(170_000L, 230_000L, 410_000L), run.upcomingEnds(10_000).map { it.inMs })
+        assertEquals("Repos", run.upcomingEnds(10_000)[0].next?.label)
+        assertEquals("À fond", run.upcomingEnds(10_000).last().next?.label)
+        assertTrue(run.pause(10_000).upcomingEnds(20_000).isEmpty())
+        val single = TimerRun("Repos", listOf(TimerPhase("Repos", 90, rest = true)), phaseStart = 0)
+        assertNull(single.upcomingEnds(0).single().next)
+    }
 }
