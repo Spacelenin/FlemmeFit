@@ -141,7 +141,7 @@ private fun ImportSheet(importActions: ImportActions, onDismiss: () -> Unit) {
             Spacer(Modifier.height(8.dp))
             SheetRow("📄", "Depuis un fichier", "Un .json reçu ou téléchargé") { onDismiss(); importActions.fromFile() }
             SheetRow("📋", "Coller du texte", "Le JSON copié depuis un message") { onDismiss(); importActions.fromPaste() }
-            SheetRow("🏠", "Routine maison", "Paliers selon tes tests de départ") { onDismiss(); importActions.example(ROUTINE_ASSET) }
+            SheetRow("🏠", "Routine maison", "Niveaux selon tes tests") { onDismiss(); importActions.example(ROUTINE_ASSET) }
             SheetRow("💪", "Programme d'exemple", "Un full body pour essayer") { onDismiss(); importActions.example(EXAMPLE_ASSET) }
         }
     }
@@ -235,7 +235,7 @@ private fun HomeContent(programs: List<StoredProgram>, actions: HomeActions, mod
                 others = others,
             )
             Text(
-                "● plein : faite · ○ cercle : prévue · rouge : manquée / Boss · vert : décharge" +
+                "● plein : faite · ○ cercle : prévue · rouge : manquée / Boss · vert : récup" +
                     if (others.isNotEmpty()) " · point : autre programme" else "",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -276,7 +276,7 @@ private fun HomeContent(programs: List<StoredProgram>, actions: HomeActions, mod
     postponing?.let { s ->
         AlertDialog(
             onDismissRequest = { postponing = null },
-            title = { Text("Repousser la séance ?") },
+            title = { Text("Décaler la séance ?") },
             text = {
                 Text(
                     "La séance du ${s.date.shortLabel()} passe au ${s.date.plusDays(1).shortLabel()}. " +
@@ -287,7 +287,7 @@ private fun HomeContent(programs: List<StoredProgram>, actions: HomeActions, mod
                 TextButton(onClick = {
                     actions.postpone(program.id, s.index)
                     postponing = null
-                }) { Text("Repousser") }
+                }) { Text("Décaler") }
             },
             dismissButton = { TextButton(onClick = { postponing = null }) { Text("Annuler") } },
         )
@@ -330,7 +330,7 @@ private fun TodayCard(
                     notStarted -> "Bientôt"
                     session?.isBurst == true -> "🚀 Burst"
                     session?.isBoss == true -> "💀 Boss"
-                    session?.isDeload == true -> "🌿 Décharge"
+                    session?.isDeload == true -> "🌿 Récup"
                     session != null -> "Aujourd'hui"
                     else -> "Repos"
                 }
@@ -396,7 +396,7 @@ private fun TodayCard(
                             OutlinedButton(onClick = { askBurst = true }) { Text("🚀 Burst") }
                         }
                         if (schedule.doneCount(session) < session.exerciseCount) {
-                            OutlinedButton(onClick = { onPostpone(session) }) { Text("Repousser") }
+                            OutlinedButton(onClick = { onPostpone(session) }) { Text("Décaler") }
                         }
                     }
                     else -> OutlinedButton(onClick = { actions.open(program.id, next?.date, 0) }) { Text("Voir le programme") }
@@ -448,7 +448,7 @@ private fun EmptyHome(importActions: ImportActions, modifier: Modifier = Modifie
             Spacer(Modifier.height(8.dp))
             Button(onClick = importActions.fromFile, modifier = Modifier.fillMaxWidth()) { Text("Importer un fichier") }
             OutlinedButton(onClick = importActions.fromPaste, modifier = Modifier.fillMaxWidth()) { Text("Coller du texte") }
-            OutlinedButton(onClick = { importActions.example(ROUTINE_ASSET) }, modifier = Modifier.fillMaxWidth()) { Text("Routine maison (paliers)") }
+            OutlinedButton(onClick = { importActions.example(ROUTINE_ASSET) }, modifier = Modifier.fillMaxWidth()) { Text("Routine maison (niveaux)") }
             OutlinedButton(onClick = { importActions.example(EXAMPLE_ASSET) }, modifier = Modifier.fillMaxWidth()) { Text("Programme d'exemple") }
         }
     }

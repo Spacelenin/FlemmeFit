@@ -71,7 +71,7 @@ fun ProgramMenuButton(
             )
             if (program.plan.tests.isNotEmpty()) {
                 DropdownMenuItem(
-                    text = { Text("Tests de départ") },
+                    text = { Text("Tests de niveau") },
                     leadingIcon = { Icon(Icons.Default.Star, null) },
                     onClick = { open = false; dialog = DIALOG_TESTS },
                 )

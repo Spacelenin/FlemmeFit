@@ -136,9 +136,9 @@ fun LazyListScope.dayDetailItems(
     }
     item(key = "day-footer") {
         Text(
-            if (schedule.isLocked(session)) "Séance à venir : elle se validera le jour même."
-            else if (session.isBoss) "Valider un exercice Boss demande ton max. Boss entièrement validé = Boss vaincu."
-            else "Touche la vignette pour valider, l'exercice pour son détail. Appui long : noter ce que tu as fait.",
+            if (schedule.isLocked(session)) "Séance à venir : elle se fera le jour même."
+            else if (session.isBoss) "Terminer un exercice Boss demande ton max. Tout le Boss fait = Boss vaincu."
+            else "Touche la vignette pour marquer comme fait, l'exercice pour son détail. Appui long : saisir tes séries.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -157,7 +157,7 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
     val accent = if (session.isBoss) BossColor else color
 
     if (session.isBurst) {
-        Banner("🚀 Burst", "Séance renforcée : +$BURST_STEPS crans de progression, ou une série de plus. Une fois par semaine.", BurstColor)
+        Banner("🚀 Burst", "Séance renforcée : +$BURST_STEPS étapes de progression, ou une série de plus. Une fois par semaine.", BurstColor)
         Spacer(Modifier.height(12.dp))
     } else if (session.isBoss) {
         Banner("💀 Jour Boss", "Chiffres de la semaine prochaine, et dernière série à fond. Bats ton dernier max !", BossColor)
@@ -165,9 +165,9 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
     } else if (session.isDeload) {
         val withTest = session.prescriptions.any { it.isTest }
         Banner(
-            "🌿 Semaine de décharge",
+            "🌿 Semaine récup",
             "Volume divisé par deux pour récupérer." +
-                if (withTest) " Commence par le test : il choisit tes paliers pour la suite." else " La progression reprend la semaine suivante.",
+                if (withTest) " Commence par le test : il choisit tes niveaux pour la suite." else " La progression reprend la semaine suivante.",
             DeloadColor,
         )
         Spacer(Modifier.height(12.dp))
@@ -195,7 +195,7 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
         if (!locked) {
             AssistChip(
                 onClick = { actions.onSetAll(session, !allDone) },
-                label = { Text(if (allDone) "Tout annuler" else "Tout valider") },
+                label = { Text(if (allDone) "Réinitialiser la séance" else "Terminer la séance") },
                 leadingIcon = { Icon(Icons.Default.Check, null, Modifier.size(18.dp)) },
             )
         }
@@ -206,7 +206,7 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
         }
         AssistChip(
             onClick = { actions.onPostpone(session) },
-            label = { Text("Repousser d'un jour") },
+            label = { Text("Décaler d'un jour") },
             leadingIcon = { Icon(Icons.Default.DateRange, null, Modifier.size(18.dp)) },
         )
         if (postponed > 0) {
@@ -269,7 +269,7 @@ private fun ExerciseRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .combinedClickable(onClick = onDetail, onLongClick = if (locked) null else onEdit, onLongClickLabel = "Noter ce qui a été fait")
+            .combinedClickable(onClick = onDetail, onLongClick = if (locked) null else onEdit, onLongClickLabel = "Saisir mes séries")
             .padding(start = 16.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
     ) {
         // Vignette : la toucher coche l'exercice.
@@ -289,8 +289,8 @@ private fun ExerciseRow(
                 .semantics {
                     contentDescription = when {
                         locked -> "Séance à venir"
-                        done -> "Validé, toucher pour annuler"
-                        else -> "Toucher pour valider"
+                        done -> "Fait, toucher pour retirer"
+                        else -> "Toucher pour marquer comme fait"
                     }
                 },
         ) {
@@ -318,8 +318,8 @@ private fun ExerciseRow(
                     prescription.isTest -> "Une seule série, à fond"
                     else -> prescription.summary().ifEmpty { null }
                 },
-                prescription.palier?.let { "palier ${it + 1}/${prescription.levelCount}" },
-                prescription.beforeDeload?.let { "décharge (au lieu de $it)" },
+                prescription.palier?.let { "niveau ${it + 1}/${prescription.levelCount}" },
+                prescription.beforeDeload?.let { "récup (au lieu de $it)" },
             ).joinToString(" · ")
             if (details.isNotEmpty()) {
                 Text(details, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -339,7 +339,7 @@ private fun ExerciseRow(
             }
             if (partial && log != null) {
                 Text(
-                    "Fait : ${log.doneLabel(prescription)} (partiel)",
+                    "Fait : ${log.doneLabel(prescription)} (incomplet)",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error,
                 )
@@ -347,7 +347,7 @@ private fun ExerciseRow(
                 Text("Fait : ${log.doneLabel(prescription)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             log?.max?.let {
-                Text("Max noté : ${prescription.maxLabel(it)}", style = MaterialTheme.typography.bodySmall, color = color)
+                Text("Max : ${prescription.maxLabel(it)}", style = MaterialTheme.typography.bodySmall, color = color)
             }
         }
         Box {
@@ -356,13 +356,13 @@ private fun ExerciseRow(
             }
             DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                 DropdownMenuItem(
-                    text = { Text(if (done) "Annuler la validation" else "Valider") },
+                    text = { Text(if (done) "Retirer" else "Marquer comme fait") },
                     leadingIcon = { Icon(Icons.Default.Check, null) },
                     enabled = !locked,
                     onClick = { menu = false; onToggle() },
                 )
                 DropdownMenuItem(
-                    text = { Text("Noter ce que j'ai fait") },
+                    text = { Text("Saisir mes séries") },
                     leadingIcon = { Icon(Icons.Default.Edit, null) },
                     enabled = !locked,
                     onClick = { menu = false; onEdit() },

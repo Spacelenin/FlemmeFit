@@ -76,7 +76,7 @@ fun ExerciseDetailSheet(
                 val test = exercise.test?.let(plan::test)
                 val result = exercise.test?.let(testResults::get)
                 Text(
-                    "Palier ${p + 1} sur ${prescription.levelCount}" +
+                    "Niveau ${p + 1} sur ${prescription.levelCount}" +
                         if (test != null && result != null) " · test : ${if (test.isSeconds) Measures.formatSeconds(result) else "$result"}" else "",
                     style = MaterialTheme.typography.labelLarge,
                     color = color,
@@ -104,7 +104,7 @@ fun ExerciseDetailSheet(
                 }
             }
             prescription.beforeDeload?.let {
-                Text("🌿 Décharge : au lieu de $it", style = MaterialTheme.typography.bodyMedium, color = DeloadColor)
+                Text("🌿 Semaine récup : au lieu de $it", style = MaterialTheme.typography.bodyMedium, color = DeloadColor)
             }
             if (prescription.allOut) {
                 val target = prescription.target?.let(prescription::setLabel)
@@ -154,11 +154,11 @@ fun ExerciseDetailSheet(
             }
             Spacer(Modifier.height(4.dp))
             if (locked) {
-                Text("Séance à venir : elle se validera le jour même.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Séance à venir : elle se fera le jour même.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    OutlinedButton(onClick = onLog, modifier = Modifier.weight(1f)) { Text("Noter ce que j'ai fait") }
-                    Button(onClick = onDone, modifier = Modifier.weight(1f)) { Text(if (done) "Annuler la validation" else "Valider") }
+                    OutlinedButton(onClick = onLog, modifier = Modifier.weight(1f)) { Text("Saisir mes séries") }
+                    Button(onClick = onDone, modifier = Modifier.weight(1f)) { Text(if (done) "Retirer" else "Marquer comme fait") }
                 }
             }
         }
@@ -271,12 +271,12 @@ fun SetsLogSheet(
             ) {
                 Column {
                     Text(
-                        if (complete) "Validé · $totalLabel" else "Partiel · $totalLabel sur $plannedLabel",
+                        if (complete) "Fait ✓ · $totalLabel" else "Incomplet · $totalLabel sur $plannedLabel",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        if (complete) "Chaque série atteint le prévu." else "La séance n'est pas validée, la progression attend.",
+                        if (complete) "Chaque série atteint le prévu." else "L'exercice reste incomplet, la progression attend.",
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -310,8 +310,8 @@ fun BurstDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
         title = { Text("🚀 Burst aujourd'hui ?") },
         text = {
             Text(
-                "La séance du jour est renforcée : +$BURST_STEPS crans de progression sur les exercices qui progressent, " +
-                    "une série de plus sur les autres. Une fois par semaine. Annulable tant que rien n'est validé.",
+                "La séance du jour est renforcée : +$BURST_STEPS étapes de progression sur les exercices qui progressent, " +
+                    "une série de plus sur les autres. Une fois par semaine. Annulable tant que rien n'est fait.",
             )
         },
         confirmButton = { TextButton(onClick = onConfirm) { Text("C'est parti") } },

@@ -164,10 +164,10 @@ fun ProgramScreen(
                                     modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 16.dp),
                                 ) {
                                     Column(Modifier.padding(12.dp)) {
-                                        Text("📏 Tests de départ à faire", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                                        Text("📏 Tests de niveau à faire", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                                         Text(
                                             program.missingTests.joinToString { it.name } +
-                                                " : en attendant, tu es au palier le plus facile. Touche pour noter tes résultats.",
+                                                " : en attendant, tu es au niveau le plus facile. Touche pour saisir tes résultats.",
                                             style = MaterialTheme.typography.bodyMedium,
                                         )
                                     }
@@ -295,7 +295,7 @@ fun ProgramScreen(
         val from = schedule.dateOf(index)
         AlertDialog(
             onDismissRequest = { postponeIndex = null },
-            title = { Text("Repousser la séance ?") },
+            title = { Text("Décaler la séance ?") },
             text = {
                 Text(
                     "La séance du ${from.shortLabel()} passe au ${from.plusDays(1).shortLabel()}. " +
@@ -307,7 +307,7 @@ fun ProgramScreen(
                     repository.postpone(program.id, index)
                     select(from.plusDays(1))
                     postponeIndex = null
-                }) { Text("Repousser") }
+                }) { Text("Décaler") }
             },
             dismissButton = { TextButton(onClick = { postponeIndex = null }) { Text("Annuler") } },
         )
@@ -364,7 +364,7 @@ fun ProgressSummary(progress: Progress, schedule: ProgramSchedule, color: Color,
             Spacer(Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                 Stat("${progress.doneExercises}/${progress.totalExercises}", "exos")
-                Stat("${progress.streak} 🔥", "série")
+                Stat("${progress.streak} 🔥", "d'affilée")
                 Stat("${progress.missedSessions}", "manquées")
             }
         }

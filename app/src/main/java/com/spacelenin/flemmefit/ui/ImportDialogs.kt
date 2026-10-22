@@ -142,7 +142,7 @@ fun ImportConfirmDialog(
                 )
                 val extras = listOfNotNull(
                     "jours Boss 💀".takeIf { plan.boss },
-                    "décharge 1 semaine sur ${plan.effectiveDeloadEvery}".takeIf { plan.effectiveDeloadEvery > 0 },
+                    "semaine récup 1 sur ${plan.effectiveDeloadEvery}".takeIf { plan.effectiveDeloadEvery > 0 },
                 )
                 if (extras.isNotEmpty()) Text("Avec " + extras.joinToString(" et "))
                 if (programs.isNotEmpty()) {
@@ -158,12 +158,12 @@ fun ImportConfirmDialog(
                     val lost = remember(target, plan) { target.planUpdateLoss(plan) }
                     Text(
                         "La routine de « ${target.plan.name} » est remplacée. Tu gardes ta date de début " +
-                            "(${target.start.shortLabel()}), tes exercices validés, tes saisies et tes tests de départ.",
+                            "(${target.start.shortLabel()}), tes exercices faits, tes saisies et tes tests de niveau.",
                         style = MaterialTheme.typography.bodyMedium,
                     )
                     if (lost > 0) {
                         Text(
-                            "⚠️ $lost validation(s) ou saisie(s) portent sur des exercices retirés de la routine : elles seront perdues.",
+                            "⚠️ $lost exercice(s) fait(s) ou saisie(s) portent sur des exercices retirés de la routine : elles seront perdues.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                         )
@@ -180,7 +180,7 @@ fun ImportConfirmDialog(
                 if (target == null && plan.tests.isNotEmpty()) {
                     Spacer(Modifier.height(16.dp))
                     Text(
-                        "📏 ${plan.tests.size} tests de départ (${plan.tests.joinToString { it.name }}) : " +
+                        "📏 ${plan.tests.size} tests de niveau (${plan.tests.joinToString { it.name }}) : " +
                             "tu noteras tes résultats juste après l'import.",
                         style = MaterialTheme.typography.bodyMedium,
                     )
@@ -236,7 +236,7 @@ fun TestsDialog(program: StoredProgram, current: Map<String, Int>, onSave: (Map<
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Tests de départ") },
+                    title = { Text("Tests de niveau") },
                     navigationIcon = { IconButton(onClick = onDismiss) { Icon(Icons.Default.Close, "Fermer") } },
                     actions = { TextButton(onClick = { onSave(results.parsedResults()) }) { Text("Enregistrer") } },
                 )
@@ -253,8 +253,8 @@ fun TestsDialog(program: StoredProgram, current: Map<String, Int>, onSave: (Map<
                     .padding(16.dp),
             ) {
                 Text(
-                    "Fais chaque test une fois, bien échauffé et à fond, puis note le résultat : il choisit ton palier de départ. " +
-                        "Laissé vide : palier le plus facile. Les tests refaits en cours de route prennent ensuite le relais.",
+                    "Fais chaque test une fois, bien échauffé et à fond, puis note le résultat : il choisit ton niveau de départ. " +
+                        "Laissé vide : niveau le plus facile. Les tests refaits en cours de route prennent ensuite le relais.",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 tests.forEachIndexed { i, test ->
@@ -282,7 +282,7 @@ fun TestsDialog(program: StoredProgram, current: Map<String, Int>, onSave: (Map<
                             val palier = levelled[test.id]?.let { e ->
                                 val i = e.levelIndexFor(results[test.id]?.toIntOrNull())
                                 val at = e.atLevel(i)
-                                "→ ${e.name} : palier ${i + 1}/${e.levels.size}" +
+                                "→ ${e.name} : niveau ${i + 1}/${e.levels.size}" +
                                     listOfNotNull(at.sets?.let { "$it ×" }, at.reps ?: at.duration).joinToString(" ", prefix = " · ")
                             }
                             Text(listOfNotNull(test.description, palier).joinToString("\n"))

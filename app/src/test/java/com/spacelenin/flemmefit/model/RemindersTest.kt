@@ -32,7 +32,7 @@ class RemindersTest {
         val p = program().toggle(0, 0).setSessionDone(7, 2, true).setSessionDone(14, 1, true)
         val msg = Reminders.evening(listOf(p.setSessionDone(14, 2, true).toggle(14, 1)), start.plusDays(14)).single()
         assertTrue(msg.text, msg.text.contains("1"))
-        assertTrue(msg.text, msg.text.contains("série de 1"))
+        assertTrue(msg.text, msg.text.contains("1 🔥 d'affilée"))
         assertTrue(Reminders.evening(listOf(p.setSessionDone(14, 2, true)), start.plusDays(14)).isEmpty())
     }
 

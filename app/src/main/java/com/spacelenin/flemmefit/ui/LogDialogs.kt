@@ -75,8 +75,8 @@ fun LogDialog(
                     max,
                 ) { max = it }
                 Text(
-                    if (complete) "✅ Le prévu est atteint : l'exercice sera validé."
-                    else "◐ En dessous du prévu : l'exercice sera noté partiel.",
+                    if (complete) "✅ Le prévu est atteint : l'exercice sera marqué comme fait."
+                    else "◐ En dessous du prévu : l'exercice sera incomplet.",
                     style = MaterialTheme.typography.bodySmall,
                     color = if (complete) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                 )
@@ -112,12 +112,12 @@ fun BossMaxDialog(prescription: Prescription, onSave: (max: Int?) -> Unit, onDis
                 )
                 prescription.target?.let { Text("Objectif : $it", style = MaterialTheme.typography.bodySmall) }
                 if (prescription.isTest) {
-                    Text("Ce résultat choisit tes paliers pour la suite.", style = MaterialTheme.typography.bodySmall)
+                    Text("Ce résultat choisit tes niveaux pour la suite.", style = MaterialTheme.typography.bodySmall)
                 }
                 NumberField(if (prescription.maxIsSeconds) "Secondes" else "Répétitions", max) { max = it }
             }
         },
-        confirmButton = { TextButton(onClick = { onSave(max.toIntOrNull()) }, enabled = max.isNotEmpty()) { Text("Valider") } },
-        dismissButton = { TextButton(onClick = { onSave(null) }) { Text("Valider sans noter") } },
+        confirmButton = { TextButton(onClick = { onSave(max.toIntOrNull()) }, enabled = max.isNotEmpty()) { Text("Enregistrer") } },
+        dismissButton = { TextButton(onClick = { onSave(null) }) { Text("Fait, sans saisir") } },
     )
 }

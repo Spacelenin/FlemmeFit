@@ -163,7 +163,7 @@ private fun TimeSelectDialog(initialMinutes: Int, onSelect: (Int) -> Unit, onDis
             TextButton(onClick = {
                 onSelect(state.hour * 60 + state.minute)
                 onDismiss()
-            }) { Text("Valider") }
+            }) { Text("OK") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Annuler") } },
     )

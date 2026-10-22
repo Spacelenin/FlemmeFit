@@ -78,7 +78,7 @@ object Reminders {
         if (remaining <= 0) return@mapNotNull null
         val streak = schedule.progress().streak
         val text = pick(evening, p.id, today, 3).fill("reste" to remaining) +
-            if (streak > 0) " Ta série de $streak 🔥 saute à minuit." else ""
+            if (streak > 0) " Tes $streak 🔥 d'affilée sautent à minuit." else ""
         ReminderMessage(p.id, "⏰ ${p.plan.name} : ${session.day.title ?: "séance"} pas finie", text)
     }
 }
