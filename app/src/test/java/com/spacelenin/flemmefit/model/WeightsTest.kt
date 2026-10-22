@@ -89,7 +89,7 @@ class WeightsTest {
     @Test
     fun `a routine update keeps the weights choices`() {
         val program = StoredProgram("p", plan, start.toString()).withWeights(1, 0, false)
-        val updated = program.withPlan(plan.copy(version = 2))
+        val updated = program.withPlan(plan.copy(revision = 2))
         assertEquals(false, updated.weightsChoice(1, 0))
     }
 }

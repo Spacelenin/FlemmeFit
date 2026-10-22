@@ -129,7 +129,7 @@ fun AppRoot(
         }
         val latest = (text?.let(PlanParser::parse) as? ParseResult.Success)?.plan ?: return@LaunchedEffect
         repository.state.value.programs
-            .filter { it.plan.name == latest.name && it.plan.version < latest.version }
+            .filter { it.plan.name == latest.name && it.plan.revision < latest.revision }
             .forEach { repository.replacePlan(it.id, latest) }
     }
 

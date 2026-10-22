@@ -37,6 +37,8 @@ const val DEFAULT_DELOAD_EVERY = 4
 data class Plan(
     val format: String = PLAN_FORMAT_ID,
     val version: Int,
+    /** Révision de la routine elle-même (la version, elle, est celle du format). Sert à mettre à jour la routine intégrée. */
+    val revision: Int = 0,
     val name: String,
     val description: String? = null,
     @Serializable(with = RepeatSerializer::class)

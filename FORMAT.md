@@ -45,6 +45,7 @@ dans l'app : *Importer → Programme d'exemple*).
 |---------------|---------|-------------|-------------|
 | `format`      | texte   | non (conseillé) | Toujours `"flemmefit"`. |
 | `version`     | entier  | **oui**     | Toujours `1` pour ce format. |
+| `revision`    | entier  | non         | Révision de la routine (défaut `0`). La routine intégrée à l'app s'en sert pour se mettre à jour toute seule chez ceux qui la suivent. |
 | `name`        | texte   | **oui**     | Nom du programme (affiché sur l'accueil). |
 | `description` | texte   | non         | Résumé, consignes générales. |
 | `repeat`      | entier ou `"forever"` | non (défaut `1`) | Nombre de fois où la liste `weeks` est jouée (1 à 100), ou `"forever"` pour un programme illimité. |
