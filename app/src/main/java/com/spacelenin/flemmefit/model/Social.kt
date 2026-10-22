@@ -132,6 +132,19 @@ object Social {
             .sortedByDescending { it.updatedAt }
             .take(MAX_FRIENDS)
 
+    /**
+     * Les cartes à montrer. Chaque réinstallation crée un nouvel identifiant : un même pseudo ne garde que sa carte
+     * la plus récente, et le mien n'apparaît pas en double de moi-même. Une carte qui n'a pas bougé depuis
+     * [FORGET_AFTER_MS] est oubliée.
+     */
+    fun visible(cards: List<FriendCard>, myPseudo: String?, now: Long): List<FriendCard> {
+        fun key(pseudo: String) = pseudo.trim().lowercase()
+        val mine = myPseudo?.let(::key)
+        return cards.filter { now - it.updatedAt <= FORGET_AFTER_MS && key(it.pseudo) != mine }
+            .groupBy { key(it.pseudo) }.map { (_, same) -> same.maxBy { it.updatedAt } }
+            .sortedByDescending { it.updatedAt }
+    }
+
     /** Classement : score décroissant, puis avancée du jour. */
     fun ranking(cards: List<FriendCard>, today: LocalDate): List<FriendCard> = cards.sortedWith(
         compareByDescending<FriendCard> { it.score }
@@ -139,4 +152,5 @@ object Social {
     )
 
     const val MAX_FRIENDS = 50
+    const val FORGET_AFTER_MS = 14L * 24 * 3600 * 1000
 }
