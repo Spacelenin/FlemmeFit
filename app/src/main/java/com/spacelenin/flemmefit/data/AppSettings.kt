@@ -18,7 +18,17 @@ class AppSettings(context: Context) {
         _theme.value = theme
     }
 
+    private val _tutorialOffered = MutableStateFlow(prefs.getBoolean(KEY_TUTORIAL, false))
+    /** Le tuto a déjà été proposé (accepté ou non) : on ne le repropose plus d'office. */
+    val tutorialOffered: StateFlow<Boolean> = _tutorialOffered.asStateFlow()
+
+    fun markTutorialOffered() {
+        prefs.edit().putBoolean(KEY_TUTORIAL, true).apply()
+        _tutorialOffered.value = true
+    }
+
     private companion object {
         const val KEY_THEME = "theme"
+        const val KEY_TUTORIAL = "tutorial_offered"
     }
 }

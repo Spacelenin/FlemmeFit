@@ -80,6 +80,8 @@ data class Prescription(
             boss: Boolean,
             lastMax: Int?,
             palier: Int? = null,
+            /** Burst : sans progression, une série de plus (les crans en plus sont déjà dans [level]). */
+            burst: Boolean = false,
         ): Prescription {
             val baseReps = Measures.reps(exercise.reps)
             val baseSeconds = Measures.seconds(exercise.duration)
@@ -128,6 +130,8 @@ data class Prescription(
                     }
                 }
             }
+
+            if (burst && exercise.progression == null) sets = sets?.plus(1)
 
             val beforeDeload = if (deload) {
                 listOfNotNull(sets?.let { "$it ×" }, reps?.toString() ?: seconds?.let(Measures::formatSeconds)).joinToString(" ").ifEmpty { null }

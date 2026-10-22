@@ -58,6 +58,8 @@ data class StoredProgram(
     val logs: Map<String, ExerciseLog> = emptyMap(),
     /** Résultats des tests de départ ([Plan.tests]), par id de test. */
     val tests: Map<String, Int> = emptyMap(),
+    /** Jours (index) passés en Burst : séance renforcée, une par semaine au plus. */
+    val bursts: List<Int> = emptyList(),
 ) {
     val start: LocalDate get() = LocalDate.parse(startDate)
 
@@ -82,6 +84,10 @@ data class StoredProgram(
         val newLogs = if (log.isEmpty) logs - key else logs + (key to log)
         return copy(done = if (complete) done + key else done - key, logs = newLogs)
     }
+
+    fun burst(dayIndex: Int) = if (dayIndex in bursts) this else copy(bursts = (bursts + dayIndex).sorted())
+
+    fun undoBurst(dayIndex: Int) = copy(bursts = bursts - dayIndex)
 
     fun postpone(dayIndex: Int) = copy(postpones = (postpones + dayIndex).sorted())
 

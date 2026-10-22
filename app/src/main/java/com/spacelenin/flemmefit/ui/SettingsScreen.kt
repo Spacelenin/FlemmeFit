@@ -59,6 +59,7 @@ fun SettingsScreen(
     social: SocialSync,
     programs: List<StoredProgram>,
     onSocial: () -> Unit,
+    onTutorial: () -> Unit,
     onBack: () -> Unit,
 ) {
     val theme by settings.theme.collectAsStateWithLifecycle()
@@ -110,6 +111,9 @@ fun SettingsScreen(
 
                 Section("LES POTES")
                 SettingRow(title = "Pseudo et canal", subtitle = pseudo ?: "Pas encore choisi", onClick = onSocial)
+
+                Section("AIDE")
+                SettingRow(title = "Comment marche l'appli", subtitle = "Le petit tour en six écrans", onClick = onTutorial)
             }
         }
     }
