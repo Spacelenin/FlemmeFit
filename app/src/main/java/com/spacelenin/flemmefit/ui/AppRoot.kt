@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spacelenin.flemmefit.data.AppSettings
+import com.spacelenin.flemmefit.data.BackupManager
 import com.spacelenin.flemmefit.data.ProgramRepository
 import com.spacelenin.flemmefit.model.ParseResult
 import com.spacelenin.flemmefit.model.PlanParser
@@ -56,6 +57,7 @@ fun AppRoot(
     reminders: ReminderScheduler,
     social: SocialSync,
     settings: AppSettings,
+    backup: BackupManager,
     incoming: ImportSource?,
     onIncomingConsumed: () -> Unit,
     openRequest: String?,
@@ -69,6 +71,8 @@ fun AppRoot(
     var openId by rememberSaveable { mutableStateOf<String?>(null) }
     // Programme tout juste importé dont il faut demander les tests de départ.
     var askTestsFor by rememberSaveable { mutableStateOf<String?>(null) }
+    // Programme à ouvrir directement en mode séance.
+    var guidedFor by rememberSaveable { mutableStateOf<String?>(null) }
     // Jour et onglet demandés en ouvrant un programme depuis l'accueil.
     var openEpoch by rememberSaveable { mutableStateOf<Long?>(null) }
     var openTab by rememberSaveable { mutableStateOf(0) }
@@ -127,7 +131,9 @@ fun AppRoot(
         uri?.let { load(ImportSource.File(it)) }
     }
 
+    val restore = rememberRestore(backup)
     val importActions = ImportActions(
+        restore = restore,
         // Beaucoup de gestionnaires de fichiers ne typent pas bien le .json : on accepte aussi le texte et tout le reste.
         fromFile = { picker.launch(arrayOf("application/json", "text/*", "application/octet-stream", "*/*")) },
         fromPaste = { pasting = true },
@@ -160,6 +166,8 @@ fun AppRoot(
                             openOn = openEpoch?.let(LocalDate::ofEpochDay),
                             initialTab = openTab,
                             onUpdateRoutine = importActions.fromFile,
+                            startGuided = guidedFor == program.id,
+                            onGuidedStarted = { guidedFor = null },
                         )
                     }
                 }
@@ -167,6 +175,7 @@ fun AppRoot(
                     BackHandler { showSettings = false }
                     SettingsScreen(
                         settings = settings,
+                        backup = backup,
                         reminders = reminders,
                         updater = updater,
                         social = social,
@@ -186,6 +195,10 @@ fun AppRoot(
                                 programs = state.programs,
                                 actions = HomeActions(
                                     open = ::open,
+                                    start = { id ->
+                                        guidedFor = id
+                                        open(id, LocalDate.now())
+                                    },
                                     postpone = repository::postpone,
                                     burst = repository::burst,
                                     restart = { restarting = it },

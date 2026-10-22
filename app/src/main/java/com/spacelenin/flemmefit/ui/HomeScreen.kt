@@ -73,12 +73,16 @@ class ImportActions(
     val fromPaste: () -> Unit,
     /** Programme embarqué (fichier de examples/). */
     val example: (asset: String) -> Unit,
+    /** Restaurer une sauvegarde FlemmeFit. */
+    val restore: () -> Unit,
 )
 
 /** Ce que l'accueil peut demander au reste de l'appli. */
 class HomeActions(
     /** Ouvre un programme, sur un jour donné ou sur un onglet (0 calendrier, 1 stats). */
     val open: (id: String, date: LocalDate?, tab: Int) -> Unit,
+    /** Ouvre la séance du jour en mode séance. */
+    val start: (id: String) -> Unit,
     val postpone: (id: String, dayIndex: Int) -> Unit,
     /** Passe la séance du jour en Burst. */
     val burst: (id: String, dayIndex: Int) -> Unit,
@@ -141,6 +145,7 @@ private fun ImportSheet(importActions: ImportActions, onDismiss: () -> Unit) {
             SheetRow("📋", "Coller du texte", "Le JSON copié depuis un message") { onDismiss(); importActions.fromPaste() }
             SheetRow("🏠", "Routine maison", "Niveaux selon tes tests") { onDismiss(); importActions.example(ROUTINE_ASSET) }
             SheetRow("💪", "Programme d'exemple", "Un full body pour essayer") { onDismiss(); importActions.example(EXAMPLE_ASSET) }
+            SheetRow("♻️", "Restaurer une sauvegarde", "Tout reprendre depuis un fichier de sauvegarde") { onDismiss(); importActions.restore() }
         }
     }
 }
@@ -388,7 +393,7 @@ private fun TodayCard(
                         OutlinedButton(onClick = { actions.restart(program) }) { Text("Recommencer") }
                     }
                     session != null -> {
-                        Button(onClick = { actions.open(program.id, today, 0) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)) {
+                        Button(onClick = { actions.start(program.id) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)) {
                             Text(if (schedule.doneCount(session) == 0) "C'est parti" else "Continuer")
                         }
                         if (schedule.canBurst(session)) {
@@ -449,6 +454,7 @@ private fun EmptyHome(importActions: ImportActions, modifier: Modifier = Modifie
             OutlinedButton(onClick = importActions.fromPaste, modifier = Modifier.fillMaxWidth()) { Text("Coller du texte") }
             OutlinedButton(onClick = { importActions.example(ROUTINE_ASSET) }, modifier = Modifier.fillMaxWidth()) { Text("Routine maison (niveaux)") }
             OutlinedButton(onClick = { importActions.example(EXAMPLE_ASSET) }, modifier = Modifier.fillMaxWidth()) { Text("Programme d'exemple") }
+            TextButton(onClick = importActions.restore) { Text("Nouveau téléphone ? Restaurer une sauvegarde") }
         }
     }
 }

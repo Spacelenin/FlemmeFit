@@ -45,6 +45,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,6 +63,7 @@ import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.Stats
 import com.spacelenin.flemmefit.model.Progress
 import com.spacelenin.flemmefit.model.StoredProgram
+import com.spacelenin.flemmefit.model.testProgress
 import com.spacelenin.flemmefit.ui.theme.programColor
 import java.time.LocalDate
 import java.time.YearMonth
@@ -82,6 +84,9 @@ fun ProgramScreen(
     initialTab: Int = 0,
     /** Réimporter la routine pour la mettre à jour. */
     onUpdateRoutine: () -> Unit = {},
+    /** Ouvre directement le mode séance sur la séance du jour (« C'est parti » de l'accueil). */
+    startGuided: Boolean = false,
+    onGuidedStarted: () -> Unit = {},
 ) {
     val today = rememberToday()
     val schedule = remember(program, today) { ProgramSchedule(program, today) }
@@ -109,6 +114,14 @@ fun ProgramScreen(
     var detailDay by rememberSaveable { mutableStateOf<Int?>(null) }
     var detailExercise by rememberSaveable { mutableStateOf(0) }
     var burstAsk by rememberSaveable { mutableStateOf<Int?>(null) }
+    var guidedDay by rememberSaveable { mutableStateOf<Int?>(null) }
+    val timer = LocalWorkoutTimer.current
+    LaunchedEffect(startGuided) {
+        if (startGuided) {
+            schedule.sessionOn(today)?.takeIf { !schedule.isLocked(it) }?.let { guidedDay = it.index }
+            onGuidedStarted()
+        }
+    }
     var tab by rememberSaveable { mutableStateOf(initialTab) }
 
     val actions = DayActions(
@@ -123,6 +136,7 @@ fun ProgramScreen(
         onBossCheck = { s, i -> logDay = s.index; logExercise = i; logBoss = true },
         onDetail = { s, i -> detailDay = s.index; detailExercise = i },
         onBurst = { s, on -> if (on) burstAsk = s.index else repository.undoBurst(program.id, s.index) },
+        onGuided = { s -> guidedDay = s.index },
     )
 
     Scaffold(
@@ -153,7 +167,7 @@ fun ProgramScreen(
             BoxWithConstraints(Modifier.fillMaxSize()) {
                 val wide = maxWidth >= TwoPaneMinWidth
                 if (tab == 1) {
-                    StatsPanes(remember(schedule) { Stats.of(schedule) }, color, showProgram = false)
+                    StatsPanes(remember(schedule) { Stats.of(schedule) }, color, showProgram = false, tests = remember(schedule) { schedule.testProgress() })
                 } else {
                     val calendarItems: LazyListScope.() -> Unit = {
                         if (program.missingTests.isNotEmpty()) {
@@ -279,6 +293,19 @@ fun ProgramScreen(
                 else actions.onToggle(session, detailExercise)
             },
             onDismiss = { detailDay = null },
+        )
+    }
+
+    guidedDay?.let { dayIndex ->
+        val session = schedule.sessionAt(dayIndex) ?: return@let
+        // Le minuteur flottant laisse la place à celui du mode séance.
+        LaunchedEffect(Unit) { timer.stop() }
+        GuidedSession(
+            schedule = schedule,
+            session = session,
+            color = if (session.isBoss) BossColor else color,
+            onSave = { i, log, complete -> repository.saveLog(program.id, dayIndex, i, log, complete) },
+            onClose = { guidedDay = null },
         )
     }
 

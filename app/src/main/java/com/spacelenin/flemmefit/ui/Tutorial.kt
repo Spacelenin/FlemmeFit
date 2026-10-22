@@ -49,6 +49,7 @@ private val Pages = listOf(
     TutorialPage(
         "✅", "Faire sa séance",
         listOf(
+            "« Démarrer la séance » : le mode séance te guide exercice par exercice, série par série, avec le repos décompté. Tout s'enregistre tout seul.",
             "Touche la vignette d'un exercice pour le marquer comme fait, touche son nom pour le détail (chiffres, consigne, niveaux).",
             "Appui long ou ⋮ › « Saisir mes séries » : tu règles chaque série. En dessous du prévu, l'exercice est incomplet et la progression attend.",
             "Dans le détail ou le ⋮ : ⏱ chrono (séries et repos enchaînés, avec bips et vibrations) et minuteur de repos. L'écran reste allumé tant qu'il tourne.",
@@ -82,7 +83,7 @@ private val Pages = listOf(
         "👥", "Le reste",
         listOf(
             "Potes : classement entre amis avec un pseudo (séances, Boss vaincus, exploits).",
-            "Réglages (roue dentée) : thème, rappels, mises à jour, et ce tuto dans Aide.",
+            "Réglages (roue dentée) : thème, rappels, sauvegarde (un fichier réécrit tout seul, si tu en choisis un), mises à jour, et ce tuto dans Aide.",
             "Routine modifiée ? Réimporte le fichier : l'appli propose de mettre à jour le programme en gardant ton suivi.",
         ),
     ),

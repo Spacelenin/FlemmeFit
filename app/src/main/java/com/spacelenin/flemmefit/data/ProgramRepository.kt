@@ -60,6 +60,19 @@ class ProgramRepository(dir: File) {
         }
     }
 
+    /** Remplace tout l'état par celui d'une sauvegarde, écrit sur le disque avant de rendre la main. */
+    suspend fun restore(state: AppState) = writeLock.withLock {
+        _state.value = state
+        val out = file.startWrite()
+        try {
+            out.write(PlanParser.json.encodeToString(AppState.serializer(), state).encodeToByteArray())
+            file.finishWrite(out)
+        } catch (e: Exception) {
+            file.failWrite(out)
+            throw e
+        }
+    }
+
     private fun updateProgram(id: String, transform: (StoredProgram) -> StoredProgram) = mutate { state ->
         state.copy(programs = state.programs.map { if (it.id == id) transform(it) else it })
     }
