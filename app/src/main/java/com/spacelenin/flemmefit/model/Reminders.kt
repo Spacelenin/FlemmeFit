@@ -52,6 +52,27 @@ object Reminders {
     private fun String.fill(vararg values: Pair<String, Any>) =
         values.fold(this) { acc, (k, v) -> acc.replace("{$k}", v.toString()) }
 
+    /**
+     * « Bob et Al ont déjà fini leur séance. » : les potes qui ont tout fait aujourd'hui, null si personne.
+     * Envoyé en notification à part, à côté d'un rappel de séance pas finie.
+     */
+    fun friendsDone(friends: List<FriendCard>, today: LocalDate): String? {
+        val names = friends.filter { it.isToday(today) && it.todayTotal > 0 && it.todayDone >= it.todayTotal }
+            .sortedByDescending { it.updatedAt }.map { it.pseudo.trim() }
+        return when (names.size) {
+            0 -> null
+            1 -> "${names[0]} a déjà fini sa séance."
+            2 -> "${names[0]} et ${names[1]} ont déjà fini leur séance."
+            3 -> "${names[0]}, ${names[1]} et ${names[2]} ont déjà fini leur séance."
+            else -> "${names[0]}, ${names[1]} et ${names.size - 2} autres ont déjà fini leur séance."
+        }
+    }
+
+    /** La notification des potes, à part du rappel pour que tout le texte s'affiche. */
+    fun friendsMessage(line: String) = ReminderMessage(FRIENDS_ID, "👥 Les potes", line)
+
+    const val FRIENDS_ID = "potes"
+
     /** Rappel du jour : séance prévue et pas finie, sinon annonce du Boss du lendemain. */
     fun daily(programs: List<StoredProgram>, today: LocalDate): List<ReminderMessage> = programs.mapNotNull { p ->
         val schedule = ProgramSchedule(p, today)

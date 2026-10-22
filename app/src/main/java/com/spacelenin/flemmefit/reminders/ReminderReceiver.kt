@@ -15,8 +15,18 @@ class ReminderReceiver : BroadcastReceiver() {
                 intent.getStringExtra(MainActivity.EXTRA_PROGRAM_ID)?.let(reminders::dismiss)
                 reminders.snooze()
             }
-            ReminderScheduler.ACTION_DAILY, ReminderScheduler.ACTION_EVENING, ReminderScheduler.ACTION_SNOOZE ->
-                reminders.fire(intent.action!!)
+            ReminderScheduler.ACTION_DAILY, ReminderScheduler.ACTION_EVENING, ReminderScheduler.ACTION_SNOOZE -> {
+                // Le rappel lit le canal des potes : hors du fil principal, l'alarme reste active le temps qu'il faut.
+                val pending = goAsync()
+                val action = intent.action!!
+                Thread {
+                    try {
+                        reminders.fire(action)
+                    } finally {
+                        pending.finish()
+                    }
+                }.start()
+            }
         }
     }
 }

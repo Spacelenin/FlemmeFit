@@ -45,4 +45,17 @@ class RemindersTest {
         assertTrue(eve.title, eve.title.contains("Boss demain"))
         assertTrue(Reminders.daily(listOf(program), boss.date).single().title.startsWith("💀"))
     }
+
+    @Test
+    fun `friends who already finished make it into the reminders`() {
+        fun card(id: String, pseudo: String, done: Int, total: Int, date: LocalDate = start) =
+            FriendCard(id = id, pseudo = pseudo, date = date.toString(), updatedAt = id.length.toLong(), todayDone = done, todayTotal = total)
+        val friends = listOf(card("b", "Bob", 4, 4), card("a", "Al", 2, 4), card("z", "Zed", 3, 3, start.minusDays(1)))
+        val line = Reminders.friendsDone(friends, start)
+        assertEquals("Bob a déjà fini sa séance.", line)
+        assertEquals(null, Reminders.friendsDone(friends.take(2).drop(1), start))
+        assertEquals("👥 Les potes", Reminders.friendsMessage(line!!).title)
+        val many = (1..5).map { card("id$it", "P$it", 2, 2) }
+        assertTrue(Reminders.friendsDone(many, start)!!.contains("et 3 autres"))
+    }
 }

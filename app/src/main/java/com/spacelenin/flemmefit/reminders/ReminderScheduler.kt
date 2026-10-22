@@ -117,6 +117,11 @@ class ReminderScheduler(private val context: Context) {
                 val today = LocalDate.now()
                 val messages = if (action == ACTION_EVENING) Reminders.evening(programs, today) else Reminders.daily(programs, today)
                 messages.forEach { notify(it, withSnooze = action != ACTION_EVENING) }
+                // Les potes qui ont déjà fini, en notification à part : seulement à côté d'une séance pas finie.
+                if (Reminders.evening(programs, today).isNotEmpty()) {
+                    val friends = (context.applicationContext as FlemmeFitApp).social.friendsForReminder()
+                    Reminders.friendsDone(friends, today)?.let { notify(Reminders.friendsMessage(it), withSnooze = false) }
+                }
             }
         } catch (e: Exception) {
             // Un rappel raté ne doit pas couper les suivants (notifications refusées, programme illisible…).

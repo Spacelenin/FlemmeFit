@@ -33,6 +33,7 @@ import com.spacelenin.flemmefit.data.ProgramRepository
 import com.spacelenin.flemmefit.model.Counter
 import com.spacelenin.flemmefit.model.ParseResult
 import com.spacelenin.flemmefit.model.PlanParser
+import com.spacelenin.flemmefit.model.Reminders
 import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.reminders.ReminderScheduler
@@ -135,6 +136,8 @@ fun AppRoot(
         openRequest?.let { id ->
             // Notification de rappel : directement la séance du jour.
             if (state.programs.any { it.id == id }) openDay(id, LocalDate.now())
+            // Notification des potes : leur onglet.
+            else if (id == Reminders.FRIENDS_ID) tab = 3
             onOpenRequestConsumed()
         }
     }
