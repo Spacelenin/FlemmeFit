@@ -268,3 +268,31 @@ private fun SocialSettingsDialog(pseudo: String, topic: String, onSave: (String,
         dismissButton = { TextButton(onClick = onDismiss) { Text("Annuler") } },
     )
 }
+
+/** Au démarrage, tant qu'aucun pseudo n'est choisi : apparaître chez les potes sans passer par l'onglet. */
+@Composable
+fun PseudoPromptDialog(onSave: (String) -> Unit, onLater: () -> Unit) {
+    var name by rememberSaveable { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onLater,
+        title = { Text("Ton pseudo pour les potes") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "Tes potes verront ce pseudo, ta séance du jour, tes 🔥 d'affilée, tes Boss vaincus et tes exploits. " +
+                        "Rien d'autre ne quitte le téléphone. Modifiable dans Réglages.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it.take(FriendCard.PSEUDO_MAX) },
+                    label = { Text("Pseudo") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        },
+        confirmButton = { TextButton(onClick = { onSave(name) }, enabled = name.isNotBlank()) { Text("C'est parti") } },
+        dismissButton = { TextButton(onClick = onLater) { Text("Plus tard") } },
+    )
+}

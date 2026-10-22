@@ -6,6 +6,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
+import android.util.Log
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -109,14 +110,20 @@ class ReminderScheduler(private val context: Context) {
     /** Appelé par [ReminderReceiver]. */
     internal fun fire(action: String) {
         val s = _settings.value
-        if (s.enabled) {
-            val programs = (context.applicationContext as FlemmeFitApp).repository.state.value.programs
-                .filterNot { it.id in s.mutedPrograms }
-            val today = LocalDate.now()
-            val messages = if (action == ACTION_EVENING) Reminders.evening(programs, today) else Reminders.daily(programs, today)
-            messages.forEach { notify(it, withSnooze = action != ACTION_EVENING) }
+        try {
+            if (s.enabled) {
+                val programs = (context.applicationContext as FlemmeFitApp).repository.state.value.programs
+                    .filterNot { it.id in s.mutedPrograms }
+                val today = LocalDate.now()
+                val messages = if (action == ACTION_EVENING) Reminders.evening(programs, today) else Reminders.daily(programs, today)
+                messages.forEach { notify(it, withSnooze = action != ACTION_EVENING) }
+            }
+        } catch (e: Exception) {
+            // Un rappel raté ne doit pas couper les suivants (notifications refusées, programme illisible…).
+            Log.e("ReminderScheduler", "Rappel impossible", e)
+        } finally {
+            if (action != ACTION_SNOOZE) reschedule()
         }
-        if (action != ACTION_SNOOZE) reschedule()
     }
 
     /** Notification d'essai depuis les réglages. */

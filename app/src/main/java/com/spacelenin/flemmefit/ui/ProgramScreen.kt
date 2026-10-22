@@ -234,8 +234,9 @@ fun ProgramScreen(
                     repository.saveLog(program.id, dayIndex, logExercise, log, complete)
                     close()
                 },
+                // Comme la saisie classique : effacer le détail ne retire pas l'exercice fait.
                 onClear = {
-                    repository.saveLog(program.id, dayIndex, logExercise, ExerciseLog(), false)
+                    repository.saveLog(program.id, dayIndex, logExercise, ExerciseLog(), program.isDone(dayIndex, logExercise))
                     close()
                 },
                 onDismiss = close,

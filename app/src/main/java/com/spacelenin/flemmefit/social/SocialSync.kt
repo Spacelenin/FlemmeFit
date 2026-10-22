@@ -6,6 +6,7 @@ import com.spacelenin.flemmefit.BuildConfig
 import com.spacelenin.flemmefit.data.ProgramRepository
 import com.spacelenin.flemmefit.model.FriendCard
 import com.spacelenin.flemmefit.model.Social
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -40,7 +41,8 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
     }
 
     private val prefs = context.getSharedPreferences("social", Context.MODE_PRIVATE)
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    // Filet de sécurité : une erreur imprévue en arrière-plan est journalisée au lieu de faire planter l'appli.
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineExceptionHandler { _, e -> Log.e(TAG, "Erreur en arrière-plan", e) })
     private val lock = Mutex()
 
     /** Identifiant aléatoire de cette installation : c'est lui, pas le pseudo, qui distingue les joueurs. */

@@ -11,6 +11,7 @@ import android.util.Log
 import com.spacelenin.flemmefit.BuildConfig
 import com.spacelenin.flemmefit.model.ReleaseInfo
 import com.spacelenin.flemmefit.model.Releases
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -42,7 +43,8 @@ class AppUpdater(private val context: Context) {
         data class Failed(val message: String, val release: ReleaseInfo? = null) : State
     }
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    // Filet de sécurité : une erreur imprévue en arrière-plan est journalisée au lieu de faire planter l'appli.
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineExceptionHandler { _, e -> Log.e(TAG, "Erreur en arrière-plan", e) })
     private val prefs = context.getSharedPreferences("updates", Context.MODE_PRIVATE)
     private var job: Job? = null
     /** Version en cours d'installation, pour « Réessayer ». */

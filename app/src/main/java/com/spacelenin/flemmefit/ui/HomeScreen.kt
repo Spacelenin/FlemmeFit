@@ -177,7 +177,8 @@ private fun HomeContent(programs: List<StoredProgram>, actions: HomeActions, mod
 
     var monthIndex by rememberSaveable { mutableStateOf(today.year * 12 + today.monthValue - 1) }
     val month = YearMonth.of(monthIndex / 12, monthIndex % 12 + 1)
-    var postponing by remember { mutableStateOf<Session?>(null) }
+    // Programme et séance : le sélecteur peut changer de programme pendant que la question est posée.
+    var postponing by remember { mutableStateOf<Pair<String, Session>?>(null) }
 
     val switcher: @Composable () -> Unit = {
         if (programs.size > 1) {
@@ -204,7 +205,7 @@ private fun HomeContent(programs: List<StoredProgram>, actions: HomeActions, mod
             today = today,
             others = programs.filter { it.id != program.id }.map { it to schedules.getValue(it.id) },
             actions = actions,
-            onPostpone = { postponing = it },
+            onPostpone = { postponing = program.id to it },
             modifier = Modifier.padding(horizontal = 16.dp),
         )
     }
@@ -273,7 +274,7 @@ private fun HomeContent(programs: List<StoredProgram>, actions: HomeActions, mod
         }
     }
 
-    postponing?.let { s ->
+    postponing?.let { (programId, s) ->
         AlertDialog(
             onDismissRequest = { postponing = null },
             title = { Text("Décaler la séance ?") },
@@ -285,7 +286,7 @@ private fun HomeContent(programs: List<StoredProgram>, actions: HomeActions, mod
             },
             confirmButton = {
                 TextButton(onClick = {
-                    actions.postpone(program.id, s.index)
+                    actions.postpone(programId, s.index)
                     postponing = null
                 }) { Text("Décaler") }
             },
