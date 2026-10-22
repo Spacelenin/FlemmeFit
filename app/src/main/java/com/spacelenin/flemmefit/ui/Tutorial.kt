@@ -40,8 +40,8 @@ private val Pages = listOf(
     TutorialPage(
         "🏠", "L'accueil",
         listOf(
-            "En haut : la séance du jour. « C'est parti » l'ouvre, « Décaler » la reporte d'un jour (tout le reste suit).",
-            "En dessous : le mois. Touche un jour pour voir sa séance.",
+            "En haut : la carte du jour. « C'est parti » lance le mode séance, « Décaler » la reporte d'un jour (tout le reste suit).",
+            "En dessous : le mois. Touche un jour pour ouvrir sa page : la séance, les exercices et ses actions. Les flèches passent au jour d'avant ou d'après.",
             "Plusieurs programmes ? Un sélecteur apparaît en haut, les autres sont des points de couleur sur le calendrier.",
             "Le ⋮ de la carte : date de début, tests, couleur, mise à jour de la routine, suppression.",
         ),
@@ -49,10 +49,11 @@ private val Pages = listOf(
     TutorialPage(
         "✅", "Faire sa séance",
         listOf(
-            "« Démarrer la séance » : le mode séance te guide exercice par exercice, série par série, avec le repos décompté. Tout s'enregistre tout seul.",
+            "« C'est parti » ou « Démarrer la séance » : le mode séance te guide exercice par exercice, série par série, avec le repos décompté. Tout s'enregistre tout seul.",
             "Touche la vignette d'un exercice pour le marquer comme fait, touche son nom pour le détail (chiffres, consigne, niveaux).",
             "Appui long ou ⋮ › « Saisir mes séries » : tu règles chaque série. En dessous du prévu, l'exercice est incomplet et la progression attend.",
-            "Dans le détail ou le ⋮ : ⏱ chrono (séries et repos enchaînés, avec bips et vibrations) et minuteur de repos. L'écran reste allumé tant qu'il tourne.",
+            "Dans le détail ou le ⋮ : ⏱ chrono (séries et repos enchaînés, avec bips au volume média et vibrations) et minuteur de repos. L'écran reste allumé tant qu'il tourne.",
+            "Besoin de souffler plus ? Réglages › Séance › Repos en plus : jusqu'au double du repos prévu, pour tous les exercices.",
             "Les séances à venir ne se marquent pas : on note ce qui est fait, le jour même.",
             "🏋️ Boxe et Beat Saber : dis le jour même si tu fais avec ou sans poids. Avec, la progression monte un peu moins vite, jusqu'au même plafond.",
         ),
@@ -71,6 +72,7 @@ private val Pages = listOf(
             "Certaines routines démarrent d'un test : ton résultat choisit ton niveau (les chiffres de départ).",
             "Les tests sont refaits en semaine récup et te font changer de niveau.",
             "Tu peux corriger tes résultats via ⋮ › « Tests de niveau ».",
+            "Onglet Stats : la courbe de chaque test, ton record, la date du prochain test et ce qu'il te manque pour passer au niveau suivant.",
         ),
     ),
     TutorialPage(
@@ -83,6 +85,7 @@ private val Pages = listOf(
     TutorialPage(
         "👥", "Le reste",
         listOf(
+            "Stats : le bilan du programme, les courbes de tests, puis tous les chiffres (séances, jours d'affilée, volume, exploits).",
             "Potes : classement entre amis avec un pseudo (séances, Boss vaincus, exploits).",
             "Réglages (roue dentée) : thème, rappels, sauvegarde (un fichier réécrit tout seul, si tu en choisis un), mises à jour, et ce tuto dans Aide.",
             "Routine modifiée ? Réimporte le fichier : l'appli propose de mettre à jour le programme en gardant ton suivi.",
@@ -96,7 +99,7 @@ fun TutorialOfferDialog(onYes: () -> Unit, onNo: () -> Unit) {
     AlertDialog(
         onDismissRequest = onNo,
         title = { Text("Un petit tour de l'appli ?") },
-        text = { Text("Six écrans pour comprendre comment faire tes séances, progresser, les niveaux, les Boss et le Burst. Toujours dispo dans Réglages › Aide.") },
+        text = { Text("Six écrans pour comprendre l'accueil, le mode séance, la progression, les niveaux, les Boss et le Burst. Toujours dispo dans Réglages › Aide.") },
         confirmButton = { TextButton(onClick = onYes) { Text("Oui, montre-moi") } },
         dismissButton = { TextButton(onClick = onNo) { Text("Non merci") } },
     )
