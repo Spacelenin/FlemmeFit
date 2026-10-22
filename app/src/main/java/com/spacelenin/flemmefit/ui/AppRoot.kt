@@ -67,15 +67,14 @@ fun AppRoot(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val timer = remember { WorkoutTimer() }
+    val restBonus by settings.restBonus.collectAsStateWithLifecycle()
 
     var openId by rememberSaveable { mutableStateOf<String?>(null) }
     // Programme tout juste importé dont il faut demander les tests de départ.
     var askTestsFor by rememberSaveable { mutableStateOf<String?>(null) }
-    // Programme à ouvrir directement en mode séance.
-    var guidedFor by rememberSaveable { mutableStateOf<String?>(null) }
-    // Jour et onglet demandés en ouvrant un programme depuis l'accueil.
-    var openEpoch by rememberSaveable { mutableStateOf<Long?>(null) }
-    var openTab by rememberSaveable { mutableStateOf(0) }
+    // Programme affiché sur l'accueil, et jour à y montrer (notification, import).
+    var homeProgramId by rememberSaveable { mutableStateOf<String?>(null) }
+    var homeFocus by rememberSaveable { mutableStateOf<Long?>(null) }
     // Onglet du bas : 0 accueil, 1 stats, 2 potes.
     var tab by rememberSaveable { mutableStateOf(0) }
     var showSettings by rememberSaveable { mutableStateOf(false) }
@@ -85,11 +84,19 @@ fun AppRoot(
     val pseudo by social.pseudo.collectAsStateWithLifecycle()
     // « Plus tard » : on redemande au prochain lancement.
     var pseudoSkipped by rememberSaveable { mutableStateOf(false) }
-    fun open(id: String, date: LocalDate? = null, programTab: Int = 0) {
-        openEpoch = date?.toEpochDay()
-        openTab = programTab
+    /** Détail d'un programme : bilan, tests et stats. */
+    fun open(id: String) {
         showSettings = false
         openId = id
+    }
+
+    /** Montre un programme sur l'accueil, au jour indiqué. */
+    fun showOnHome(id: String, date: LocalDate = LocalDate.now()) {
+        openId = null
+        showSettings = false
+        tab = 0
+        homeProgramId = id
+        homeFocus = date.toEpochDay()
     }
     var pasting by rememberSaveable { mutableStateOf(false) }
     // Texte brut sauvegardé (et non le résultat) pour que l'import en cours survive au pliage / dépliage.
@@ -115,7 +122,7 @@ fun AppRoot(
 
     LaunchedEffect(openRequest) {
         openRequest?.let { id ->
-            if (state.programs.any { it.id == id }) open(id)
+            if (state.programs.any { it.id == id }) showOnHome(id)
             onOpenRequestConsumed()
         }
     }
@@ -164,7 +171,7 @@ fun AppRoot(
     )
 
     val program = state.programs.find { it.id == openId }
-    CompositionLocalProvider(LocalWorkoutTimer provides timer) {
+    CompositionLocalProvider(LocalWorkoutTimer provides timer, LocalRestBonus provides restBonus) {
         Box(Modifier.fillMaxSize()) {
             when {
                 program != null -> {
@@ -174,13 +181,7 @@ fun AppRoot(
                             program = program,
                             repository = repository,
                             onBack = { openId = null },
-                            askTests = askTestsFor == program.id,
-                            onTestsAsked = { askTestsFor = null },
-                            openOn = openEpoch?.let(LocalDate::ofEpochDay),
-                            initialTab = openTab,
                             onUpdateRoutine = importActions.fromFile,
-                            startGuided = guidedFor == program.id,
-                            onGuidedStarted = { guidedFor = null },
                         )
                     }
                 }
@@ -206,17 +207,26 @@ fun AppRoot(
                             2 -> SocialScreen(social = social, repository = repository)
                             else -> HomeScreen(
                                 programs = state.programs,
+                                repository = repository,
+                                selectedId = homeProgramId,
+                                onSelectProgram = { homeProgramId = it },
+                                focus = homeFocus?.let(LocalDate::ofEpochDay),
+                                onFocusConsumed = { homeFocus = null },
                                 actions = HomeActions(
                                     open = ::open,
-                                    start = { id ->
-                                        guidedFor = id
-                                        open(id, LocalDate.now())
-                                    },
-                                    postpone = repository::postpone,
-                                    burst = repository::burst,
                                     restart = { restarting = it },
                                     settings = { showSettings = true },
-                                    menu = { p -> ProgramMenuButton(p, repository, onUpdateRoutine = importActions.fromFile) },
+                                    menu = { p ->
+                                        ProgramMenuButton(
+                                            p,
+                                            repository,
+                                            onUpdateRoutine = importActions.fromFile,
+                                            onStartChanged = { homeFocus = it.toEpochDay() },
+                                            // Juste après l'import : les tests de départ s'ouvrent d'eux-mêmes.
+                                            askTests = askTestsFor == p.id,
+                                            onTestsAsked = { askTestsFor = null },
+                                        )
+                                    },
                                 ),
                                 importActions = importActions,
                                 updater = updater,
@@ -262,7 +272,7 @@ fun AppRoot(
                 TextButton(onClick = {
                     restarting = null
                     val results = ProgramSchedule(old, LocalDate.now()).currentTestResults()
-                    open(repository.addProgram(old.plan, LocalDate.now(), results))
+                    showOnHome(repository.addProgram(old.plan, LocalDate.now(), results))
                 }) { Text("Recommencer") }
             },
             dismissButton = { TextButton(onClick = { restarting = null }) { Text("Annuler") } },
@@ -289,13 +299,13 @@ fun AppRoot(
                 clearImport()
                 repository.replacePlan(id, result.plan)
                 if (result.plan.tests.any { t -> state.programs.first { it.id == id }.tests[t.id] == null }) askTestsFor = id
-                open(id)
+                showOnHome(id)
             },
             onConfirm = { start ->
                 clearImport()
                 val id = repository.addProgram(result.plan, start)
                 if (result.plan.tests.isNotEmpty()) askTestsFor = id
-                open(id)
+                showOnHome(id, start)
             },
         )
         null -> {}

@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -45,13 +48,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spacelenin.flemmefit.data.AppSettings
 import com.spacelenin.flemmefit.data.BackupManager
+import com.spacelenin.flemmefit.model.Measures
+import com.spacelenin.flemmefit.model.Prescription
 import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.reminders.ReminderScheduler
 import com.spacelenin.flemmefit.social.SocialSync
 import com.spacelenin.flemmefit.ui.theme.AppTheme
 import com.spacelenin.flemmefit.update.AppUpdater
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun SettingsScreen(
     settings: AppSettings,
@@ -65,6 +70,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
 ) {
     val theme by settings.theme.collectAsStateWithLifecycle()
+    val restBonus by settings.restBonus.collectAsStateWithLifecycle()
     val reminderSettings by reminders.settings.collectAsStateWithLifecycle()
     val pseudo by social.pseudo.collectAsStateWithLifecycle()
     var showReminders by remember { mutableStateOf(false) }
@@ -87,6 +93,25 @@ fun SettingsScreen(
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
                     AppTheme.entries.forEach { t -> ThemeSwatch(t, selected = t == theme, onClick = { settings.setTheme(t) }) }
+                }
+
+                Section("SÉANCE")
+                Text("Repos en plus", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(horizontal = 20.dp, vertical = 2.dp))
+                Text(
+                    "Pour tous les exercices, jamais moins que prévu ni plus du double." +
+                        if (restBonus > 0) " Ex. 1min30 → ${Measures.formatSeconds(Prescription.withRestBonus(90, restBonus))}." else "",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                )
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)) {
+                    listOf(0, 25, 50, 75, 100).forEach { percent ->
+                        FilterChip(
+                            selected = restBonus == percent,
+                            onClick = { settings.setRestBonus(percent) },
+                            label = { Text(if (percent == 0) "Prévu" else "+$percent %") },
+                        )
+                    }
                 }
 
                 Section("RAPPELS")

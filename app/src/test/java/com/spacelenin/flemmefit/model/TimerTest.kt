@@ -66,4 +66,21 @@ class TimerTest {
         assertTrue(stopped.finished)
         assertEquals(72_000, stopped.elapsedMs(999_000))
     }
+
+    @Test
+    fun `extra rest stretches every rest, up to double`() {
+        val pushups = plain(Exercise("Pompes", sets = 4, reps = "10", rest = "90s"))
+        assertEquals(90, pushups.restSeconds(0))
+        assertEquals(115, pushups.restSeconds(25))
+        assertEquals(135, pushups.restSeconds(50))
+        assertEquals(180, pushups.restSeconds(100))
+        assertEquals(180, pushups.restSeconds(300))
+        assertEquals("90s", pushups.restLabel(0))
+        assertEquals("2min15", pushups.restLabel(50))
+        assertTrue(pushups.summary(50).endsWith("repos 2min15"))
+        assertEquals(135, TimerPlans.rest(pushups, 50)!!.seconds)
+        val shadow = TimerPlans.exercise(plain(Exercise("Shadow", sets = 2, duration = "3min", rest = "1min")), restBonus = 50)!!
+        assertEquals(listOf(180, 90, 180), shadow.map { it.seconds })
+        assertEquals(135, GuidedExercise(pushups, restBonus = 50).restSeconds)
+    }
 }

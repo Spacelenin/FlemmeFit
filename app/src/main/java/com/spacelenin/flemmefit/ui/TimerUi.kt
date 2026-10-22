@@ -81,6 +81,9 @@ class WorkoutTimer {
 
 val LocalWorkoutTimer = staticCompositionLocalOf { WorkoutTimer() }
 
+/** Réglage « repos en plus », en % du repos prévu. */
+val LocalRestBonus = staticCompositionLocalOf { 0 }
+
 /** Le minuteur en cours, posé en bas de l'écran. L'écran reste allumé tant qu'il tourne. */
 @Composable
 fun TimerOverlay(timer: WorkoutTimer, modifier: Modifier = Modifier) {

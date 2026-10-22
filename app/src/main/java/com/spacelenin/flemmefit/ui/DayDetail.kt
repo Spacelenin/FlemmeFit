@@ -279,8 +279,9 @@ private fun ExerciseRow(
     val partial = state == ExerciseState.PARTIAL
     var menu by remember { mutableStateOf(false) }
     val timer = LocalWorkoutTimer.current
-    val chrono = remember(prescription) { TimerPlans.exercise(prescription) }
-    val rest = remember(prescription) { TimerPlans.rest(prescription) }
+    val restBonus = LocalRestBonus.current
+    val chrono = remember(prescription, restBonus) { TimerPlans.exercise(prescription, restBonus) }
+    val rest = remember(prescription, restBonus) { TimerPlans.rest(prescription, restBonus) }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -333,7 +334,7 @@ private fun ExerciseRow(
             val details = listOfNotNull(
                 when {
                     prescription.isTest -> "Une seule série, à fond"
-                    else -> prescription.summary().ifEmpty { null }
+                    else -> prescription.summary(restBonus).ifEmpty { null }
                 },
                 prescription.palier?.let { "niveau ${it + 1}/${prescription.levelCount}" },
                 prescription.beforeDeload?.let { "récup (au lieu de $it)" },

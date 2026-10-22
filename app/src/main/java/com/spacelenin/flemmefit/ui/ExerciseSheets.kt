@@ -73,6 +73,7 @@ fun ExerciseDetailSheet(
     onWeights: (Boolean) -> Unit = {},
 ) {
     val exercise = prescription.exercise
+    val restBonus = LocalRestBonus.current
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -105,7 +106,7 @@ fun ExerciseDetailSheet(
                 prescription.repsLabel?.let { it to "reps par série" },
                 prescription.durationLabel?.let { it to if (prescription.sets != null) "par série" else "durée" },
                 prescription.loadLabel?.let { it to "charge" },
-                exercise.rest?.let { it to "de repos" },
+                prescription.restLabel(restBonus)?.let { it to "de repos" },
             )
             if (facts.isNotEmpty()) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -173,8 +174,8 @@ fun ExerciseDetailSheet(
                 Text("Séance à venir : elle se fera le jour même.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 val timer = LocalWorkoutTimer.current
-                val chrono = remember(prescription) { TimerPlans.exercise(prescription) }
-                val rest = remember(prescription) { TimerPlans.rest(prescription) }
+                val chrono = remember(prescription, restBonus) { TimerPlans.exercise(prescription, restBonus) }
+                val rest = remember(prescription, restBonus) { TimerPlans.rest(prescription, restBonus) }
                 if (chrono != null || rest != null) {
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         chrono?.let { phases ->
@@ -248,7 +249,7 @@ fun SetsLogSheet(
             Column {
                 Text("Ce que tu as vraiment fait", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
                 Text(
-                    "${prescription.exercise.name} · prévu ${prescription.summary()}",
+                    "${prescription.exercise.name} · prévu ${prescription.summary(LocalRestBonus.current)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
