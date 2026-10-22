@@ -59,6 +59,38 @@ class AppUpdater(private val context: Context) {
 
     val currentVersion: Int get() = BuildConfig.VERSION_CODE
 
+    private val _changelog = MutableStateFlow<ReleaseInfo?>(null)
+    /** Nouveautés de la version tout juste installée, à montrer une fois. */
+    val changelog: StateFlow<ReleaseInfo?> = _changelog.asStateFlow()
+
+    /**
+     * Premier lancement d'une nouvelle version : va chercher ses notes de version.
+     * Une installation neuve (jamais vérifié de mise à jour) n'affiche rien.
+     */
+    fun loadChangelogIfUpdated() {
+        val seen = prefs.getInt(KEY_SEEN_VERSION, 0)
+        if (seen >= currentVersion) return
+        val usedBefore = seen > 0 || prefs.contains(KEY_LAST_CHECK)
+        if (!usedBefore) {
+            markChangelogSeen()
+            return
+        }
+        scope.launch {
+            try {
+                val release = Releases.parseLatest(httpGet("$TAG_URL$currentVersion"))
+                if (release?.notes != null) _changelog.value = release else markChangelogSeen()
+            } catch (e: Exception) {
+                // Hors ligne : on retentera au prochain lancement.
+                Log.w(TAG, "Notes de version indisponibles", e)
+            }
+        }
+    }
+
+    fun markChangelogSeen() {
+        prefs.edit().putInt(KEY_SEEN_VERSION, currentVersion).apply()
+        _changelog.value = null
+    }
+
     /** Vérification automatique au plus toutes les [AUTO_CHECK_INTERVAL_MS], silencieuse en cas d'erreur. */
     fun autoCheck() {
         // Une version déjà trouvée reste affichée : inutile de redemander.
@@ -221,6 +253,8 @@ class AppUpdater(private val context: Context) {
         private const val APK_FILE = "update.apk"
         private const val KEY_LAST_CHECK = "lastCheck"
         private const val KEY_DISMISSED = "dismissedVersion"
+        private const val KEY_SEEN_VERSION = "seenVersion"
+        private const val TAG_URL = "https://api.github.com/repos/$REPOSITORY/releases/tags/build-"
         private const val AUTO_CHECK_INTERVAL_MS = 10 * 60 * 1000L
     }
 }

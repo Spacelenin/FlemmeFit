@@ -189,7 +189,8 @@ fun AppRoot(
         }
     }
 
-    val calm = askTestsFor == null && parsed == null && !pasting
+    val changelog by updater.changelog.collectAsStateWithLifecycle()
+    val calm = askTestsFor == null && parsed == null && !pasting && changelog == null
     // Pas encore de pseudo : on le demande dès l'ouverture, pour apparaître chez les potes sans y penser.
     if (pseudo == null && !pseudoSkipped && calm) {
         PseudoPromptDialog(onSave = social::setPseudo, onLater = { pseudoSkipped = true })
@@ -259,6 +260,7 @@ fun AppRoot(
         null -> {}
     }
 
+    ChangelogDialog(updater)
     // En dernier : passe par-dessus tout le reste.
     UpdateGate(updater)
 }
