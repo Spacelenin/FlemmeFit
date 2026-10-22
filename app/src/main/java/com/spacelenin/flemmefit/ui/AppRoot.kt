@@ -5,10 +5,15 @@ import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -17,7 +22,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spacelenin.flemmefit.data.AppSettings
 import com.spacelenin.flemmefit.data.ProgramRepository
@@ -56,6 +64,7 @@ fun AppRoot(
     val state by repository.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val timer = remember { WorkoutTimer() }
 
     var openId by rememberSaveable { mutableStateOf<String?>(null) }
     // Programme tout juste importé dont il faut demander les tests de départ.
@@ -136,56 +145,62 @@ fun AppRoot(
     )
 
     val program = state.programs.find { it.id == openId }
-    when {
-        program != null -> {
-            BackHandler { openId = null }
-            key(program.id) {
-                ProgramScreen(
-                    program = program,
-                    repository = repository,
-                    onBack = { openId = null },
-                    askTests = askTestsFor == program.id,
-                    onTestsAsked = { askTestsFor = null },
-                    openOn = openEpoch?.let(LocalDate::ofEpochDay),
-                    initialTab = openTab,
-                    onUpdateRoutine = importActions.fromFile,
-                )
-            }
-        }
-        showSettings -> {
-            BackHandler { showSettings = false }
-            SettingsScreen(
-                settings = settings,
-                reminders = reminders,
-                updater = updater,
-                social = social,
-                programs = state.programs,
-                onSocial = { showSettings = false; tab = 2 },
-                onTutorial = { showTutorial = true },
-                onBack = { showSettings = false },
-            )
-        }
-        else -> {
-            if (tab != 0) BackHandler { tab = 0 }
-            MainTabs(tab = tab, onTab = { tab = it }) {
-                when (tab) {
-                    1 -> GlobalStatsScreen(programs = state.programs)
-                    2 -> SocialScreen(social = social, repository = repository)
-                    else -> HomeScreen(
-                        programs = state.programs,
-                        actions = HomeActions(
-                            open = ::open,
-                            postpone = repository::postpone,
-                            burst = repository::burst,
-                            restart = { restarting = it },
-                            settings = { showSettings = true },
-                            menu = { p -> ProgramMenuButton(p, repository, onUpdateRoutine = importActions.fromFile) },
-                        ),
-                        importActions = importActions,
+    CompositionLocalProvider(LocalWorkoutTimer provides timer) {
+        Box(Modifier.fillMaxSize()) {
+            when {
+                program != null -> {
+                    BackHandler { openId = null }
+                    key(program.id) {
+                        ProgramScreen(
+                            program = program,
+                            repository = repository,
+                            onBack = { openId = null },
+                            askTests = askTestsFor == program.id,
+                            onTestsAsked = { askTestsFor = null },
+                            openOn = openEpoch?.let(LocalDate::ofEpochDay),
+                            initialTab = openTab,
+                            onUpdateRoutine = importActions.fromFile,
+                        )
+                    }
+                }
+                showSettings -> {
+                    BackHandler { showSettings = false }
+                    SettingsScreen(
+                        settings = settings,
+                        reminders = reminders,
                         updater = updater,
+                        social = social,
+                        programs = state.programs,
+                        onSocial = { showSettings = false; tab = 2 },
+                        onTutorial = { showTutorial = true },
+                        onBack = { showSettings = false },
                     )
                 }
+                else -> {
+                    if (tab != 0) BackHandler { tab = 0 }
+                    MainTabs(tab = tab, onTab = { tab = it }) {
+                        when (tab) {
+                            1 -> GlobalStatsScreen(programs = state.programs)
+                            2 -> SocialScreen(social = social, repository = repository)
+                            else -> HomeScreen(
+                                programs = state.programs,
+                                actions = HomeActions(
+                                    open = ::open,
+                                    postpone = repository::postpone,
+                                    burst = repository::burst,
+                                    restart = { restarting = it },
+                                    settings = { showSettings = true },
+                                    menu = { p -> ProgramMenuButton(p, repository, onUpdateRoutine = importActions.fromFile) },
+                                ),
+                                importActions = importActions,
+                                updater = updater,
+                            )
+                        }
+                    }
+                }
             }
+            // Au-dessus de la barre du bas, sur tous les écrans.
+            TimerOverlay(timer, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 88.dp))
         }
     }
 

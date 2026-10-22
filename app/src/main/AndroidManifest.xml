@@ -9,6 +9,9 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Minuteur de séance. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
         android:name=".FlemmeFitApp"
         android:allowBackup="true"

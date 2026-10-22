@@ -57,6 +57,7 @@ import com.spacelenin.flemmefit.model.Measures
 import com.spacelenin.flemmefit.model.Prescription
 import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.Session
+import com.spacelenin.flemmefit.model.TimerPlans
 import java.time.LocalDate
 
 /** Rouge « Boss », indépendant du thème pour rester reconnaissable. */
@@ -264,6 +265,9 @@ private fun ExerciseRow(
     val done = state == ExerciseState.DONE
     val partial = state == ExerciseState.PARTIAL
     var menu by remember { mutableStateOf(false) }
+    val timer = LocalWorkoutTimer.current
+    val chrono = remember(prescription) { TimerPlans.exercise(prescription) }
+    val rest = remember(prescription) { TimerPlans.rest(prescription) }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -367,6 +371,20 @@ private fun ExerciseRow(
                     enabled = !locked,
                     onClick = { menu = false; onEdit() },
                 )
+                if (!locked && chrono != null) {
+                    DropdownMenuItem(
+                        text = { Text("Lancer le chrono") },
+                        leadingIcon = { Text("⏱") },
+                        onClick = { menu = false; timer.start(exercise.name, chrono, onFinished = if (done) null else onToggle) },
+                    )
+                }
+                if (!locked && rest != null) {
+                    DropdownMenuItem(
+                        text = { Text("Repos ${Measures.formatSeconds(rest.seconds ?: 0)}") },
+                        leadingIcon = { Text("⏳") },
+                        onClick = { menu = false; timer.start(exercise.name, listOf(rest)) },
+                    )
+                }
                 DropdownMenuItem(
                     text = { Text("Voir le détail") },
                     leadingIcon = { Icon(Icons.Default.Info, null) },
