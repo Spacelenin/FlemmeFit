@@ -7,6 +7,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -78,6 +80,8 @@ class HomeActions(
     /** Ouvre un programme, sur un jour donné ou sur un onglet (0 calendrier, 1 stats). */
     val open: (id: String, date: LocalDate?, tab: Int) -> Unit,
     val postpone: (id: String, dayIndex: Int) -> Unit,
+    /** Passe la séance du jour en Burst. */
+    val burst: (id: String, dayIndex: Int) -> Unit,
     /** Repart de zéro avec la même routine, à partir d'aujourd'hui. */
     val restart: (StoredProgram) -> Unit,
     val settings: () -> Unit,
@@ -289,6 +293,7 @@ private fun HomeContent(programs: List<StoredProgram>, actions: HomeActions, mod
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TodayCard(
     program: StoredProgram,
@@ -304,7 +309,9 @@ private fun TodayCard(
     val progress = schedule.progress()
     val finished = schedule.endDate?.let { today.isAfter(it) } == true
     val notStarted = today.isBefore(schedule.startDate)
+    var askBurst by remember { mutableStateOf(false) }
     val accent = when {
+        session?.isBurst == true -> BurstColor
         session?.isBoss == true -> BossColor
         session?.isDeload == true -> DeloadColor
         else -> color
@@ -320,6 +327,7 @@ private fun TodayCard(
                 val badge = when {
                     finished -> "Terminé"
                     notStarted -> "Bientôt"
+                    session?.isBurst == true -> "🚀 Burst"
                     session?.isBoss == true -> "💀 Boss"
                     session?.isDeload == true -> "🌿 Décharge"
                     session != null -> "Aujourd'hui"
@@ -371,7 +379,7 @@ private fun TodayCard(
                 }
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 when {
                     finished -> {
                         Button(onClick = { actions.open(program.id, null, 1) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)) {
@@ -382,6 +390,9 @@ private fun TodayCard(
                     session != null -> {
                         Button(onClick = { actions.open(program.id, today, 0) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)) {
                             Text(if (schedule.doneCount(session) == 0) "C'est parti" else "Continuer")
+                        }
+                        if (schedule.canBurst(session)) {
+                            OutlinedButton(onClick = { askBurst = true }) { Text("🚀 Burst") }
                         }
                         if (schedule.doneCount(session) < session.exerciseCount) {
                             OutlinedButton(onClick = { onPostpone(session) }) { Text("Repousser") }
@@ -406,6 +417,16 @@ private fun TodayCard(
                 }
             }
         }
+    }
+
+    if (askBurst && session != null) {
+        BurstDialog(
+            onConfirm = {
+                askBurst = false
+                actions.burst(program.id, session.index)
+            },
+            onDismiss = { askBurst = false },
+        )
     }
 }
 

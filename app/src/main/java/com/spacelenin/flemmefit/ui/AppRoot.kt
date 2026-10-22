@@ -67,6 +67,8 @@ fun AppRoot(
     var tab by rememberSaveable { mutableStateOf(0) }
     var showSettings by rememberSaveable { mutableStateOf(false) }
     var restarting by remember { mutableStateOf<StoredProgram?>(null) }
+    var showTutorial by rememberSaveable { mutableStateOf(false) }
+    val tutorialOffered by settings.tutorialOffered.collectAsStateWithLifecycle()
     fun open(id: String, date: LocalDate? = null, programTab: Int = 0) {
         openEpoch = date?.toEpochDay()
         openTab = programTab
@@ -152,6 +154,7 @@ fun AppRoot(
                 social = social,
                 programs = state.programs,
                 onSocial = { showSettings = false; tab = 2 },
+                onTutorial = { showTutorial = true },
                 onBack = { showSettings = false },
             )
         }
@@ -166,6 +169,7 @@ fun AppRoot(
                         actions = HomeActions(
                             open = ::open,
                             postpone = repository::postpone,
+                            burst = repository::burst,
                             restart = { restarting = it },
                             settings = { showSettings = true },
                             menu = { p -> ProgramMenuButton(p, repository, onUpdateRoutine = importActions.fromFile) },
@@ -177,6 +181,18 @@ fun AppRoot(
             }
         }
     }
+
+    // Premier programme : on propose le tuto une fois, après les éventuels tests de départ.
+    if (!tutorialOffered && state.programs.isNotEmpty() && askTestsFor == null && parsed == null) {
+        TutorialOfferDialog(
+            onYes = {
+                settings.markTutorialOffered()
+                showTutorial = true
+            },
+            onNo = settings::markTutorialOffered,
+        )
+    }
+    if (showTutorial) TutorialDialog(onClose = { showTutorial = false })
 
     restarting?.let { old ->
         AlertDialog(

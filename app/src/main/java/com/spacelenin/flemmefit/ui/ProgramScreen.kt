@@ -108,6 +108,7 @@ fun ProgramScreen(
     // Exercice dont le détail est ouvert : index de jour et d'exercice.
     var detailDay by rememberSaveable { mutableStateOf<Int?>(null) }
     var detailExercise by rememberSaveable { mutableStateOf(0) }
+    var burstAsk by rememberSaveable { mutableStateOf<Int?>(null) }
     var tab by rememberSaveable { mutableStateOf(initialTab) }
 
     val actions = DayActions(
@@ -121,6 +122,7 @@ fun ProgramScreen(
         onEditLog = { s, i -> logDay = s.index; logExercise = i; logBoss = false },
         onBossCheck = { s, i -> logDay = s.index; logExercise = i; logBoss = true },
         onDetail = { s, i -> detailDay = s.index; detailExercise = i },
+        onBurst = { s, on -> if (on) burstAsk = s.index else repository.undoBurst(program.id, s.index) },
     )
 
     Scaffold(
@@ -260,6 +262,7 @@ fun ProgramScreen(
         val prescription = session?.prescriptions?.getOrNull(detailExercise) ?: return@let
         val done = program.isDone(dayIndex, detailExercise)
         ExerciseDetailSheet(
+            locked = schedule.isLocked(session),
             prescription = prescription,
             plan = program.plan,
             testResults = remember(schedule) { schedule.currentTestResults() },
@@ -275,6 +278,16 @@ fun ProgramScreen(
                 else actions.onToggle(session, detailExercise)
             },
             onDismiss = { detailDay = null },
+        )
+    }
+
+    burstAsk?.let { index ->
+        BurstDialog(
+            onConfirm = {
+                repository.burst(program.id, index)
+                burstAsk = null
+            },
+            onDismiss = { burstAsk = null },
         )
     }
 

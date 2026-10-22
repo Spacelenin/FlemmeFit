@@ -42,6 +42,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.spacelenin.flemmefit.model.BURST_STEPS
 import com.spacelenin.flemmefit.model.ExerciseLog
 import com.spacelenin.flemmefit.model.Measures
 import com.spacelenin.flemmefit.model.Plan
@@ -54,6 +55,8 @@ private fun Prescription.setLabel(v: Int) = if (maxIsSeconds) Measures.formatSec
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseDetailSheet(
+    /** Séance à venir : on regarde, on ne coche pas. */
+    locked: Boolean,
     prescription: Prescription,
     plan: Plan,
     testResults: Map<String, Int>,
@@ -150,9 +153,13 @@ fun ExerciseDetailSheet(
                 }
             }
             Spacer(Modifier.height(4.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedButton(onClick = onLog, modifier = Modifier.weight(1f)) { Text("Noter ce que j'ai fait") }
-                Button(onClick = onDone, modifier = Modifier.weight(1f)) { Text(if (done) "Décocher" else "C'est fait") }
+            if (locked) {
+                Text("Séance à venir : elle se cochera le jour même.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedButton(onClick = onLog, modifier = Modifier.weight(1f)) { Text("Noter ce que j'ai fait") }
+                    Button(onClick = onDone, modifier = Modifier.weight(1f)) { Text(if (done) "Décocher" else "C'est fait") }
+                }
             }
         }
     }
@@ -293,4 +300,21 @@ fun exerciseInitials(name: String): String =
 @Composable
 fun Dot(color: Color, size: Int = 8) {
     Box(Modifier.size(size.dp).clip(CircleShape).background(color))
+}
+
+/** Confirmation avant de passer la séance du jour en Burst. */
+@Composable
+fun BurstDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("🚀 Burst aujourd'hui ?") },
+        text = {
+            Text(
+                "La séance du jour est renforcée : +$BURST_STEPS crans de progression sur les exercices qui progressent, " +
+                    "une série de plus sur les autres. Une fois par semaine. Annulable tant que rien n'est coché.",
+            )
+        },
+        confirmButton = { TextButton(onClick = onConfirm) { Text("C'est parti") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Pas aujourd'hui") } },
+    )
 }

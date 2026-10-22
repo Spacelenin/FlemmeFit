@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import com.spacelenin.flemmefit.model.BURST_STEPS
 import com.spacelenin.flemmefit.model.ExerciseLog
 import com.spacelenin.flemmefit.model.ExerciseState
 import com.spacelenin.flemmefit.model.Measures
@@ -61,6 +62,7 @@ import java.time.LocalDate
 /** Rouge « Boss », indépendant du thème pour rester reconnaissable. */
 val BossColor = Color(0xFFE05252)
 val DeloadColor = Color(0xFF8FE0A5)
+val BurstColor = Color(0xFFFFC94D)
 
 class DayActions(
     val onToggle: (session: Session, exerciseIndex: Int) -> Unit,
@@ -73,6 +75,8 @@ class DayActions(
     val onBossCheck: (session: Session, exerciseIndex: Int) -> Unit,
     /** Ouvrir le détail d'un exercice. */
     val onDetail: (session: Session, exerciseIndex: Int) -> Unit,
+    /** Passer la séance du jour en Burst (ou l'annuler). */
+    val onBurst: (session: Session, on: Boolean) -> Unit,
 )
 
 /** Détail du jour sélectionné, sous forme d'éléments de liste pour s'insérer dans n'importe quelle LazyColumn. */
@@ -116,6 +120,7 @@ fun LazyListScope.dayDetailItems(
     session.prescriptions.forEachIndexed { i, prescription ->
         item(key = "ex-${session.index}-$i") {
             ExerciseRow(
+                locked = schedule.isLocked(session),
                 prescription = prescription,
                 state = schedule.exerciseState(session, i),
                 log = schedule.program.logOf(session.index, i),
@@ -131,7 +136,8 @@ fun LazyListScope.dayDetailItems(
     }
     item(key = "day-footer") {
         Text(
-            if (session.isBoss) "Cocher un exercice Boss demande ton max. Boss entièrement validé = Boss vaincu."
+            if (schedule.isLocked(session)) "Séance à venir : elle se cochera le jour même."
+            else if (session.isBoss) "Cocher un exercice Boss demande ton max. Boss entièrement validé = Boss vaincu."
             else "Touche la vignette pour cocher, l'exercice pour son détail. Appui long : noter ce que tu as fait.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -150,7 +156,10 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
     val postponed = schedule.program.postponeCount(session.index)
     val accent = if (session.isBoss) BossColor else color
 
-    if (session.isBoss) {
+    if (session.isBurst) {
+        Banner("🚀 Burst", "Séance renforcée : +$BURST_STEPS crans de progression, ou une série de plus. Une fois par semaine.", BurstColor)
+        Spacer(Modifier.height(12.dp))
+    } else if (session.isBoss) {
         Banner("💀 Jour Boss", "Chiffres de la semaine prochaine, et dernière série à fond. Bats ton dernier max !", BossColor)
         Spacer(Modifier.height(12.dp))
     } else if (session.isDeload) {
@@ -182,11 +191,19 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
     Spacer(Modifier.height(8.dp))
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         val allDone = done == total
-        AssistChip(
-            onClick = { actions.onSetAll(session, !allDone) },
-            label = { Text(if (allDone) "Tout décocher" else "Tout cocher") },
-            leadingIcon = { Icon(Icons.Default.Check, null, Modifier.size(18.dp)) },
-        )
+        val locked = schedule.isLocked(session)
+        if (!locked) {
+            AssistChip(
+                onClick = { actions.onSetAll(session, !allDone) },
+                label = { Text(if (allDone) "Tout décocher" else "Tout cocher") },
+                leadingIcon = { Icon(Icons.Default.Check, null, Modifier.size(18.dp)) },
+            )
+        }
+        if (schedule.canBurst(session)) {
+            AssistChip(onClick = { actions.onBurst(session, true) }, label = { Text("🚀 Burst") })
+        } else if (schedule.canUndoBurst(session)) {
+            AssistChip(onClick = { actions.onBurst(session, false) }, label = { Text("Annuler le Burst") })
+        }
         AssistChip(
             onClick = { actions.onPostpone(session) },
             label = { Text("Repousser d'un jour") },
@@ -234,6 +251,7 @@ private fun Prescription.maxLabel(value: Int) = if (maxIsSeconds) Measures.forma
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ExerciseRow(
+    locked: Boolean,
     prescription: Prescription,
     state: ExerciseState,
     log: ExerciseLog?,
@@ -251,7 +269,7 @@ private fun ExerciseRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .combinedClickable(onClick = onDetail, onLongClick = onEdit, onLongClickLabel = "Noter ce qui a été fait")
+            .combinedClickable(onClick = onDetail, onLongClick = if (locked) null else onEdit, onLongClickLabel = "Noter ce qui a été fait")
             .padding(start = 16.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
     ) {
         // Vignette : la toucher coche l'exercice.
@@ -267,8 +285,14 @@ private fun ExerciseRow(
                         else -> MaterialTheme.colorScheme.surfaceContainerHighest
                     },
                 )
-                .toggleable(value = done, role = Role.Checkbox, onValueChange = { onToggle() })
-                .semantics { contentDescription = if (done) "Fait, toucher pour décocher" else "Toucher pour cocher" },
+                .toggleable(value = done, enabled = !locked, role = Role.Checkbox, onValueChange = { onToggle() })
+                .semantics {
+                    contentDescription = when {
+                        locked -> "Séance à venir"
+                        done -> "Fait, toucher pour décocher"
+                        else -> "Toucher pour cocher"
+                    }
+                },
         ) {
             if (done) {
                 Icon(Icons.Default.Check, null, tint = Color(0xFF0F0F0F))
@@ -334,11 +358,13 @@ private fun ExerciseRow(
                 DropdownMenuItem(
                     text = { Text(if (done) "Décocher" else "C'est fait") },
                     leadingIcon = { Icon(Icons.Default.Check, null) },
+                    enabled = !locked,
                     onClick = { menu = false; onToggle() },
                 )
                 DropdownMenuItem(
                     text = { Text("Noter ce que j'ai fait") },
                     leadingIcon = { Icon(Icons.Default.Edit, null) },
+                    enabled = !locked,
                     onClick = { menu = false; onEdit() },
                 )
                 DropdownMenuItem(

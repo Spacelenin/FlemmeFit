@@ -18,11 +18,16 @@ data class Session(
     val isBoss: Boolean,
     val isDeload: Boolean,
     val prescriptions: List<Prescription>,
+    /** Séance renforcée à la demande (Burst). */
+    val isBurst: Boolean = false,
 ) {
     val exerciseCount get() = day.exercises.size
     /** Semaine du programme depuis le début (0-based), répétitions comprises. */
     val programWeek get() = index / DAYS_PER_WEEK
 }
+
+/** Crans de progression ajoutés par un Burst. */
+const val BURST_STEPS = 2
 
 enum class SessionStatus { DONE, PARTIAL, MISSED, PENDING }
 
@@ -147,6 +152,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         // Le Boss ne se dévoile que la veille : avant, la séance est affichée normalement.
         val boss = !deload && isBossWeek(week) && bossIndexOfWeek(week) == i && !date.isAfter(today.plusDays(1))
         val weeksBefore = if (deloadEvery > 0) week - week / deloadEvery else week
+        val burst = !boss && !deload && i in program.bursts
 
         val prescriptions = day.exercises.map { ex ->
             if (ex.retest) return@map Prescription.test(ex, plan.test(ex.test), ex.test?.let(testResults::get))
@@ -164,12 +170,18 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 p.basis == Progression.BASIS_WEEK -> (weeksBefore - (levelSince[ex.key] ?: 0)) / p.every
                 else -> (validated[ex.key] ?: 0) / p.every
             }
-            val level = (steps + (bonus[ex.key] ?: 0)).coerceAtLeast(0) + if (boss && p != null) 1 else 0
+            val extra = when {
+                p == null -> 0
+                boss -> 1
+                burst -> BURST_STEPS
+                else -> 0
+            }
+            val level = (steps + (bonus[ex.key] ?: 0)).coerceAtLeast(0) + extra
             Prescription.of(
-                palier?.let(ex::atLevel) ?: ex, level, deload, boss = boss, lastMax = lastMax[ex.key], palier = palier,
+                palier?.let(ex::atLevel) ?: ex, level, deload, boss = boss, lastMax = lastMax[ex.key], palier = palier, burst = burst,
             )
         }
-        resolved[i] = Session(i, week / plan.weeks.size + 1, cycleWeek + 1, day, planWeek.label, date, boss, deload, prescriptions)
+        resolved[i] = Session(i, week / plan.weeks.size + 1, cycleWeek + 1, day, planWeek.label, date, boss, deload, prescriptions, burst)
 
         prescriptions.forEachIndexed { e, pr ->
             val key = pr.key
@@ -243,6 +255,23 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             else -> SessionStatus.PENDING
         }
     }
+
+    /** Une séance à venir ne se coche pas : on ne valide que ce qui est fait. */
+    fun isLocked(session: Session) = session.date.isAfter(today)
+
+    /**
+     * Burst possible : séance du jour, pas Boss ni décharge, rien encore coché, et pas d'autre Burst
+     * la même semaine du programme.
+     */
+    fun canBurst(session: Session): Boolean =
+        session.date == today && !session.isBoss && !session.isDeload && !session.isBurst &&
+            session.prescriptions.any { it.exercise.progression != null || it.sets != null } &&
+            (0 until session.exerciseCount).none { program.isDone(session.index, it) || program.logOf(session.index, it) != null } &&
+            program.bursts.none { it / DAYS_PER_WEEK == session.programWeek }
+
+    /** Annuler un Burst tant que rien n'est coché. */
+    fun canUndoBurst(session: Session): Boolean =
+        session.isBurst && (0 until session.exerciseCount).none { program.isDone(session.index, it) || program.logOf(session.index, it) != null }
 
     fun nextSession(): Session? {
         var i = maxOf(0, lastIndexOnOrBefore(today.minusDays(1)) + 1)

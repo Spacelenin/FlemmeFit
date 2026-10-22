@@ -91,6 +91,10 @@ class ProgramRepository(dir: File) {
     fun saveLog(id: String, dayIndex: Int, exerciseIndex: Int, log: ExerciseLog, complete: Boolean) =
         updateProgram(id) { it.saveLog(dayIndex, exerciseIndex, log, complete) }
 
+    fun burst(id: String, dayIndex: Int) = updateProgram(id) { it.burst(dayIndex) }
+
+    fun undoBurst(id: String, dayIndex: Int) = updateProgram(id) { it.undoBurst(dayIndex) }
+
     fun postpone(id: String, dayIndex: Int) = updateProgram(id) { it.postpone(dayIndex) }
 
     fun undoPostpone(id: String, dayIndex: Int) = updateProgram(id) { it.undoPostpone(dayIndex) }
