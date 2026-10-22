@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -27,6 +28,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -48,6 +50,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spacelenin.flemmefit.data.AppSettings
 import com.spacelenin.flemmefit.data.BackupManager
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import com.spacelenin.flemmefit.model.Counter
 import com.spacelenin.flemmefit.model.Measures
 import com.spacelenin.flemmefit.model.Prescription
 import com.spacelenin.flemmefit.model.StoredProgram
@@ -151,6 +156,25 @@ fun SettingsScreen(
 
                 Section("AIDE")
                 SettingRow(title = "Comment marche l'appli", subtitle = "Le petit tour en six écrans", onClick = onTutorial)
+
+                // Un champ sans rien autour. Le bon mot ouvre (ou referme) les compteurs.
+                var word by remember { mutableStateOf("") }
+                val context = LocalContext.current
+                OutlinedTextField(
+                    value = word,
+                    onValueChange = { text ->
+                        if (Counter.isSecretWord(text)) {
+                            val on = !countersUnlocked
+                            settings.setCountersByHand(on)
+                            word = ""
+                            Toast.makeText(context, if (on) "🔓" else "🔒", Toast.LENGTH_SHORT).show()
+                        } else {
+                            word = text.take(20)
+                        }
+                    },
+                    singleLine = true,
+                    modifier = Modifier.align(Alignment.CenterHorizontally).width(160.dp).padding(top = 32.dp, bottom = 24.dp),
+                )
             }
         }
     }

@@ -61,6 +61,14 @@ data class Counter(
 
         private fun plural(n: Int) = if (n > 1) "s" else ""
 
+        private val leet = mapOf('5' to 's', '$' to 's', '3' to 'e', '€' to 'e', '7' to 't', '1' to 'i', '0' to 'o', '4' to 'a', '@' to 'a')
+
+        /** « secret » écrit en leet (53cr3t, $3CR37…) : au moins un caractère remplacé, sinon ça ne compte pas. */
+        fun isSecretWord(text: String): Boolean {
+            val t = text.trim().lowercase()
+            return t.any { it in leet } && t.map { leet[it] ?: it }.joinToString("") == "secret"
+        }
+
         /** Assez fait pour dévoiler les compteurs ? */
         fun unlocked(counters: List<Counter>) = counters.any { it.reps >= UNLOCK_REPS || it.seconds >= UNLOCK_SECONDS }
 

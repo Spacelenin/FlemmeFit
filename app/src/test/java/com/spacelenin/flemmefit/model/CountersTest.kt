@@ -68,4 +68,14 @@ class CountersTest {
         val merged = Counter.merge(listOf(listOf(Counter("Pompes", reps = 10)), listOf(Counter("Pompes", reps = 5), Counter("Boxe", seconds = 60))))
         assertEquals(listOf(Counter("Pompes", reps = 15), Counter("Boxe", seconds = 60)), merged)
     }
+
+    @Test
+    fun `the secret word only counts in leet`() {
+        assertTrue(Counter.isSecretWord("53cr3t"))
+        assertTrue(Counter.isSecretWord(" \$3CR37 "))
+        assertTrue(Counter.isSecretWord("s3cret"))
+        assertFalse(Counter.isSecretWord("secret"))
+        assertFalse(Counter.isSecretWord("53cr3ts"))
+        assertFalse(Counter.isSecretWord(""))
+    }
 }

@@ -261,7 +261,7 @@ fun AppRoot(
     }
     var unlockedBy by remember { mutableStateOf<Counter?>(null) }
     LaunchedEffect(counters) {
-        if (!countersUnlocked && Counter.unlocked(counters)) {
+        if (!countersUnlocked && !settings.countersLockedByHand && Counter.unlocked(counters)) {
             settings.unlockCounters()
             unlockedBy = Counter.milestone(counters)
         }
