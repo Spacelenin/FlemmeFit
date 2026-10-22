@@ -75,6 +75,9 @@ fun AppRoot(
     // Programme affiché sur l'accueil, et jour à y montrer (notification, import).
     var homeProgramId by rememberSaveable { mutableStateOf<String?>(null) }
     var homeFocus by rememberSaveable { mutableStateOf<Long?>(null) }
+    // Page d'un jour ouverte depuis le calendrier : programme et date.
+    var dayProgramId by rememberSaveable { mutableStateOf<String?>(null) }
+    var dayEpoch by rememberSaveable { mutableStateOf(0L) }
     // Onglet du bas : 0 accueil, 1 stats, 2 potes.
     var tab by rememberSaveable { mutableStateOf(0) }
     var showSettings by rememberSaveable { mutableStateOf(false) }
@@ -90,9 +93,17 @@ fun AppRoot(
         openId = id
     }
 
-    /** Montre un programme sur l'accueil, au jour indiqué. */
+    fun openDay(id: String, date: LocalDate) {
+        showSettings = false
+        openId = null
+        dayEpoch = date.toEpochDay()
+        dayProgramId = id
+    }
+
+    /** Montre un programme sur l'accueil, au mois du jour indiqué. */
     fun showOnHome(id: String, date: LocalDate = LocalDate.now()) {
         openId = null
+        dayProgramId = null
         showSettings = false
         tab = 0
         homeProgramId = id
@@ -122,7 +133,8 @@ fun AppRoot(
 
     LaunchedEffect(openRequest) {
         openRequest?.let { id ->
-            if (state.programs.any { it.id == id }) showOnHome(id)
+            // Notification de rappel : directement la séance du jour.
+            if (state.programs.any { it.id == id }) openDay(id, LocalDate.now())
             onOpenRequestConsumed()
         }
     }
@@ -171,9 +183,22 @@ fun AppRoot(
     )
 
     val program = state.programs.find { it.id == openId }
+    val dayProgram = state.programs.find { it.id == dayProgramId }
     CompositionLocalProvider(LocalWorkoutTimer provides timer, LocalRestBonus provides restBonus) {
         Box(Modifier.fillMaxSize()) {
             when {
+                dayProgram != null -> {
+                    BackHandler { dayProgramId = null }
+                    key(dayProgram.id) {
+                        DayScreen(
+                            program = dayProgram,
+                            repository = repository,
+                            date = LocalDate.ofEpochDay(dayEpoch),
+                            onDate = { dayEpoch = it.toEpochDay() },
+                            onBack = { dayProgramId = null },
+                        )
+                    }
+                }
                 program != null -> {
                     BackHandler { openId = null }
                     key(program.id) {
@@ -214,6 +239,7 @@ fun AppRoot(
                                 onFocusConsumed = { homeFocus = null },
                                 actions = HomeActions(
                                     open = ::open,
+                                    openDay = ::openDay,
                                     restart = { restarting = it },
                                     settings = { showSettings = true },
                                     menu = { p ->
