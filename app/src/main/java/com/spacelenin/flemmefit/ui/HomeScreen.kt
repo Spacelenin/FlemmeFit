@@ -47,6 +47,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.rememberLazyListState
+import kotlinx.coroutines.launch
+import com.spacelenin.flemmefit.data.ProgramRepository
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -79,13 +86,8 @@ class ImportActions(
 
 /** Ce que l'accueil peut demander au reste de l'appli. */
 class HomeActions(
-    /** Ouvre un programme, sur un jour donné ou sur un onglet (0 calendrier, 1 stats). */
-    val open: (id: String, date: LocalDate?, tab: Int) -> Unit,
-    /** Ouvre la séance du jour en mode séance. */
-    val start: (id: String) -> Unit,
-    val postpone: (id: String, dayIndex: Int) -> Unit,
-    /** Passe la séance du jour en Burst. */
-    val burst: (id: String, dayIndex: Int) -> Unit,
+    /** Ouvre le détail d'un programme : bilan, tests et stats. */
+    val open: (id: String) -> Unit,
     /** Repart de zéro avec la même routine, à partir d'aujourd'hui. */
     val restart: (StoredProgram) -> Unit,
     val settings: () -> Unit,
@@ -97,6 +99,13 @@ class HomeActions(
 @Composable
 fun HomeScreen(
     programs: List<StoredProgram>,
+    repository: ProgramRepository,
+    /** Programme affiché (null : le premier). */
+    selectedId: String?,
+    onSelectProgram: (String) -> Unit,
+    /** Jour à montrer (notification, import), consommé une fois montré. */
+    focus: LocalDate?,
+    onFocusConsumed: () -> Unit,
     actions: HomeActions,
     importActions: ImportActions,
     updater: AppUpdater,
@@ -115,7 +124,7 @@ fun HomeScreen(
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
             if (programs.isEmpty()) EmptyHome(importActions)
-            else HomeContent(programs, actions, Modifier)
+            else HomeContent(programs, repository, selectedId, onSelectProgram, focus, onFocusConsumed, actions, Modifier)
         }
     }
 
@@ -169,19 +178,45 @@ private fun SheetRow(icon: String, title: String, subtitle: String, onClick: () 
 }
 
 @Composable
-private fun HomeContent(programs: List<StoredProgram>, actions: HomeActions, modifier: Modifier) {
+private fun HomeContent(
+    programs: List<StoredProgram>,
+    repository: ProgramRepository,
+    selectedId: String?,
+    onSelectProgram: (String) -> Unit,
+    focus: LocalDate?,
+    onFocusConsumed: () -> Unit,
+    actions: HomeActions,
+    modifier: Modifier,
+) {
     val today = rememberToday()
-    var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
     val program = programs.find { it.id == selectedId } ?: programs.first()
     val schedules = remember(programs, today) { programs.associate { it.id to ProgramSchedule(it, today) } }
     val schedule = schedules.getValue(program.id)
     val color = programColor(program.colorIndex)
     val others = programs.filter { it.id != program.id }.map { schedules.getValue(it.id) to programColor(it.colorIndex) }
 
-    var monthIndex by rememberSaveable { mutableStateOf(today.year * 12 + today.monthValue - 1) }
+    // Jour choisi sur le calendrier : sa séance s'affiche en dessous, sans changer d'écran.
+    val initial = remember(program.id) { initialDate(schedule, today) }
+    var selectedEpoch by rememberSaveable(program.id) { mutableStateOf(initial.toEpochDay()) }
+    var monthIndex by rememberSaveable(program.id) { mutableStateOf(initial.year * 12 + initial.monthValue - 1) }
+    val selected = LocalDate.ofEpochDay(selectedEpoch)
     val month = YearMonth.of(monthIndex / 12, monthIndex % 12 + 1)
-    // Programme et séance : le sélecteur peut changer de programme pendant que la question est posée.
-    var postponing by remember { mutableStateOf<Pair<String, Session>?>(null) }
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    var editTests by remember { mutableStateOf(false) }
+
+    fun select(date: LocalDate) {
+        selectedEpoch = date.toEpochDay()
+        monthIndex = date.year * 12 + date.monthValue - 1
+        scope.launch { listState.animateScrollToItem(DAY_ITEM) }
+    }
+    LaunchedEffect(focus) {
+        focus?.let {
+            select(it)
+            onFocusConsumed()
+        }
+    }
+    val dayActions = rememberDayActions(program, schedule, repository, color, onSelect = ::select)
 
     val switcher: @Composable () -> Unit = {
         if (programs.size > 1) {
@@ -192,7 +227,7 @@ private fun HomeContent(programs: List<StoredProgram>, actions: HomeActions, mod
                 programs.forEach { p ->
                     FilterChip(
                         selected = p.id == program.id,
-                        onClick = { selectedId = p.id },
+                        onClick = { onSelectProgram(p.id) },
                         label = { Text(p.plan.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                         leadingIcon = { Box(Modifier.size(8.dp).clip(CircleShape).background(programColor(p.colorIndex))) },
                     )
@@ -208,11 +243,28 @@ private fun HomeContent(programs: List<StoredProgram>, actions: HomeActions, mod
             today = today,
             others = programs.filter { it.id != program.id }.map { it to schedules.getValue(it.id) },
             actions = actions,
-            onPostpone = { postponing = program.id to it },
+            dayActions = dayActions,
+            onShow = ::select,
             modifier = Modifier.padding(horizontal = 16.dp),
         )
     }
-    val bossCard: @Composable () -> Unit = {
+    val notices: @Composable () -> Unit = {
+        if (program.missingTests.isNotEmpty()) {
+            Card(
+                onClick = { editTests = true },
+                colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.14f)),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            ) {
+                Column(Modifier.padding(12.dp)) {
+                    Text("📏 Tests de niveau à faire", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(
+                        program.missingTests.joinToString { it.name } +
+                            " : en attendant, tu es au niveau le plus facile. Touche pour saisir tes résultats.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            }
+        }
         val next = schedule.progress().nextSession
         if (next != null && next.isBoss && next.date == today.plusDays(1)) {
             Card(
@@ -233,9 +285,9 @@ private fun HomeContent(programs: List<StoredProgram>, actions: HomeActions, mod
                 color = color,
                 month = month,
                 onMonthChange = { monthIndex = it.year * 12 + it.monthValue - 1 },
-                selected = today,
+                selected = selected,
                 today = today,
-                onSelect = { date -> actions.open(program.id, date, 0) },
+                onSelect = ::select,
                 others = others,
             )
             Text(
@@ -250,52 +302,51 @@ private fun HomeContent(programs: List<StoredProgram>, actions: HomeActions, mod
     }
 
     BoxWithConstraints(modifier.fillMaxSize()) {
-        if (maxWidth >= TwoPaneMinWidth) {
-            // Fold déplié : la séance du jour à gauche, le mois à droite.
+        val wide = maxWidth >= TwoPaneMinWidth
+        // Toujours DAY_ITEM éléments avant la séance du jour choisi, pour pouvoir y défiler.
+        val top: LazyListScope.() -> Unit = {
+            item(key = "switcher") { switcher() }
+            item(key = "today") { todayCard() }
+            item(key = "notices") { Column(verticalArrangement = Arrangement.spacedBy(12.dp)) { notices() } }
+            item(key = "calendar") { if (!wide) calendar() else Spacer(Modifier.height(0.dp)) }
+        }
+        if (wide) {
+            // Fold déplié : la séance (du jour ou choisie) à gauche, le mois à droite.
             Row(Modifier.fillMaxSize()) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()).padding(vertical = 8.dp),
-                ) {
-                    switcher()
-                    todayCard()
-                    bossCard()
+                LazyColumn(state = listState, verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.weight(1f).fillMaxHeight()) {
+                    top()
+                    dayDetailItems(schedule, selected, color, dayActions)
                 }
                 Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())) { calendar() }
             }
         } else {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 8.dp),
-            ) {
-                switcher()
-                todayCard()
-                calendar()
-                bossCard()
-                Spacer(Modifier.height(8.dp))
+            LazyColumn(state = listState, verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxSize()) {
+                top()
+                dayDetailItems(schedule, selected, color, dayActions)
             }
         }
     }
 
-    postponing?.let { (programId, s) ->
-        AlertDialog(
-            onDismissRequest = { postponing = null },
-            title = { Text("Décaler la séance ?") },
-            text = {
-                Text(
-                    "La séance du ${s.date.shortLabel()} passe au ${s.date.plusDays(1).shortLabel()}. " +
-                        "Tout le reste du programme est décalé d'un jour.",
-                )
+    if (editTests) {
+        TestsDialog(
+            program = program,
+            current = remember(schedule) { schedule.currentTestResults() },
+            onSave = { results ->
+                repository.setTests(program.id, results)
+                editTests = false
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    actions.postpone(programId, s.index)
-                    postponing = null
-                }) { Text("Décaler") }
-            },
-            dismissButton = { TextButton(onClick = { postponing = null }) { Text("Annuler") } },
+            onDismiss = { editTests = false },
         )
     }
+}
+
+/** Index du premier élément de la séance choisie dans la liste de l'accueil. */
+private const val DAY_ITEM = 4
+
+/** Aujourd'hui si on est dans le programme, sinon son début ou sa fin. */
+private fun initialDate(schedule: ProgramSchedule, today: LocalDate): LocalDate = when {
+    today.isBefore(schedule.startDate) -> schedule.startDate
+    else -> schedule.endDate?.takeIf { today.isAfter(it) } ?: today
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -307,14 +358,15 @@ private fun TodayCard(
     today: LocalDate,
     others: List<Pair<StoredProgram, ProgramSchedule>>,
     actions: HomeActions,
-    onPostpone: (Session) -> Unit,
+    dayActions: DayActions,
+    /** Montre un jour sur le calendrier et sa séance en dessous. */
+    onShow: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val session = schedule.sessionOn(today)
     val progress = schedule.progress()
     val finished = schedule.endDate?.let { today.isAfter(it) } == true
     val notStarted = today.isBefore(schedule.startDate)
-    var askBurst by remember { mutableStateOf(false) }
     val accent = when {
         session?.isBurst == true -> BurstColor
         session?.isBoss == true -> BossColor
@@ -387,23 +439,23 @@ private fun TodayCard(
             FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 when {
                     finished -> {
-                        Button(onClick = { actions.open(program.id, null, 1) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)) {
+                        Button(onClick = { actions.open(program.id) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)) {
                             Text("Voir le bilan")
                         }
                         OutlinedButton(onClick = { actions.restart(program) }) { Text("Recommencer") }
                     }
                     session != null -> {
-                        Button(onClick = { actions.start(program.id) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)) {
+                        Button(onClick = { dayActions.onGuided(session) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)) {
                             Text(if (schedule.doneCount(session) == 0) "C'est parti" else "Continuer")
                         }
                         if (schedule.canBurst(session)) {
-                            OutlinedButton(onClick = { askBurst = true }) { Text("🚀 Burst") }
+                            OutlinedButton(onClick = { dayActions.onBurst(session, true) }) { Text("🚀 Burst") }
                         }
                         if (schedule.doneCount(session) < session.exerciseCount) {
-                            OutlinedButton(onClick = { onPostpone(session) }) { Text("Décaler") }
+                            OutlinedButton(onClick = { dayActions.onPostpone(session) }) { Text("Décaler") }
                         }
                     }
-                    else -> OutlinedButton(onClick = { actions.open(program.id, next?.date, 0) }) { Text("Voir le programme") }
+                    else -> if (next != null) OutlinedButton(onClick = { onShow(next.date) }) { Text("Voir la prochaine séance") }
                 }
             }
 
@@ -422,16 +474,6 @@ private fun TodayCard(
                 }
             }
         }
-    }
-
-    if (askBurst && session != null) {
-        BurstDialog(
-            onConfirm = {
-                askBurst = false
-                actions.burst(program.id, session.index)
-            },
-            onDismiss = { askBurst = false },
-        )
     }
 }
 

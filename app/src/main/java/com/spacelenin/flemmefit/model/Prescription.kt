@@ -38,8 +38,21 @@ data class Prescription(
     /** Le max se mesure en répétitions, sauf pour un exercice uniquement en durée. */
     val maxIsSeconds: Boolean get() = secondsMax ?: (reps == null && exercise.reps == null && (seconds != null || exercise.duration != null))
 
+    /**
+     * Repos entre deux séries en secondes, allongé de [bonusPercent] % (réglage « repos en plus »,
+     * jamais plus du double), arrondi aux 5 s. Null si l'exercice n'en indique pas de lisible.
+     */
+    fun restSeconds(bonusPercent: Int = 0): Int? {
+        val base = Measures.seconds(exercise.rest)?.takeIf { it > 0 } ?: return null
+        return withRestBonus(base, bonusPercent)
+    }
+
+    /** Le repos tel qu'affiché : celui de la routine, ou allongé par le réglage. */
+    fun restLabel(bonusPercent: Int = 0): String? =
+        if (bonusPercent <= 0) exercise.rest else restSeconds(bonusPercent)?.let(Measures::formatSeconds) ?: exercise.rest
+
     /** « 3 × 12 · 8 kg · repos 60s » */
-    fun summary(): String = listOfNotNull(
+    fun summary(restBonus: Int = 0): String = listOfNotNull(
         when {
             sets != null && repsLabel != null -> "$sets × $repsLabel"
             sets != null && durationLabel != null -> "$sets × $durationLabel"
@@ -49,7 +62,7 @@ data class Prescription(
         },
         durationLabel?.takeIf { sets == null || repsLabel != null },
         loadLabel,
-        exercise.rest?.let { "repos $it" },
+        restLabel(restBonus)?.let { "repos $it" },
         if (weighted == true) "avec poids" else null,
     ).joinToString(" · ")
 
@@ -67,6 +80,15 @@ data class Prescription(
     val perSetPlanned: Int? get() = if (maxIsSeconds) seconds else reps
 
     companion object {
+        /** Repos en plus au maximum : le double du repos prévu. */
+        const val MAX_REST_BONUS = 100
+
+        /** [base] secondes de repos allongées de [bonusPercent] %, arrondies aux 5 s, sans dépasser le double. */
+        fun withRestBonus(base: Int, bonusPercent: Int): Int {
+            val extra = (base * bonusPercent.coerceIn(0, MAX_REST_BONUS) / 100.0 / 5).roundToInt() * 5
+            return base + extra.coerceAtMost(base)
+        }
+
         /** Un test : une série à fond, objectif = dernier résultat + 1. */
         fun test(exercise: Exercise, test: PlanTest?, current: Int?) = Prescription(
             exercise, sets = null, reps = null, seconds = null, load = null,

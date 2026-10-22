@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,11 +26,20 @@ val TwoPaneMinWidth = 600.dp
 
 /** Stats sur une colonne, ou deux (vue d'ensemble | exercices) sur écran large. */
 @Composable
-fun StatsPanes(stats: Stats, color: Color, showProgram: Boolean, modifier: Modifier = Modifier, tests: List<TestProgress> = emptyList()) {
+fun StatsPanes(
+    stats: Stats,
+    color: Color,
+    showProgram: Boolean,
+    modifier: Modifier = Modifier,
+    tests: List<TestProgress> = emptyList(),
+    /** Éléments en tête de la vue d'ensemble. */
+    header: LazyListScope.() -> Unit = {},
+) {
     BoxWithConstraints(modifier.fillMaxSize()) {
         if (maxWidth >= TwoPaneMinWidth) {
             Row(Modifier.fillMaxSize()) {
                 LazyColumn(Modifier.weight(1f).fillMaxHeight()) {
+                    header()
                     statsTestItems(tests, color)
                     statsOverviewItems(stats, color, showProgram)
                 }
@@ -38,6 +48,7 @@ fun StatsPanes(stats: Stats, color: Color, showProgram: Boolean, modifier: Modif
             }
         } else {
             LazyColumn(Modifier.fillMaxSize()) {
+                header()
                 statsTestItems(tests, color)
                 statsOverviewItems(stats, color, showProgram)
                 statsExerciseItems(stats, color)

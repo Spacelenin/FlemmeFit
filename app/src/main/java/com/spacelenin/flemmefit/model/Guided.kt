@@ -1,7 +1,7 @@
 package com.spacelenin.flemmefit.model
 
 /** Déroulé d'un exercice en mode séance : les séries une par une, le repos entre elles, puis la saisie qui en sort. */
-class GuidedExercise(val prescription: Prescription) {
+class GuidedExercise(val prescription: Prescription, restBonus: Int = 0) {
     /** Un test se fait en une seule série, à fond. */
     val sets: Int = if (prescription.isTest) 1 else (prescription.sets ?: 1).coerceAtLeast(1)
 
@@ -10,7 +10,7 @@ class GuidedExercise(val prescription: Prescription) {
 
     val inSeconds: Boolean = prescription.maxIsSeconds
 
-    val restSeconds: Int? = TimerPlans.rest(prescription)?.seconds
+    val restSeconds: Int? = TimerPlans.rest(prescription, restBonus)?.seconds
 
     fun isAllOut(set: Int) = prescription.allOut && set == sets - 1
 

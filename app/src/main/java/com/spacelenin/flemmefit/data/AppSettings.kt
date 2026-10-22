@@ -27,6 +27,15 @@ class AppSettings(context: Context) {
         _tutorialOffered.value = true
     }
 
+    private val _restBonus = MutableStateFlow(prefs.getInt(KEY_REST_BONUS, 0))
+    /** Repos en plus, en % du repos prévu (0 à 100), pour tous les exercices. */
+    val restBonus: StateFlow<Int> = _restBonus.asStateFlow()
+
+    fun setRestBonus(percent: Int) {
+        prefs.edit().putInt(KEY_REST_BONUS, percent).apply()
+        _restBonus.value = percent
+    }
+
     private val _backupUri = MutableStateFlow(prefs.getString(KEY_BACKUP_URI, null))
     /** Fichier de sauvegarde automatique choisi par l'utilisateur. Null : pas de sauvegarde automatique. */
     val backupUri: StateFlow<String?> = _backupUri.asStateFlow()
@@ -54,6 +63,7 @@ class AppSettings(context: Context) {
     private companion object {
         const val KEY_THEME = "theme"
         const val KEY_TUTORIAL = "tutorial_offered"
+        const val KEY_REST_BONUS = "rest_bonus"
         // Mêmes clés que Backup.LOCAL_KEYS : elles ne partent pas dans la sauvegarde.
         const val KEY_BACKUP_URI = "backup_uri"
         const val KEY_BACKUP_LAST = "backup_last"

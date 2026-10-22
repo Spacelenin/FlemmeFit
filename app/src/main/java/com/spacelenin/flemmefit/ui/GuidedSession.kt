@@ -84,7 +84,8 @@ fun GuidedSession(
 
     val exerciseIndex = queue.getOrNull(pos)
     val prescription = exerciseIndex?.let { session.prescriptions.getOrNull(it) }
-    val guided = remember(prescription) { prescription?.let(::GuidedExercise) }
+    val restBonus = LocalRestBonus.current
+    val guided = remember(prescription, restBonus) { prescription?.let { GuidedExercise(it, restBonus) } }
     var value by remember(pos, set) { mutableIntStateOf(guided?.suggested(set) ?: 0) }
 
     val context = LocalContext.current

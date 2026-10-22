@@ -72,20 +72,20 @@ data class TimerRun(
 
 /** Ce que le minuteur sait lancer pour un exercice. */
 object TimerPlans {
-    /** Repos entre deux séries, si l'exercice en indique un lisible. */
-    fun rest(p: Prescription): TimerPhase? =
-        Measures.seconds(p.exercise.rest)?.takeIf { it > 0 }?.let { TimerPhase("Repos", it, rest = true) }
+    /** Repos entre deux séries, si l'exercice en indique un lisible, allongé de [bonusPercent] %. */
+    fun rest(p: Prescription, bonusPercent: Int = 0): TimerPhase? =
+        p.restSeconds(bonusPercent)?.let { TimerPhase("Repos", it, rest = true) }
 
     /**
      * Chrono d'un exercice en durée : séries et repos enchaînés, dernière série chronométrée si elle est à fond.
      * Null si l'exercice ne se fait pas au temps.
      */
-    fun exercise(p: Prescription): List<TimerPhase>? {
+    fun exercise(p: Prescription, restBonus: Int = 0): List<TimerPhase>? {
         val target = p.target?.takeIf { p.maxIsSeconds }?.let(Measures::formatSeconds)
         if (p.isTest) return if (p.maxIsSeconds) listOf(TimerPhase("À fond", null, target = target)) else null
         val work = p.seconds?.takeIf { it > 0 } ?: return null
         val sets = (p.sets ?: 1).coerceAtLeast(1)
-        val rest = rest(p)
+        val rest = rest(p, restBonus)
         return buildList {
             for (i in 1..sets) {
                 val last = i == sets
