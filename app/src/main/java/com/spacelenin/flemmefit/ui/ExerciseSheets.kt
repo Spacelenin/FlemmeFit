@@ -154,11 +154,11 @@ fun ExerciseDetailSheet(
             }
             Spacer(Modifier.height(4.dp))
             if (locked) {
-                Text("Séance à venir : elle se cochera le jour même.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Séance à venir : elle se validera le jour même.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedButton(onClick = onLog, modifier = Modifier.weight(1f)) { Text("Noter ce que j'ai fait") }
-                    Button(onClick = onDone, modifier = Modifier.weight(1f)) { Text(if (done) "Décocher" else "C'est fait") }
+                    Button(onClick = onDone, modifier = Modifier.weight(1f)) { Text(if (done) "Annuler la validation" else "Valider") }
                 }
             }
         }
@@ -311,7 +311,7 @@ fun BurstDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
         text = {
             Text(
                 "La séance du jour est renforcée : +$BURST_STEPS crans de progression sur les exercices qui progressent, " +
-                    "une série de plus sur les autres. Une fois par semaine. Annulable tant que rien n'est coché.",
+                    "une série de plus sur les autres. Une fois par semaine. Annulable tant que rien n'est validé.",
             )
         },
         confirmButton = { TextButton(onClick = onConfirm) { Text("C'est parti") } },

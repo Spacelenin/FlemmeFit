@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -31,7 +33,7 @@ import com.spacelenin.flemmefit.update.AppUpdater.State
 
 /** Bandeau de mise à jour en haut de l'accueil ; ne prend aucune place quand il n'y a rien à dire. */
 @Composable
-fun UpdateBanner(updater: AppUpdater, modifier: Modifier = Modifier) {
+fun UpdateBanner(updater: AppUpdater, modifier: Modifier = Modifier, floating: Boolean = false) {
     val state by updater.state.collectAsStateWithLifecycle()
     val dismissed by updater.dismissedVersion.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -53,7 +55,7 @@ fun UpdateBanner(updater: AppUpdater, modifier: Modifier = Modifier) {
 
     when (val s = state) {
         is State.Available -> if (s.release.versionCode != dismissed) {
-            BannerCard(modifier) {
+            BannerCard(modifier, floating) {
                 Text("Nouvelle version disponible", style = MaterialTheme.typography.titleMedium)
                 Text(
                     "${s.release.name} (tu as le build ${updater.currentVersion})",
@@ -68,21 +70,21 @@ fun UpdateBanner(updater: AppUpdater, modifier: Modifier = Modifier) {
                 }
             }
         }
-        is State.Downloading -> BannerCard(modifier) {
+        is State.Downloading -> BannerCard(modifier, floating) {
             Text("Téléchargement de ${s.release.name}… ${(s.progress * 100).toInt()} %", style = MaterialTheme.typography.bodyMedium)
             LinearProgressIndicator(progress = { s.progress }, modifier = Modifier.fillMaxWidth())
         }
-        State.Installing -> BannerCard(modifier) {
+        State.Installing -> BannerCard(modifier, floating) {
             Text("Installation… confirme dans la fenêtre d'Android.", style = MaterialTheme.typography.bodyMedium)
         }
-        State.Checking -> BannerCard(modifier) {
+        State.Checking -> BannerCard(modifier, floating) {
             Text("Recherche de mise à jour…", style = MaterialTheme.typography.bodyMedium)
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         }
-        State.UpToDate -> BannerCard(modifier) {
+        State.UpToDate -> BannerCard(modifier, floating) {
             Text("FlemmeFit est à jour (build ${updater.currentVersion}).", style = MaterialTheme.typography.bodyMedium)
         }
-        is State.Failed -> BannerCard(modifier) {
+        is State.Failed -> BannerCard(modifier, floating) {
             Text(s.message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
             s.release?.let { r -> TextButton(onClick = { install(r) }) { Text("Réessayer") } }
         }
@@ -111,10 +113,14 @@ fun UpdateBanner(updater: AppUpdater, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun BannerCard(modifier: Modifier, content: @Composable () -> Unit) {
+private fun BannerCard(modifier: Modifier, floating: Boolean, content: @Composable () -> Unit) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (floating) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.secondaryContainer,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (floating) 8.dp else 0.dp),
+        shape = RoundedCornerShape(20.dp),
+        modifier = modifier.fillMaxWidth().widthIn(max = 560.dp).padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             content()
