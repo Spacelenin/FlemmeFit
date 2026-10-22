@@ -55,7 +55,7 @@ fun LazyListScope.statsOverviewItems(stats: Stats, color: Color, showProgram: Bo
     if (stats.isEmpty) {
         item(key = "stats-empty") {
             Text(
-                "Pas encore de stats : coche des exercices dans le calendrier.",
+                "Pas encore de stats : valide des exercices dans le calendrier.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(16.dp),
             )

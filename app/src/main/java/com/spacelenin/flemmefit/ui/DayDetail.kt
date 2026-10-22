@@ -136,9 +136,9 @@ fun LazyListScope.dayDetailItems(
     }
     item(key = "day-footer") {
         Text(
-            if (schedule.isLocked(session)) "Séance à venir : elle se cochera le jour même."
-            else if (session.isBoss) "Cocher un exercice Boss demande ton max. Boss entièrement validé = Boss vaincu."
-            else "Touche la vignette pour cocher, l'exercice pour son détail. Appui long : noter ce que tu as fait.",
+            if (schedule.isLocked(session)) "Séance à venir : elle se validera le jour même."
+            else if (session.isBoss) "Valider un exercice Boss demande ton max. Boss entièrement validé = Boss vaincu."
+            else "Touche la vignette pour valider, l'exercice pour son détail. Appui long : noter ce que tu as fait.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -195,7 +195,7 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
         if (!locked) {
             AssistChip(
                 onClick = { actions.onSetAll(session, !allDone) },
-                label = { Text(if (allDone) "Tout décocher" else "Tout cocher") },
+                label = { Text(if (allDone) "Tout annuler" else "Tout valider") },
                 leadingIcon = { Icon(Icons.Default.Check, null, Modifier.size(18.dp)) },
             )
         }
@@ -289,8 +289,8 @@ private fun ExerciseRow(
                 .semantics {
                     contentDescription = when {
                         locked -> "Séance à venir"
-                        done -> "Fait, toucher pour décocher"
-                        else -> "Toucher pour cocher"
+                        done -> "Validé, toucher pour annuler"
+                        else -> "Toucher pour valider"
                     }
                 },
         ) {
@@ -356,7 +356,7 @@ private fun ExerciseRow(
             }
             DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                 DropdownMenuItem(
-                    text = { Text(if (done) "Décocher" else "C'est fait") },
+                    text = { Text(if (done) "Annuler la validation" else "Valider") },
                     leadingIcon = { Icon(Icons.Default.Check, null) },
                     enabled = !locked,
                     onClick = { menu = false; onToggle() },

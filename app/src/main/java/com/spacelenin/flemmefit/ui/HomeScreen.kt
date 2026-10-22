@@ -109,10 +109,11 @@ fun HomeScreen(
             )
         },
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding)) {
-            UpdateBanner(updater)
-            if (programs.isEmpty()) EmptyHome(importActions, Modifier.weight(1f))
-            else HomeContent(programs, actions, Modifier.weight(1f))
+        Box(Modifier.fillMaxSize().padding(padding)) {
+            if (programs.isEmpty()) EmptyHome(importActions)
+            else HomeContent(programs, actions, Modifier)
+            // Par-dessus l'écran, en bas : l'accueil ne bouge pas quand une mise à jour est annoncée.
+            UpdateBanner(updater, floating = true, modifier = Modifier.align(Alignment.BottomCenter))
         }
     }
 

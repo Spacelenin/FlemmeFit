@@ -158,12 +158,12 @@ fun ImportConfirmDialog(
                     val lost = remember(target, plan) { target.planUpdateLoss(plan) }
                     Text(
                         "La routine de « ${target.plan.name} » est remplacée. Tu gardes ta date de début " +
-                            "(${target.start.shortLabel()}), tes cases cochées, tes saisies et tes tests de départ.",
+                            "(${target.start.shortLabel()}), tes exercices validés, tes saisies et tes tests de départ.",
                         style = MaterialTheme.typography.bodyMedium,
                     )
                     if (lost > 0) {
                         Text(
-                            "⚠️ $lost case(s) cochée(s) ou saisie(s) portent sur des exercices retirés de la routine : elles seront perdues.",
+                            "⚠️ $lost validation(s) ou saisie(s) portent sur des exercices retirés de la routine : elles seront perdues.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                         )

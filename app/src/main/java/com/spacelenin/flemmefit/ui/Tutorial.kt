@@ -47,11 +47,11 @@ private val Pages = listOf(
         ),
     ),
     TutorialPage(
-        "✅", "Cocher une séance",
+        "✅", "Valider une séance",
         listOf(
-            "Touche la vignette d'un exercice pour le cocher, touche son nom pour le détail (chiffres, consigne, paliers).",
+            "Touche la vignette d'un exercice pour le valider, touche son nom pour le détail (chiffres, consigne, paliers).",
             "Appui long ou ⋮ › « Noter ce que j'ai fait » : tu règles chaque série. En dessous du prévu, l'exercice est partiel et la progression attend.",
-            "Les séances à venir ne se cochent pas : on valide ce qui est fait, le jour même.",
+            "Les séances à venir ne se valident pas : on valide ce qui est fait, le jour même.",
         ),
     ),
     TutorialPage(
@@ -74,7 +74,7 @@ private val Pages = listOf(
         "💀", "Boss et Burst",
         listOf(
             "Boss : une séance surprise toutes les 3-4 semaines, dévoilée la veille. Chiffres de la semaine suivante et dernière série à fond.",
-            "Burst 🚀 : une fois par semaine, tu peux renforcer la séance du jour (+$BURST_STEPS crans, ou une série de plus). Annulable tant que rien n'est coché.",
+            "Burst 🚀 : une fois par semaine, tu peux renforcer la séance du jour (+$BURST_STEPS crans, ou une série de plus). Annulable tant que rien n'est validé.",
         ),
     ),
     TutorialPage(
@@ -93,7 +93,7 @@ fun TutorialOfferDialog(onYes: () -> Unit, onNo: () -> Unit) {
     AlertDialog(
         onDismissRequest = onNo,
         title = { Text("Un petit tour de l'appli ?") },
-        text = { Text("Six écrans pour comprendre comment cocher, progresser, les paliers, les Boss et le Burst. Toujours dispo dans Réglages › Aide.") },
+        text = { Text("Six écrans pour comprendre comment valider, progresser, les paliers, les Boss et le Burst. Toujours dispo dans Réglages › Aide.") },
         confirmButton = { TextButton(onClick = onYes) { Text("Oui, montre-moi") } },
         dismissButton = { TextButton(onClick = onNo) { Text("Non merci") } },
     )
