@@ -97,6 +97,7 @@ fun rememberDayActions(
         onWeights = { s, i, on -> repository.setWeights(program.id, s.index, i, on) },
         onAddExtra = { date -> extraFor = date.toEpochDay() },
         onRemoveExtra = { date, i -> repository.removeExtra(program.id, date, i) },
+        onSkipVariant = { s -> repository.skipVariant(program.id, s.index) },
     )
 
     logDay?.let { dayIndex ->

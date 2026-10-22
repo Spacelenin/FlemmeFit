@@ -52,6 +52,8 @@ dans l'app : *Importer → Programme d'exemple*).
 | `deloadEvery` | entier  | non         | Une semaine de **décharge** toutes les N semaines (2 à 52), `0` = jamais. Par défaut : `4` si au moins un exercice a une `progression`, sinon `0`. |
 | `boss`        | booléen | non (défaut `true`) | Jours **Boss** aléatoires. `false` pour les désactiver. |
 | `tests`       | tableau | non         | **Tests de départ** : leur résultat choisit le palier des exercices (voir « Tests et paliers »). |
+| `families`    | tableau | non         | **Familles** d'exercices, pour les variantes (voir « Variantes »). |
+| `variants`    | tableau | non         | **Variantes** glissées au hasard dans leur famille (voir « Variantes »). |
 | `weeks`       | tableau | **oui**     | Au moins une semaine (voir ci-dessous). |
 
 ### Semaine (`weeks[]`)
@@ -190,6 +192,44 @@ et le test refait plus tard fait passer au palier suivant.
 - La `progression` s'applique **depuis le départ du palier**, et repart de zéro quand le palier change.
 - Un exercice `retest` met à jour le résultat du test avec le max noté : les séances suivantes changent de palier
   si besoin. Il n'est jamais allégé par la décharge, ce qui permet de placer les tests en semaine de décharge.
+
+## Variantes 🎲
+
+Une famille regroupe des exercices de base et le test qui leur sert d'étalon :
+
+```
+"families": [
+  { "id": "pompes", "name": "Pompes", "exercises": ["pompes", "pompes-lentes"], "test": "pompes", "counter": "Pompes" }
+],
+"variants": [
+  { "id": "pompes-pike", "name": "Pompes pike", "family": "pompes", "ratio": 10, "from": 25,
+    "description": "…", "easy": "pieds plus loin des mains." }
+]
+```
+
+| Champ (famille) | Description |
+|-----------------|-------------|
+| `id`, `name`    | Identifiant (pas `"autre"`, réservé aux exos perso) et nom affiché. |
+| `exercises`     | Ids des exercices de base. |
+| `test`          | Test de la famille : l'étalon des variantes. |
+| `counter`       | Compteur caché où les variantes s'ajoutent, en équivalent. |
+
+| Champ (variante) | Description |
+|------------------|-------------|
+| `id`, `name`, `family`, `description` | Identité, famille, consigne. |
+| `ratio`          | Une rep (ou une seconde) de la variante vaut `ratio` unités du test : max estimé = test ÷ `ratio`. Absent : le premier passage est une seule série au max, qui le mesure. |
+| `unit`           | `"reps"` (défaut) ou `"seconds"`. |
+| `from`           | Vraie version à partir de ce résultat au test ; en dessous, version facile (`easy`), comptée deux fois plus facile. |
+
+- **Jours variante** : tirés au sort séance par séance, seulement les jours où un exercice de base est prévu, au plus
+  un par séance, jamais en semaine de décharge, et dévoilés le jour même. Sur un cycle (`deloadEvery` semaines, 4 sinon),
+  chaque variante tombe 1 fois sous `from`, 2 fois au-dessus, 3 fois à partir d'une fois et demie `from`, réduit
+  d'autant si la famille n'a pas assez de séances.
+- **Ce jour-là**, l'exercice de base perd environ 40 % de ses séries et sa série max, puis vient un bloc de 3 séries
+  de la variante à 60 % du max estimé, la dernière au max. Ce max recale le taux (moyenne avec le précédent).
+- « Pas aujourd'hui » replace la variante plus loin dans le cycle.
+- **Exos perso** (onglet Exos) : dans une famille, ce sont des variantes comme les autres ; dans « Autre », ils
+  s'ajoutent à 2 séances par semaine, avant le dernier exercice, avec leur propre progression.
 
 ## Semaine de décharge 🌿
 

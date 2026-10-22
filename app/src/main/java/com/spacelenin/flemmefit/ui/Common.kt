@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.spacelenin.flemmefit.model.Stats
 import com.spacelenin.flemmefit.model.TestProgress
+import com.spacelenin.flemmefit.model.VariantProgress
 import java.time.LocalDate
 
 /** Largeur à partir de laquelle on affiche deux colonnes (écran intérieur des Fold, tablettes, paysage). */
@@ -32,6 +33,7 @@ fun StatsPanes(
     showProgram: Boolean,
     modifier: Modifier = Modifier,
     tests: List<TestProgress> = emptyList(),
+    variants: List<VariantProgress> = emptyList(),
     /** Éléments en tête de la vue d'ensemble. */
     header: LazyListScope.() -> Unit = {},
 ) {
@@ -41,6 +43,7 @@ fun StatsPanes(
                 LazyColumn(Modifier.weight(1f).fillMaxHeight()) {
                     header()
                     statsTestItems(tests, color)
+                    statsVariantItems(variants, color)
                     statsOverviewItems(stats, color, showProgram)
                 }
                 VerticalDivider()
@@ -50,6 +53,7 @@ fun StatsPanes(
             LazyColumn(Modifier.fillMaxSize()) {
                 header()
                 statsTestItems(tests, color)
+                statsVariantItems(variants, color)
                 statsOverviewItems(stats, color, showProgram)
                 statsExerciseItems(stats, color)
             }

@@ -197,8 +197,15 @@ data class Stats(
                     a.last = summary
                     a.lastDate = s.date
                     totalSets += sets; totalReps += reps; totalSeconds += secs
-                    pr.exercise.counter?.takeIf { it.isNotBlank() }?.let { name ->
-                        val add = Counter(name, reps, secs, if (pr.weighted == true) secs else 0)
+                    val variant = pr.variant
+                    (variant?.counter ?: pr.exercise.counter)?.takeIf { it.isNotBlank() }?.let { name ->
+                        val add = if (variant != null) {
+                            // Une variante compte en équivalent de sa famille (1 pompe à une main = 5 pompes).
+                            val equivalent = variant.equivalent(if (variant.isSeconds) secs else reps) ?: 0
+                            if (variant.testSeconds) Counter(name, seconds = equivalent) else Counter(name, reps = equivalent)
+                        } else {
+                            Counter(name, reps, secs, if (pr.weighted == true) secs else 0)
+                        }
                         counters[name] = counters[name]?.plus(add) ?: add
                     }
                     weekSets[monday] = (weekSets[monday] ?: 0) + sets

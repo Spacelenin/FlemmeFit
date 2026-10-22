@@ -3,6 +3,7 @@ package com.spacelenin.flemmefit.data
 import android.util.AtomicFile
 import android.util.Log
 import com.spacelenin.flemmefit.model.AppState
+import com.spacelenin.flemmefit.model.CustomExercise
 import com.spacelenin.flemmefit.model.ExerciseLog
 import com.spacelenin.flemmefit.model.Plan
 import com.spacelenin.flemmefit.model.PlanParser
@@ -114,6 +115,13 @@ class ProgramRepository(dir: File) {
 
     fun setWeights(id: String, dayIndex: Int, exerciseIndex: Int, on: Boolean) =
         updateProgram(id) { it.withWeights(dayIndex, exerciseIndex, on) }
+
+    fun skipVariant(id: String, dayIndex: Int) = updateProgram(id) { it.skipVariant(dayIndex) }
+
+    fun addCustom(id: String, exercise: CustomExercise) = updateProgram(id) { it.addCustom(exercise) }
+
+    fun updateCustom(id: String, exerciseId: String, transform: (CustomExercise) -> CustomExercise) =
+        updateProgram(id) { it.updateCustom(exerciseId, transform) }
 
     fun burst(id: String, dayIndex: Int) = updateProgram(id) { it.burst(dayIndex) }
 

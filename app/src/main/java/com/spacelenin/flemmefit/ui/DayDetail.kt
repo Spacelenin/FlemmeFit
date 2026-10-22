@@ -88,6 +88,8 @@ class DayActions(
     /** « J'ai fait autre chose » : ajouter une activité en plus à un jour, ou la retirer. */
     val onAddExtra: (date: LocalDate) -> Unit,
     val onRemoveExtra: (date: LocalDate, index: Int) -> Unit,
+    /** « Pas aujourd'hui » : la variante du jour est replacée plus tard dans le cycle. */
+    val onSkipVariant: (session: Session) -> Unit,
 )
 
 /** Détail du jour sélectionné, sous forme d'éléments de liste pour s'insérer dans n'importe quelle LazyColumn. */
@@ -131,9 +133,15 @@ fun LazyListScope.dayDetailItems(
         extraItems(schedule, date, color, actions)
         return
     }
-    session.prescriptions.forEachIndexed { i, prescription ->
+    session.order.forEach { i ->
+        val prescription = session.prescriptions[i]
         item(key = "ex-${session.index}-$i") {
             ExerciseRow(
+                tag = when {
+                    i == session.variantIndex -> "🎲 Variante : à la place de ta série max de ${session.prescriptions[session.variantBaseIndex!!].exercise.name.lowercase()}"
+                    i == session.otherIndex -> "⭐ Exo perso"
+                    else -> prescription.replacedBy?.let { "🎲 Série max remplacée par : ${it.lowercase()}" }
+                },
                 locked = schedule.isLocked(session),
                 prescription = prescription,
                 state = schedule.exerciseState(session, i),
@@ -213,6 +221,19 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
                 if (withTest) " Commence par le test : il choisit tes niveaux pour la suite." else " La progression reprend la semaine suivante.",
             DeloadColor,
         )
+        Spacer(Modifier.height(12.dp))
+    }
+    session.variantIndex?.let { v ->
+        val variant = session.prescriptions[v].exercise.name
+        val base = session.prescriptions[session.variantBaseIndex!!].exercise.name.lowercase()
+        Banner(
+            "🎲 Variante du jour : $variant",
+            "Un peu moins de $base, puis un bloc de ${variant.lowercase()} à la place de ta série max. Sa dernière série au max ajuste la suite.",
+            BurstColor,
+        )
+        if (schedule.canSkipVariant(session)) {
+            AssistChip(onClick = { actions.onSkipVariant(session) }, label = { Text("Pas aujourd'hui") })
+        }
         Spacer(Modifier.height(12.dp))
     }
     Text(
@@ -303,6 +324,8 @@ private fun Prescription.maxLabel(value: Int) = if (maxIsSeconds) Measures.forma
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ExerciseRow(
+    /** Variante, exo perso, ou série max remplacée. */
+    tag: String?,
     locked: Boolean,
     prescription: Prescription,
     state: ExerciseState,
@@ -381,6 +404,7 @@ private fun ExerciseRow(
             if (details.isNotEmpty()) {
                 Text(details, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+            tag?.let { Text(it, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, color = BurstColor) }
             prescription.weighted?.let { on -> WeightsChip(on, enabled = !locked && !done, onChange = onWeights) }
             if (prescription.allOut) {
                 val target = prescription.target?.let(prescription::maxLabel)
@@ -388,6 +412,7 @@ private fun ExerciseRow(
                     when {
                         prescription.isTest -> "📏 Record à battre" + (target?.let { " : $it" } ?: "")
                         prescription.isBoss -> "Dernière série à fond" + (target?.let { " · objectif $it" } ?: "")
+                        prescription.sets == 1 -> "Une seule série : ton max" + (target?.let { " (au moins $it)" } ?: "")
                         else -> "Dernière série : le max possible" + (target?.let { " (au moins $it)" } ?: "")
                     },
                     style = MaterialTheme.typography.bodyMedium,
