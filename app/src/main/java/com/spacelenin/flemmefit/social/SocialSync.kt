@@ -104,17 +104,36 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
             _status.value = Status.Loading
             _status.value = try {
                 publish(force = false)
-                val fresh = Social.parsePoll(httpGet("$BASE/${encoded()}/json?poll=1&since=12h"))
-                    .filter { it.id != myId }
-                val merged = Social.visible(Social.merge(_friends.value, fresh), _pseudo.value, System.currentTimeMillis())
-                prefs.edit().putString(KEY_CACHE, Social.encodeAll(merged)).apply()
-                _friends.value = merged
+                pull()
                 Status.Idle
             } catch (e: Exception) {
                 Log.w(TAG, "Canal injoignable", e)
                 Status.Failed("Canal injoignable (${e.message.orEmpty()}). Les dernières cartes connues restent affichées.")
             }
         }
+    }
+
+    /** Lit le canal et met à jour les cartes connues. [timeoutMs] : délai réseau, plus court pour un rappel. */
+    private fun pull(timeoutMs: Int? = null) {
+        val fresh = Social.parsePoll(httpGet("$BASE/${encoded()}/json?poll=1&since=12h", timeoutMs))
+            .filter { it.id != myId }
+        val merged = Social.visible(Social.merge(_friends.value, fresh), _pseudo.value, System.currentTimeMillis())
+        prefs.edit().putString(KEY_CACHE, Social.encodeAll(merged)).apply()
+        _friends.value = merged
+    }
+
+    /**
+     * Les potes, pour un rappel : lecture rapide du canal, sinon les dernières cartes connues.
+     * Rien si on ne joue pas (pas de pseudo).
+     */
+    fun friendsForReminder(): List<FriendCard> {
+        if (_pseudo.value == null) return emptyList()
+        try {
+            pull(REMINDER_TIMEOUT_MS)
+        } catch (e: Exception) {
+            Log.w(TAG, "Canal injoignable pour le rappel", e)
+        }
+        return _friends.value
     }
 
     /**
@@ -138,7 +157,7 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
 
     private fun encoded() = URLEncoder.encode(_topic.value, "UTF-8")
 
-    private fun httpGet(url: String): String = connect(url).run {
+    private fun httpGet(url: String, timeoutMs: Int? = null): String = connect(url, timeoutMs).run {
         try {
             if (responseCode != HttpURLConnection.HTTP_OK) throw IOException("HTTP $responseCode")
             inputStream.bufferedReader().use { it.readText() }
@@ -159,9 +178,9 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
         }
     }
 
-    private fun connect(url: String) = (URL(url).openConnection() as HttpURLConnection).apply {
-        connectTimeout = 15_000
-        readTimeout = 20_000
+    private fun connect(url: String, timeoutMs: Int? = null) = (URL(url).openConnection() as HttpURLConnection).apply {
+        connectTimeout = timeoutMs ?: 15_000
+        readTimeout = timeoutMs ?: 20_000
         setRequestProperty("User-Agent", "FlemmeFit/${BuildConfig.VERSION_NAME}")
     }
 
@@ -178,5 +197,7 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
         private const val KEY_LAST_AT = "lastPublishedAt"
         private const val PUBLISH_DEBOUNCE_MS = 20_000L
         private const val REPUBLISH_AFTER_MS = 6 * 60 * 60 * 1000L
+        /** Un rappel tient dans les quelques secondes qu'Android laisse à une alarme. */
+        private const val REMINDER_TIMEOUT_MS = 3_000
     }
 }

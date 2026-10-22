@@ -105,7 +105,7 @@ fun RemindersDialog(reminders: ReminderScheduler, programs: List<StoredProgram>,
                     HorizontalDivider()
                     OutlinedButton(onClick = reminders::test, modifier = Modifier.fillMaxWidth()) { Text("Envoyer une notification de test") }
                     Text(
-                        "Pas de rappel les jours de repos. Si rien n'arrive sur un Samsung : Réglages › Applications › " +
+                        "Pas de rappel les jours de repos. Avec un pseudo dans Potes, le rappel dit aussi qui a déjà fini sa séance. Si rien n'arrive sur un Samsung : Réglages › Applications › " +
                             "FlemmeFit › Batterie › « Non restreinte ».",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

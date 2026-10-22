@@ -115,7 +115,9 @@ class ReminderScheduler(private val context: Context) {
                 val programs = (context.applicationContext as FlemmeFitApp).repository.state.value.programs
                     .filterNot { it.id in s.mutedPrograms }
                 val today = LocalDate.now()
-                val messages = if (action == ACTION_EVENING) Reminders.evening(programs, today) else Reminders.daily(programs, today)
+                // Les potes qui ont déjà fini : de quoi piquer un peu plus (réseau, donc hors du fil principal).
+                val friends = Reminders.friendsDone((context.applicationContext as FlemmeFitApp).social.friendsForReminder(), today)
+                val messages = if (action == ACTION_EVENING) Reminders.evening(programs, today, friends) else Reminders.daily(programs, today, friends)
                 messages.forEach { notify(it, withSnooze = action != ACTION_EVENING) }
             }
         } catch (e: Exception) {

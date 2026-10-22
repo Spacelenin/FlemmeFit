@@ -100,7 +100,7 @@ private val Pages = listOf(
         listOf(
             "Stats : le bilan, les badges 🏅 (10, 50, 100, 500, 1 000, 10 000 pompes, séances, Boss…), les courbes de tests et tous les chiffres.",
             "Exos : tes exos perso et les variantes de la routine, avec ton taux pour chacune.",
-            "Potes : classement entre amis avec un pseudo (séances, Boss vaincus, exploits).",
+            "Potes : classement entre amis avec un pseudo (séances, Boss vaincus, exploits). Tes rappels te disent qui a déjà fini.",
             "Réglages (roue dentée) : thème, rappels, sauvegarde (un fichier réécrit tout seul, si tu en choisis un), mises à jour, et ce tuto dans Aide.",
             "Routine modifiée ? Réimporte le fichier : l'appli propose de mettre à jour le programme en gardant ton suivi.",
         ),
