@@ -258,6 +258,9 @@ fun AppRoot(
         )
         null -> {}
     }
+
+    // En dernier : passe par-dessus tout le reste.
+    UpdateGate(updater)
 }
 
 private suspend fun readSource(context: Context, source: ImportSource): String = when (source) {
