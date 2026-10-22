@@ -51,7 +51,7 @@ fun DateSelectDialog(initial: LocalDate, onSelect: (LocalDate) -> Unit, onDismis
             TextButton(onClick = {
                 state.selectedDateMillis?.let { onSelect(it.pickerMillisToDate()) }
                 onDismiss()
-            }) { Text("Valider") }
+            }) { Text("OK") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Annuler") } },
     ) { DatePicker(state = state) }

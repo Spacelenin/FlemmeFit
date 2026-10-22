@@ -40,41 +40,41 @@ private val Pages = listOf(
     TutorialPage(
         "🏠", "L'accueil",
         listOf(
-            "En haut : la séance du jour. « C'est parti » l'ouvre, « Repousser » la décale d'un jour (tout le reste suit).",
+            "En haut : la séance du jour. « C'est parti » l'ouvre, « Décaler » la reporte d'un jour (tout le reste suit).",
             "En dessous : le mois. Touche un jour pour voir sa séance.",
             "Plusieurs programmes ? Un sélecteur apparaît en haut, les autres sont des points de couleur sur le calendrier.",
             "Le ⋮ de la carte : date de début, tests, couleur, mise à jour de la routine, suppression.",
         ),
     ),
     TutorialPage(
-        "✅", "Valider une séance",
+        "✅", "Faire sa séance",
         listOf(
-            "Touche la vignette d'un exercice pour le valider, touche son nom pour le détail (chiffres, consigne, paliers).",
-            "Appui long ou ⋮ › « Noter ce que j'ai fait » : tu règles chaque série. En dessous du prévu, l'exercice est partiel et la progression attend.",
-            "Les séances à venir ne se valident pas : on valide ce qui est fait, le jour même.",
+            "Touche la vignette d'un exercice pour le marquer comme fait, touche son nom pour le détail (chiffres, consigne, niveaux).",
+            "Appui long ou ⋮ › « Saisir mes séries » : tu règles chaque série. En dessous du prévu, l'exercice est incomplet et la progression attend.",
+            "Les séances à venir ne se marquent pas : on note ce qui est fait, le jour même.",
         ),
     ),
     TutorialPage(
         "📈", "La progression",
         listOf(
-            "Chaque séance validée fait monter les chiffres (reps, durée ou charge, selon la routine).",
-            "Dernière série « à fond » : note ton max. Bien au-dessus du prévu, ça accélère ; en dessous, ça ralentit.",
-            "Toutes les 4 semaines : décharge 🌿, le volume est divisé par deux pour récupérer.",
+            "Chaque séance terminée fait monter les chiffres (reps, durée ou charge, selon la routine).",
+            "Dernière série « à fond » : saisis ton max. Bien au-dessus du prévu, ça accélère ; en dessous, ça ralentit.",
+            "Toutes les 4 semaines : semaine récup 🌿, le volume est divisé par deux pour récupérer.",
         ),
     ),
     TutorialPage(
-        "📏", "Tests et paliers",
+        "📏", "Tests et niveaux",
         listOf(
-            "Certaines routines démarrent d'un test : ton résultat choisit ton palier (les chiffres de départ).",
-            "Les tests sont refaits en semaine de décharge et te font changer de palier.",
-            "Tu peux corriger tes résultats via ⋮ › « Tests de départ ».",
+            "Certaines routines démarrent d'un test : ton résultat choisit ton niveau (les chiffres de départ).",
+            "Les tests sont refaits en semaine récup et te font changer de niveau.",
+            "Tu peux corriger tes résultats via ⋮ › « Tests de niveau ».",
         ),
     ),
     TutorialPage(
         "💀", "Boss et Burst",
         listOf(
             "Boss : une séance surprise toutes les 3-4 semaines, dévoilée la veille. Chiffres de la semaine suivante et dernière série à fond.",
-            "Burst 🚀 : une fois par semaine, tu peux renforcer la séance du jour (+$BURST_STEPS crans, ou une série de plus). Annulable tant que rien n'est validé.",
+            "Burst 🚀 : une fois par semaine, tu peux renforcer la séance du jour (+$BURST_STEPS étapes, ou une série de plus). Annulable tant que rien n'est fait.",
         ),
     ),
     TutorialPage(
@@ -93,7 +93,7 @@ fun TutorialOfferDialog(onYes: () -> Unit, onNo: () -> Unit) {
     AlertDialog(
         onDismissRequest = onNo,
         title = { Text("Un petit tour de l'appli ?") },
-        text = { Text("Six écrans pour comprendre comment valider, progresser, les paliers, les Boss et le Burst. Toujours dispo dans Réglages › Aide.") },
+        text = { Text("Six écrans pour comprendre comment faire tes séances, progresser, les niveaux, les Boss et le Burst. Toujours dispo dans Réglages › Aide.") },
         confirmButton = { TextButton(onClick = onYes) { Text("Oui, montre-moi") } },
         dismissButton = { TextButton(onClick = onNo) { Text("Non merci") } },
     )

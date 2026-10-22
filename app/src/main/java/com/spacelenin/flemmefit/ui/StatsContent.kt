@@ -55,7 +55,7 @@ fun LazyListScope.statsOverviewItems(stats: Stats, color: Color, showProgram: Bo
     if (stats.isEmpty) {
         item(key = "stats-empty") {
             Text(
-                "Pas encore de stats : valide des exercices dans le calendrier.",
+                "Pas encore de stats : termine des exercices dans le calendrier.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(16.dp),
             )
@@ -94,7 +94,7 @@ private fun SectionTitle(text: String) {
 private fun Totals(stats: Stats, color: Color) {
     val tiles = listOf(
         Triple("${stats.sessionsDone}", "séances faites", color),
-        Triple("${stats.currentStreak} 🔥", "série · record ${stats.bestStreak}", null),
+        Triple("${stats.currentStreak} 🔥", "d'affilée · record ${stats.bestStreak}", null),
         Triple("${stats.totalReps}", "reps · ${stats.totalSets} séries", null),
         Triple(formatTotalSeconds(stats.totalSeconds), "en durée", null),
         Triple("${stats.bossDefeated}/${stats.bossMet}", "Boss vaincus", BossColor),
@@ -137,7 +137,7 @@ private fun WeeklyChart(weeks: List<WeekVolume>, color: Color) {
             weeks.getOrNull(selected)?.let { w ->
                 Text(
                     "Semaine du ${w.monday.format(DayMonth)} : ${w.sets} séries" +
-                        (if (w.boss) " · Boss 💀" else "") + (if (w.deload) " · décharge 🌿" else ""),
+                        (if (w.boss) " · Boss 💀" else "") + (if (w.deload) " · récup 🌿" else ""),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -220,7 +220,7 @@ private fun ExerciseStatsCard(e: ExerciseStats, color: Color) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        val record = listOfNotNull(e.bestReps?.let { "max $it" }, e.bestSeconds?.let(Measures::formatSeconds)).firstOrNull()
+        val record = listOfNotNull(e.bestReps?.let { "record $it" }, e.bestSeconds?.let(Measures::formatSeconds)).firstOrNull()
         if (record != null) Text(record, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
     }
 }
