@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spacelenin.flemmefit.data.AppSettings
+import com.spacelenin.flemmefit.data.BackupManager
 import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.reminders.ReminderScheduler
 import com.spacelenin.flemmefit.social.SocialSync
@@ -54,6 +55,7 @@ import com.spacelenin.flemmefit.update.AppUpdater
 @Composable
 fun SettingsScreen(
     settings: AppSettings,
+    backup: BackupManager,
     reminders: ReminderScheduler,
     updater: AppUpdater,
     social: SocialSync,
@@ -98,6 +100,9 @@ fun SettingsScreen(
                     },
                     onClick = { showReminders = true },
                 )
+
+                Section("SAUVEGARDE")
+                BackupSection(backup, settings) { title, subtitle, onClick -> SettingRow(title, subtitle, onClick) }
 
                 Section("MISES À JOUR")
                 UpdateBanner(updater)

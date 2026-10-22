@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.spacelenin.flemmefit.model.Stats
+import com.spacelenin.flemmefit.model.TestProgress
 import java.time.LocalDate
 
 /** Largeur à partir de laquelle on affiche deux colonnes (écran intérieur des Fold, tablettes, paysage). */
@@ -24,16 +25,20 @@ val TwoPaneMinWidth = 600.dp
 
 /** Stats sur une colonne, ou deux (vue d'ensemble | exercices) sur écran large. */
 @Composable
-fun StatsPanes(stats: Stats, color: Color, showProgram: Boolean, modifier: Modifier = Modifier) {
+fun StatsPanes(stats: Stats, color: Color, showProgram: Boolean, modifier: Modifier = Modifier, tests: List<TestProgress> = emptyList()) {
     BoxWithConstraints(modifier.fillMaxSize()) {
         if (maxWidth >= TwoPaneMinWidth) {
             Row(Modifier.fillMaxSize()) {
-                LazyColumn(Modifier.weight(1f).fillMaxHeight()) { statsOverviewItems(stats, color, showProgram) }
+                LazyColumn(Modifier.weight(1f).fillMaxHeight()) {
+                    statsTestItems(tests, color)
+                    statsOverviewItems(stats, color, showProgram)
+                }
                 VerticalDivider()
                 LazyColumn(Modifier.weight(1f).fillMaxHeight()) { statsExerciseItems(stats, color) }
             }
         } else {
             LazyColumn(Modifier.fillMaxSize()) {
+                statsTestItems(tests, color)
                 statsOverviewItems(stats, color, showProgram)
                 statsExerciseItems(stats, color)
             }

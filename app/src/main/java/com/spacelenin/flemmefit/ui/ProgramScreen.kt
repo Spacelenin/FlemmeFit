@@ -63,6 +63,7 @@ import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.Stats
 import com.spacelenin.flemmefit.model.Progress
 import com.spacelenin.flemmefit.model.StoredProgram
+import com.spacelenin.flemmefit.model.testProgress
 import com.spacelenin.flemmefit.ui.theme.programColor
 import java.time.LocalDate
 import java.time.YearMonth
@@ -166,7 +167,7 @@ fun ProgramScreen(
             BoxWithConstraints(Modifier.fillMaxSize()) {
                 val wide = maxWidth >= TwoPaneMinWidth
                 if (tab == 1) {
-                    StatsPanes(remember(schedule) { Stats.of(schedule) }, color, showProgram = false)
+                    StatsPanes(remember(schedule) { Stats.of(schedule) }, color, showProgram = false, tests = remember(schedule) { schedule.testProgress() })
                 } else {
                     val calendarItems: LazyListScope.() -> Unit = {
                         if (program.missingTests.isNotEmpty()) {

@@ -83,7 +83,7 @@ private val Pages = listOf(
         "👥", "Le reste",
         listOf(
             "Potes : classement entre amis avec un pseudo (séances, Boss vaincus, exploits).",
-            "Réglages (roue dentée) : thème, rappels, mises à jour, et ce tuto dans Aide.",
+            "Réglages (roue dentée) : thème, rappels, sauvegarde (un fichier réécrit tout seul, si tu en choisis un), mises à jour, et ce tuto dans Aide.",
             "Routine modifiée ? Réimporte le fichier : l'appli propose de mettre à jour le programme en gardant ton suivi.",
         ),
     ),

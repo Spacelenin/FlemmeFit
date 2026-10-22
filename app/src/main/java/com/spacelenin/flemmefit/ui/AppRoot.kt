@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spacelenin.flemmefit.data.AppSettings
+import com.spacelenin.flemmefit.data.BackupManager
 import com.spacelenin.flemmefit.data.ProgramRepository
 import com.spacelenin.flemmefit.model.ParseResult
 import com.spacelenin.flemmefit.model.PlanParser
@@ -56,6 +57,7 @@ fun AppRoot(
     reminders: ReminderScheduler,
     social: SocialSync,
     settings: AppSettings,
+    backup: BackupManager,
     incoming: ImportSource?,
     onIncomingConsumed: () -> Unit,
     openRequest: String?,
@@ -129,7 +131,9 @@ fun AppRoot(
         uri?.let { load(ImportSource.File(it)) }
     }
 
+    val restore = rememberRestore(backup)
     val importActions = ImportActions(
+        restore = restore,
         // Beaucoup de gestionnaires de fichiers ne typent pas bien le .json : on accepte aussi le texte et tout le reste.
         fromFile = { picker.launch(arrayOf("application/json", "text/*", "application/octet-stream", "*/*")) },
         fromPaste = { pasting = true },
@@ -171,6 +175,7 @@ fun AppRoot(
                     BackHandler { showSettings = false }
                     SettingsScreen(
                         settings = settings,
+                        backup = backup,
                         reminders = reminders,
                         updater = updater,
                         social = social,

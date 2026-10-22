@@ -46,6 +46,7 @@ class MainActivity : ComponentActivity() {
                     reminders = app.reminders,
                     social = app.social,
                     settings = app.settings,
+                    backup = app.backup,
                     incoming = incoming,
                     onIncomingConsumed = { incoming = null },
                     openRequest = openRequest,
