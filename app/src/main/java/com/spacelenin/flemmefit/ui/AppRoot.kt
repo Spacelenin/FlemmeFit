@@ -67,6 +67,7 @@ fun AppRoot(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val timer = remember { WorkoutTimer() }
+    val guard = remember { SessionGuard() }
     val restBonus by settings.restBonus.collectAsStateWithLifecycle()
 
     // Programme tout juste importé dont il faut demander les tests de départ.
@@ -181,7 +182,7 @@ fun AppRoot(
     )
 
     val dayProgram = state.programs.find { it.id == dayProgramId }
-    CompositionLocalProvider(LocalWorkoutTimer provides timer, LocalRestBonus provides restBonus) {
+    CompositionLocalProvider(LocalWorkoutTimer provides timer, LocalRestBonus provides restBonus, LocalSessionGuard provides guard) {
         Box(Modifier.fillMaxSize()) {
             when {
                 dayProgram != null -> {
@@ -325,7 +326,8 @@ fun AppRoot(
 
     ChangelogDialog(updater)
     // En dernier : passe par-dessus tout le reste.
-    UpdateGate(updater)
+    // Pas en pleine séance : la mise à jour s'affiche dès que le mode séance est fermé et le minuteur arrêté.
+    if (!guard.active) UpdateGate(updater)
 }
 
 private suspend fun readSource(context: Context, source: ImportSource): String = when (source) {
