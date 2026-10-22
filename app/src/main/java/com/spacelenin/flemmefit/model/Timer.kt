@@ -57,6 +57,26 @@ data class TimerRun(
         else -> copy(index = index + 1, phaseStart = now, pausedAt = null, bonusSeconds = 0)
     }
 
+    /**
+     * Les fins d'étape à venir, en ms à partir de [now], tant que les étapes sont à rebours :
+     * de quoi prévenir à l'heure même appli fermée. S'arrête au premier chrono (sa fin dépend de « Stop »).
+     */
+    fun upcomingEnds(now: Long): List<PhaseEnd> {
+        if (finished || pausedAt != null) return emptyList()
+        val first = phase.seconds ?: return emptyList()
+        val ends = ArrayList<PhaseEnd>()
+        var at = (first + bonusSeconds) * 1000L - elapsedMs(now)
+        var i = index
+        while (true) {
+            val next = phases.getOrNull(i + 1)
+            ends += PhaseEnd(at.coerceAtLeast(0), phases[i], next)
+            val seconds = next?.seconds ?: break
+            i++
+            at += seconds * 1000L
+        }
+        return ends
+    }
+
     /** Fait passer les étapes à rebours écoulées ; la suivante démarre pile à la fin de la précédente. */
     fun advance(now: Long): TimerRun {
         var r = this
@@ -69,6 +89,9 @@ data class TimerRun(
         return r
     }
 }
+
+/** Fin d'une étape dans [inMs] ms : celle qui se termine et celle qui suit (null : c'était la dernière). */
+data class PhaseEnd(val inMs: Long, val ended: TimerPhase, val next: TimerPhase?)
 
 /** Ce que le minuteur sait lancer pour un exercice. */
 object TimerPlans {

@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.spacelenin.flemmefit.timer.AppVisibility
 import com.spacelenin.flemmefit.ui.AppRoot
 import com.spacelenin.flemmefit.ui.ImportSource
 import com.spacelenin.flemmefit.ui.theme.FlemmeFitTheme
@@ -59,9 +60,15 @@ class MainActivity : ComponentActivity() {
     /** À chaque retour au premier plan (lancement compris) : y a-t-il une nouvelle version ? */
     override fun onStart() {
         super.onStart()
+        AppVisibility.foreground = true
         val updater = (application as FlemmeFitApp).updater
         updater.loadChangelogIfUpdated()
         updater.autoCheck()
+    }
+
+    override fun onStop() {
+        AppVisibility.foreground = false
+        super.onStop()
     }
 
     override fun onNewIntent(intent: Intent) {
