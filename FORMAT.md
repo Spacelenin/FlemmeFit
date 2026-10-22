@@ -91,6 +91,7 @@ Ce sont des **textes libres** (tu peux écrire `"12"`, `"8-10"`, `"max"`, `"10 p
 | `amrap`       | booléen | non (défaut `false`) | `true` | Dernière série : le **max possible** (« au moins » le prévu), noté en cochant. |
 | `retest`      | booléen | non (défaut `false`) | `true` | L'exercice **est** le test : une série à fond, son résultat devient la nouvelle référence. |
 | `weights`     | objet  | non         | `{ "default": true, "factor": 0.85 }` | Exercice faisable **avec ou sans petits poids**, à dire le jour même dans l'app. `default` : choix proposé tant que rien n'est dit (ensuite, le dernier choix). `factor` (0 à 1, défaut `0.85`) : avec poids, chaque cran de progression ne vaut que cette part du pas. Même plafond, atteint plus tard ; arrondi vers le bas (minute au-delà de 10 min, 5 s en dessous). |
+| `counter`     | texte  | non         | `"Pompes"` | Compteur caché où s'additionne ce qui est fait (reps ou temps). Les exercices qui portent le même nom sont regroupés. Les compteurs se dévoilent dans les Réglages quand l'un d'eux passe 1 000 reps ou 10 h. |
 
 Affichage dans l'app : `sets × reps · load · repos rest`, par ex. **4 × 8-10 · 60 kg · repos 90s**.
 

@@ -1,7 +1,7 @@
 {
   "format": "flemmefit",
   "version": 1,
-  "revision": 2,
+  "revision": 3,
   "name": "Routine maison",
   "description": "5 séances par semaine (jours 4 et 7 : repos, ou rien selon la fatigue). Paliers inspirés de 100pompes, 50tractions, musclesabdominaux et musclesdesjambes : un test de départ choisit ton palier, la dernière série va souvent au max, et la 4e semaine allège tout de moitié et refait les tests pour passer au palier suivant. Échauffement et étirements d'après echauffez-vous et etirez-vous.",
   "repeat": "forever",
@@ -125,7 +125,8 @@
               "progression": {
                 "every": 2,
                 "reps": 1
-              }
+              },
+              "counter": "Pompes"
             },
             {
               "name": "Shadow boxing léger",
@@ -143,7 +144,8 @@
               "weights": {
                 "default": true,
                 "factor": 0.85
-              }
+              },
+              "counter": "Boxe"
             },
             {
               "name": "Étirements",
@@ -237,7 +239,8 @@
               ],
               "progression": {
                 "reps": 1
-              }
+              },
+              "counter": "Abdos"
             },
             {
               "name": "Obliques en planche latérale",
@@ -281,7 +284,8 @@
               "progression": {
                 "every": 2,
                 "reps": 1
-              }
+              },
+              "counter": "Abdos"
             },
             {
               "name": "Gainage",
@@ -330,7 +334,8 @@
               ],
               "progression": {
                 "duration": "5s"
-              }
+              },
+              "counter": "Gainage"
             },
             {
               "name": "Étirements",
@@ -418,7 +423,8 @@
               ],
               "progression": {
                 "reps": 1
-              }
+              },
+              "counter": "Tractions"
             },
             {
               "name": "Étirements",
@@ -513,7 +519,8 @@
               ],
               "progression": {
                 "reps": 1
-              }
+              },
+              "counter": "Pompes"
             },
             {
               "name": "Beat Saber",
@@ -528,7 +535,8 @@
               "weights": {
                 "default": false,
                 "factor": 0.85
-              }
+              },
+              "counter": "Beat Saber"
             },
             {
               "name": "Étirements",
@@ -624,7 +632,8 @@
               "progression": {
                 "every": 2,
                 "reps": 1
-              }
+              },
+              "counter": "Abdos"
             },
             {
               "name": "Squats sur une jambe",
@@ -670,7 +679,8 @@
               "progression": {
                 "every": 2,
                 "reps": 1
-              }
+              },
+              "counter": "Squats"
             },
             {
               "name": "Étirements",
@@ -767,7 +777,8 @@
               "progression": {
                 "every": 2,
                 "reps": 1
-              }
+              },
+              "counter": "Pompes"
             },
             {
               "name": "Shadow boxing léger",
@@ -785,7 +796,8 @@
               "weights": {
                 "default": true,
                 "factor": 0.85
-              }
+              },
+              "counter": "Boxe"
             },
             {
               "name": "Étirements",
@@ -879,7 +891,8 @@
               ],
               "progression": {
                 "reps": 1
-              }
+              },
+              "counter": "Abdos"
             },
             {
               "name": "Obliques en planche latérale",
@@ -923,7 +936,8 @@
               "progression": {
                 "every": 2,
                 "reps": 1
-              }
+              },
+              "counter": "Abdos"
             },
             {
               "name": "Gainage",
@@ -972,7 +986,8 @@
               ],
               "progression": {
                 "duration": "5s"
-              }
+              },
+              "counter": "Gainage"
             },
             {
               "name": "Étirements",
@@ -1060,7 +1075,8 @@
               ],
               "progression": {
                 "reps": 1
-              }
+              },
+              "counter": "Tractions"
             },
             {
               "name": "Étirements",
@@ -1155,7 +1171,8 @@
               ],
               "progression": {
                 "reps": 1
-              }
+              },
+              "counter": "Pompes"
             },
             {
               "name": "Beat Saber",
@@ -1170,7 +1187,8 @@
               "weights": {
                 "default": false,
                 "factor": 0.85
-              }
+              },
+              "counter": "Beat Saber"
             },
             {
               "name": "Étirements",
@@ -1266,7 +1284,8 @@
               "progression": {
                 "every": 2,
                 "reps": 1
-              }
+              },
+              "counter": "Abdos"
             },
             {
               "name": "Squats sur une jambe",
@@ -1312,7 +1331,8 @@
               "progression": {
                 "every": 2,
                 "reps": 1
-              }
+              },
+              "counter": "Squats"
             },
             {
               "name": "Étirements",
@@ -1409,7 +1429,8 @@
               "progression": {
                 "every": 2,
                 "reps": 1
-              }
+              },
+              "counter": "Pompes"
             },
             {
               "name": "Shadow boxing léger",
@@ -1427,7 +1448,8 @@
               "weights": {
                 "default": true,
                 "factor": 0.85
-              }
+              },
+              "counter": "Boxe"
             },
             {
               "name": "Étirements",
@@ -1521,7 +1543,8 @@
               ],
               "progression": {
                 "reps": 1
-              }
+              },
+              "counter": "Abdos"
             },
             {
               "name": "Obliques en planche latérale",
@@ -1565,7 +1588,8 @@
               "progression": {
                 "every": 2,
                 "reps": 1
-              }
+              },
+              "counter": "Abdos"
             },
             {
               "name": "Gainage",
@@ -1614,7 +1638,8 @@
               ],
               "progression": {
                 "duration": "5s"
-              }
+              },
+              "counter": "Gainage"
             },
             {
               "name": "Étirements",
@@ -1702,7 +1727,8 @@
               ],
               "progression": {
                 "reps": 1
-              }
+              },
+              "counter": "Tractions"
             },
             {
               "name": "Étirements",
@@ -1797,7 +1823,8 @@
               ],
               "progression": {
                 "reps": 1
-              }
+              },
+              "counter": "Pompes"
             },
             {
               "name": "Beat Saber",
@@ -1812,7 +1839,8 @@
               "weights": {
                 "default": false,
                 "factor": 0.85
-              }
+              },
+              "counter": "Beat Saber"
             },
             {
               "name": "Étirements",
@@ -1908,7 +1936,8 @@
               "progression": {
                 "every": 2,
                 "reps": 1
-              }
+              },
+              "counter": "Abdos"
             },
             {
               "name": "Squats sur une jambe",
@@ -1954,7 +1983,8 @@
               "progression": {
                 "every": 2,
                 "reps": 1
-              }
+              },
+              "counter": "Squats"
             },
             {
               "name": "Étirements",
@@ -1984,7 +2014,8 @@
               "id": "test-pompes",
               "test": "pompes",
               "retest": true,
-              "description": "Pompes classiques d'affilée, corps gainé, poitrine à un poing du sol. Arrête dès que la forme casse. Fais-le avant le reste de la séance, bien échauffé."
+              "description": "Pompes classiques d'affilée, corps gainé, poitrine à un poing du sol. Arrête dès que la forme casse. Fais-le avant le reste de la séance, bien échauffé.",
+              "counter": "Pompes"
             },
             {
               "name": "Pompes lentes et contrôlées",
@@ -2058,7 +2089,8 @@
               "progression": {
                 "every": 2,
                 "reps": 1
-              }
+              },
+              "counter": "Pompes"
             },
             {
               "name": "Shadow boxing léger",
@@ -2076,7 +2108,8 @@
               "weights": {
                 "default": true,
                 "factor": 0.85
-              }
+              },
+              "counter": "Boxe"
             },
             {
               "name": "Étirements",
@@ -2101,14 +2134,16 @@
               "id": "test-abdos",
               "test": "abdos",
               "retest": true,
-              "description": "Crunchs d'affilée, sans pause en bas."
+              "description": "Crunchs d'affilée, sans pause en bas.",
+              "counter": "Abdos"
             },
             {
               "name": "Test gainage",
               "id": "test-gainage",
               "test": "gainage",
               "retest": true,
-              "description": "Planche sur les avant-bras, le plus longtemps possible en restant droit."
+              "description": "Planche sur les avant-bras, le plus longtemps possible en restant droit.",
+              "counter": "Gainage"
             },
             {
               "name": "Abdos bras tendus",
@@ -2184,7 +2219,8 @@
               ],
               "progression": {
                 "reps": 1
-              }
+              },
+              "counter": "Abdos"
             },
             {
               "name": "Obliques en planche latérale",
@@ -2228,7 +2264,8 @@
               "progression": {
                 "every": 2,
                 "reps": 1
-              }
+              },
+              "counter": "Abdos"
             },
             {
               "name": "Gainage",
@@ -2277,7 +2314,8 @@
               ],
               "progression": {
                 "duration": "5s"
-              }
+              },
+              "counter": "Gainage"
             },
             {
               "name": "Étirements",
@@ -2302,7 +2340,8 @@
               "id": "test-tractions",
               "test": "tractions",
               "retest": true,
-              "description": "D'affilée, corps droit, poitrine jusqu'au plateau."
+              "description": "D'affilée, corps droit, poitrine jusqu'au plateau.",
+              "counter": "Tractions"
             },
             {
               "name": "Tractions sous une table",
@@ -2372,7 +2411,8 @@
               ],
               "progression": {
                 "reps": 1
-              }
+              },
+              "counter": "Tractions"
             },
             {
               "name": "Étirements",
@@ -2467,7 +2507,8 @@
               ],
               "progression": {
                 "reps": 1
-              }
+              },
+              "counter": "Pompes"
             },
             {
               "name": "Beat Saber",
@@ -2482,7 +2523,8 @@
               "weights": {
                 "default": false,
                 "factor": 0.85
-              }
+              },
+              "counter": "Beat Saber"
             },
             {
               "name": "Étirements",
@@ -2508,7 +2550,8 @@
               "id": "test-squat",
               "test": "squat",
               "retest": true,
-              "description": "Sur ta moins bonne jambe. Se tenir à un appui est permis, mais compte 0 si tu ne descends pas sous les genoux."
+              "description": "Sur ta moins bonne jambe. Se tenir à un appui est permis, mais compte 0 si tu ne descends pas sous les genoux.",
+              "counter": "Squats"
             },
             {
               "name": "Abdos",
@@ -2585,7 +2628,8 @@
               "progression": {
                 "every": 2,
                 "reps": 1
-              }
+              },
+              "counter": "Abdos"
             },
             {
               "name": "Squats sur une jambe",
@@ -2631,7 +2675,8 @@
               "progression": {
                 "every": 2,
                 "reps": 1
-              }
+              },
+              "counter": "Squats"
             },
             {
               "name": "Étirements",

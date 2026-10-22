@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spacelenin.flemmefit.data.AppSettings
 import com.spacelenin.flemmefit.data.BackupManager
 import com.spacelenin.flemmefit.data.ProgramRepository
+import com.spacelenin.flemmefit.model.Counter
 import com.spacelenin.flemmefit.model.ParseResult
 import com.spacelenin.flemmefit.model.PlanParser
 import com.spacelenin.flemmefit.model.ProgramSchedule
@@ -67,6 +68,7 @@ fun AppRoot(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val timer = remember { WorkoutTimer() }
+    val guard = remember { SessionGuard() }
     val restBonus by settings.restBonus.collectAsStateWithLifecycle()
 
     // Programme tout juste importé dont il faut demander les tests de départ.
@@ -181,7 +183,7 @@ fun AppRoot(
     )
 
     val dayProgram = state.programs.find { it.id == dayProgramId }
-    CompositionLocalProvider(LocalWorkoutTimer provides timer, LocalRestBonus provides restBonus) {
+    CompositionLocalProvider(LocalWorkoutTimer provides timer, LocalRestBonus provides restBonus, LocalSessionGuard provides guard) {
         Box(Modifier.fillMaxSize()) {
             when {
                 dayProgram != null -> {
@@ -250,6 +252,31 @@ fun AppRoot(
             // Au-dessus de la barre du bas, sur tous les écrans.
             TimerOverlay(timer, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 88.dp))
         }
+    }
+
+    // Compteurs cachés : dévoilés le jour où l'un d'eux passe le cap, une seule fois.
+    val countersUnlocked by settings.countersUnlocked.collectAsStateWithLifecycle()
+    val counters = remember(state.programs, countersUnlocked) {
+        if (countersUnlocked) emptyList() else countersOf(state.programs, LocalDate.now())
+    }
+    var unlockedBy by remember { mutableStateOf<Counter?>(null) }
+    LaunchedEffect(counters) {
+        if (!countersUnlocked && !settings.countersLockedByHand && Counter.unlocked(counters)) {
+            settings.unlockCounters()
+            unlockedBy = Counter.milestone(counters)
+        }
+    }
+    // Pas au milieu d'une séance : le message attend qu'elle soit finie.
+    unlockedBy?.takeIf { !guard.active }?.let { milestone ->
+        CountersUnlockedDialog(
+            milestone = milestone,
+            onSee = {
+                unlockedBy = null
+                dayProgramId = null
+                showSettings = true
+            },
+            onDismiss = { unlockedBy = null },
+        )
     }
 
     val changelog by updater.changelog.collectAsStateWithLifecycle()
@@ -325,7 +352,8 @@ fun AppRoot(
 
     ChangelogDialog(updater)
     // En dernier : passe par-dessus tout le reste.
-    UpdateGate(updater)
+    // Pas en pleine séance : la mise à jour s'affiche dès que le mode séance est fermé et le minuteur arrêté.
+    if (!guard.active) UpdateGate(updater)
 }
 
 private suspend fun readSource(context: Context, source: ImportSource): String = when (source) {

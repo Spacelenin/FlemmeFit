@@ -60,7 +60,7 @@ private enum class Step { SET, RUN, REST, END }
 
 /**
  * Mode séance : les exercices pas encore faits, série par série, avec le repos décompté entre deux.
- * Chaque exercice fini est enregistré tout de suite ; quitter en route garde ce qui est fait.
+ * Chaque série est enregistrée dès qu'elle est faite : l'appli peut se fermer, on reprend où on en était.
  */
 @Composable
 fun GuidedSession(
@@ -71,13 +71,21 @@ fun GuidedSession(
     onWeights: (exerciseIndex: Int, on: Boolean) -> Unit,
     onClose: () -> Unit,
 ) {
+    HoldSession()
     // Les exercices à faire, figés à l'ouverture : en valider un ne décale pas la suite.
     val queue = remember(session.index) {
         (0 until session.exerciseCount).filter { !schedule.program.isDone(session.index, it) }
     }
+    /** Séries déjà faites d'un exercice commencé (mode séance quitté ou appli fermée en route). */
+    fun doneSets(exerciseIndex: Int?): List<Int> {
+        val i = exerciseIndex ?: return emptyList()
+        val sets = session.prescriptions.getOrNull(i)?.let(::GuidedExercise)?.sets ?: return emptyList()
+        val done = schedule.program.logOf(session.index, i)?.perSet?.takeIf { it.size == sets }?.takeWhile { it > 0 }.orEmpty()
+        return if (done.size < sets) done else emptyList()
+    }
     var pos by remember { mutableIntStateOf(0) }
-    var set by remember { mutableIntStateOf(0) }
-    var values by remember { mutableStateOf(emptyList<Int>()) }
+    var values by remember { mutableStateOf(doneSets(queue.firstOrNull())) }
+    var set by remember { mutableIntStateOf(values.size) }
     var step by remember { mutableStateOf(if (queue.isEmpty()) Step.END else Step.SET) }
     var run by remember { mutableStateOf<TimerRun?>(null) }
     var now by remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
@@ -112,13 +120,15 @@ fun GuidedSession(
     }
 
     fun nextExercise(rest: Int?) {
-        set = 0
-        values = emptyList()
         run = null
         if (pos < queue.lastIndex) {
             pos++
+            values = doneSets(queue[pos])
+            set = values.size
             startRest(rest)
         } else {
+            values = emptyList()
+            set = 0
             step = Step.END
         }
     }
@@ -128,6 +138,8 @@ fun GuidedSession(
         values = values + v
         run = null
         if (set < g.sets - 1) {
+            // Série enregistrée tout de suite (l'exercice reste incomplet tant que tout n'est pas fait).
+            savePartial()
             set++
             startRest(g.restSeconds)
         } else {

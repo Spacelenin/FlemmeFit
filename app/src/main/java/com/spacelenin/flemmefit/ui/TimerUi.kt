@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -81,6 +82,35 @@ class WorkoutTimer {
 
 val LocalWorkoutTimer = staticCompositionLocalOf { WorkoutTimer() }
 
+/**
+ * Séance en cours (mode séance ouvert, minuteur qui tourne) : la mise à jour obligatoire attend la fin
+ * plutôt que de couper la séance.
+ */
+class SessionGuard {
+    private var holds by mutableIntStateOf(0)
+    val active: Boolean get() = holds > 0
+
+    fun hold() {
+        holds++
+    }
+
+    fun release() {
+        holds = (holds - 1).coerceAtLeast(0)
+    }
+}
+
+val LocalSessionGuard = staticCompositionLocalOf { SessionGuard() }
+
+/** Tant que ce composable est affiché, la séance est « en cours ». */
+@Composable
+fun HoldSession() {
+    val guard = LocalSessionGuard.current
+    DisposableEffect(guard) {
+        guard.hold()
+        onDispose(guard::release)
+    }
+}
+
 /** Réglage « repos en plus », en % du repos prévu. */
 val LocalRestBonus = staticCompositionLocalOf { 0 }
 
@@ -89,6 +119,7 @@ val LocalRestBonus = staticCompositionLocalOf { 0 }
 fun TimerOverlay(timer: WorkoutTimer, modifier: Modifier = Modifier) {
     val run by timer.run.collectAsStateWithLifecycle()
     val current = run ?: return
+    HoldSession()
     val context = LocalContext.current
     val feedback = remember { TimerFeedback(context) }
     DisposableEffect(Unit) { onDispose(feedback::release) }

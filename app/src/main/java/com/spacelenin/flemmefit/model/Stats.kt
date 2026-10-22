@@ -63,6 +63,8 @@ data class Stats(
     val weeks: List<WeekVolume>,
     val history: List<HistoryEntry>,
     val exploits: List<Exploit> = emptyList(),
+    /** Compteurs cachés, par famille d'exercices. */
+    val counters: List<Counter> = emptyList(),
 ) {
     val isEmpty get() = sessionsDone == 0 && exercises.isEmpty()
 
@@ -105,6 +107,7 @@ data class Stats(
                 weeks = weeks,
                 history = all.flatMap { it.history }.sortedByDescending { it.date }.take(HISTORY_SIZE),
                 exploits = all.flatMap { it.exploits }.sortedByDescending { it.date },
+                counters = Counter.merge(all.map { it.counters }),
             )
         }
 
@@ -133,6 +136,7 @@ data class Stats(
             var bestStreak = 0; var run = 0
             val history = ArrayList<HistoryEntry>()
             val exploits = ArrayList<Exploit>()
+            val counters = LinkedHashMap<String, Counter>()
 
             for (s in sessions) {
                 val monday = s.date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
@@ -193,6 +197,10 @@ data class Stats(
                     a.last = summary
                     a.lastDate = s.date
                     totalSets += sets; totalReps += reps; totalSeconds += secs
+                    pr.exercise.counter?.takeIf { it.isNotBlank() }?.let { name ->
+                        val add = Counter(name, reps, secs, if (pr.weighted == true) secs else 0)
+                        counters[name] = counters[name]?.plus(add) ?: add
+                    }
                     weekSets[monday] = (weekSets[monday] ?: 0) + sets
                 }
                 if (touched) {
@@ -220,6 +228,7 @@ data class Stats(
                 },
                 history = history.sortedByDescending { it.date }.take(HISTORY_SIZE),
                 exploits = exploits.sortedByDescending { it.date },
+                counters = counters.values.sortedBy { it.isTime },
             )
         }
     }
