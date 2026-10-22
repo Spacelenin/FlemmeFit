@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -32,6 +33,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,6 +49,7 @@ import com.spacelenin.flemmefit.model.ExerciseLog
 import com.spacelenin.flemmefit.model.Measures
 import com.spacelenin.flemmefit.model.Plan
 import com.spacelenin.flemmefit.model.Prescription
+import com.spacelenin.flemmefit.model.TimerPlans
 
 /** Valeur d'une série, en reps ou en durée. */
 private fun Prescription.setLabel(v: Int) = if (maxIsSeconds) Measures.formatSeconds(v) else v.toString()
@@ -156,6 +159,31 @@ fun ExerciseDetailSheet(
             if (locked) {
                 Text("Séance à venir : elle se fera le jour même.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
+                val timer = LocalWorkoutTimer.current
+                val chrono = remember(prescription) { TimerPlans.exercise(prescription) }
+                val rest = remember(prescription) { TimerPlans.rest(prescription) }
+                if (chrono != null || rest != null) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        chrono?.let { phases ->
+                            FilledTonalButton(
+                                onClick = {
+                                    timer.start(exercise.name, phases, onFinished = if (done) null else onDone)
+                                    onDismiss()
+                                },
+                                modifier = Modifier.weight(1f),
+                            ) { Text("⏱ Lancer le chrono") }
+                        }
+                        rest?.let { phase ->
+                            FilledTonalButton(
+                                onClick = {
+                                    timer.start(exercise.name, listOf(phase))
+                                    onDismiss()
+                                },
+                                modifier = Modifier.weight(1f),
+                            ) { Text("Repos ${Measures.formatSeconds(phase.seconds ?: 0)}") }
+                        }
+                    }
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedButton(onClick = onLog, modifier = Modifier.weight(1f)) { Text("Saisir mes séries") }
                     Button(onClick = onDone, modifier = Modifier.weight(1f)) { Text(if (done) "Retirer" else "Marquer comme fait") }
