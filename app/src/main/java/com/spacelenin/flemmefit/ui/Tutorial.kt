@@ -82,7 +82,7 @@ private val Pages = listOf(
     TutorialPage(
         "🎲", "Variantes et exos perso",
         listOf(
-            "Certains jours tirés au sort, une variante plus dure (diamant, pike, une main, cossack…) remplace une partie des séries de son exo de base.",
+            "Certains jours tirés au sort, une variante plus dure (diamant, pike, une main, cossack…) remplace une partie des séries de son exo de base (aux jambes, tout l'exercice : les squats classiques servent surtout de test).",
             "Tu es prévenu en haut de la séance et au moment des séries. Pas chaud ? « Pas aujourd'hui » la replace plus tard dans le cycle.",
             "Sa dernière série au max recale ton taux (1 pompe pike ≈ 10 pompes…) : la dose suit ton vrai niveau. Courbes dans Stats.",
             "Onglet Exos : ajoute tes propres exos. Dans une famille, ils deviennent des variantes ; dans « Autre », l'appli les place 2 fois par semaine.",

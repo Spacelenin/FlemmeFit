@@ -2,6 +2,7 @@ package com.spacelenin.flemmefit.model
 
 import kotlinx.serialization.Serializable
 import java.time.LocalDate
+import kotlin.math.floor
 import kotlin.math.roundToInt
 
 /** Séries d'un bloc variante, la dernière au max. */
@@ -116,6 +117,8 @@ data class VariantInfo(
     val testSeconds: Boolean,
     val counter: String?,
     val custom: Boolean,
+    /** Prend toute la place de l'exercice de base (famille en [PlanFamily.replace]). */
+    val whole: Boolean = false,
 ) {
     /** Ce qui a été fait ([amount] reps ou secondes de variante), en unités du test de la famille. */
     fun equivalent(amount: Int): Int? = ratio?.let { (amount * it).roundToInt() }
@@ -166,6 +169,23 @@ object Variants {
         }
     }
 
+    /** Part des séances de la famille données aux variantes, en [PlanFamily.replace] : une sur deux, puis 5 sur 6. */
+    fun replaceShare(family: PlanFamily, variants: List<Variant>, test: Int?): Double {
+        val t = test ?: 0
+        if (family.minTest != null && t < family.minTest) return 0.0
+        val full = variants.mapNotNull { it.from }.minOrNull()
+        return if (full == null || t >= full) 5.0 / 6 else 0.5
+    }
+
+    /**
+     * Passages de variantes sur le cycle [cycle] pour [slots] séances : un cycle sur deux arrondi au-dessus, l'autre
+     * au-dessous (5/6 de 3 séances : 3 puis 2, soit l'exercice de base une fois tous les 2 cycles).
+     */
+    fun replaceCount(share: Double, slots: Int, cycle: Int): Int {
+        if (share <= 0.0) return 0
+        return floor(slots * share + if (cycle % 2 == 1) 0.5 else 0.0).toInt().coerceIn(0, slots)
+    }
+
     /** Taux après un max noté : la moyenne avec le précédent, pour qu'une mauvaise séance ne fasse pas tout basculer. */
     fun learn(previous: Double?, test: Int, max: Int): Double {
         val measured = test.toDouble() / max
@@ -207,6 +227,7 @@ object Variants {
             variant = VariantInfo(
                 id = v.id, name = v.name, familyName = family.name, baseName = base.name, ratio = ratio, startRatio = startRatio,
                 full = full, isSeconds = v.isSeconds, testSeconds = testSeconds, counter = family.counter, custom = custom,
+                whole = family.replace,
             ),
         )
     }

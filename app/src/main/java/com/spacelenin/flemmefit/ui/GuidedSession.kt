@@ -294,7 +294,9 @@ private fun SetContent(
             color = color,
         )
         // Jour variante : rappelé au moment des séries concernées.
-        val reminder = p.variant?.let { "🎲 Variante, à la place de ta série max de ${it.baseName.lowercase()}" }
+        val reminder = p.variant?.let {
+            if (it.whole) "🎲 Variante, à la place de ${it.baseName.lowercase()}" else "🎲 Variante, à la place de ta série max de ${it.baseName.lowercase()}"
+        }
             ?: p.replacedBy?.let { "🎲 Pas de série max ici : elle laisse place à ${it.lowercase()}" }
         reminder?.let {
             Spacer(Modifier.height(8.dp))
