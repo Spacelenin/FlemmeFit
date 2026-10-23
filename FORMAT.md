@@ -193,6 +193,15 @@ et le test refait plus tard fait passer au palier suivant.
 - Un exercice `retest` met à jour le résultat du test avec le max noté : les séances suivantes changent de palier
   si besoin. Il n'est jamais allégé par la décharge, ce qui permet de placer les tests en semaine de décharge.
 
+
+### Exercice au choix (`tests[].options`)
+
+Un test peut se faire au choix (`"options": [{ "id": "crunch", "name": "Crunchs", "short": "crunch" }, …]`).
+Dans les noms d'exercices, `{id du test}` est remplacé par le choix en cours (« Abdos ({abdos}) » → « Abdos (crunch) »),
+ou par tous les choix tant que rien n'est dit. Le premier choix vaut depuis le début ; changer ensuite propose de refaire
+le test : ce max devient la référence dès la séance suivante. La courbe du test garde les deux, séparées, et départ et
+record ne comparent que le choix en cours.
+
 ## Variantes 🎲
 
 Une famille regroupe des exercices de base et le test qui leur sert d'étalon :

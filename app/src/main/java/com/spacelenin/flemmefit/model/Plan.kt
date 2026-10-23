@@ -81,8 +81,18 @@ data class PlanTest(
     val description: String? = null,
     /** "reps" ou "seconds". */
     val unit: String = UNIT_REPS,
+    /**
+     * Exercices au choix pour ce test (« crunch » ou « sit-up »). Dans les noms d'exercices, `{id du test}`
+     * est remplacé par le choix en cours, ou par tous les choix (« crunch ou sit-up ») tant que rien n'est dit.
+     */
+    val options: List<TestOption> = emptyList(),
 ) {
     val isSeconds get() = unit == UNIT_SECONDS
+
+    fun option(id: String?): TestOption? = id?.let { o -> options.firstOrNull { it.id == o } }
+
+    /** Ce qui remplace `{id}` dans les noms : le choix, ou tous les choix. */
+    fun optionLabel(id: String?): String = option(id)?.short ?: options.joinToString(" ou ") { it.short }
 
     companion object {
         const val UNIT_REPS = "reps"
@@ -130,6 +140,10 @@ data class Variant(
 ) {
     val isSeconds get() = unit == PlanTest.UNIT_SECONDS
 }
+
+/** Un exercice au choix pour un test : [name] pour le test (« Sit-ups »), [short] dans les noms (« sit-up »). */
+@Serializable
+data class TestOption(val id: String, val name: String, val short: String)
 
 /**
  * Palier d'un exercice, choisi d'après le dernier résultat du test : le palier retenu est le dernier

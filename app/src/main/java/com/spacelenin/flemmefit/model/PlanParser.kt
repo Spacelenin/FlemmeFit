@@ -92,6 +92,8 @@ object PlanParser {
             if (test.unit != PlanTest.UNIT_REPS && test.unit != PlanTest.UNIT_SECONDS) {
                 add("$at.unit doit valoir \"reps\" ou \"seconds\" (reçu \"${test.unit}\").")
             }
+            if (test.options.any { it.id.isBlank() || it.name.isBlank() || it.short.isBlank() }) add("$at.options : id, name et short ne doivent pas être vides.")
+            if (test.options.map { it.id }.toSet().size != test.options.size) add("$at.options : un même id apparaît deux fois.")
         }
 
         val familyIds = mutableSetOf<String>()

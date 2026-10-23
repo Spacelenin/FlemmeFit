@@ -113,6 +113,7 @@ fun ProgramMenuButton(
                     dialog = null
                     onTestsAsked()
                 },
+                onChangeOption = { test, option, result -> repository.changeTestOption(program.id, test, option, result) },
                 onDismiss = {
                     dialog = null
                     onTestsAsked()

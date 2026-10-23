@@ -21,6 +21,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -220,8 +222,18 @@ private fun Map<String, String>.parsedResults(): Map<String, Int> =
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun TestsDialog(program: StoredProgram, current: Map<String, Int>, onSave: (Map<String, Int>) -> Unit, onDismiss: () -> Unit) {
+fun TestsDialog(
+    program: StoredProgram,
+    current: Map<String, Int>,
+    onSave: (Map<String, Int>) -> Unit,
+    onDismiss: () -> Unit,
+    /** Test à exercice au choix (crunch ou sit-up) : nouveau choix, avec le max refait tout de suite ou non. */
+    onChangeOption: (testId: String, option: String, result: Int?) -> Unit = { _, _, _ -> },
+) {
     var results by remember { mutableStateOf(program.tests.mapValues { it.value.toString() }) }
+    val today = LocalDate.now()
+    // Changement d'exercice en attente de confirmation : test et nouveau choix.
+    var switching by remember { mutableStateOf<Pair<String, String>?>(null) }
     val tests = program.plan.tests
     val scope = rememberCoroutineScope()
     // Premier exercice à paliers de chaque test : sert à montrer le palier atteint pendant la saisie.
@@ -258,12 +270,31 @@ fun TestsDialog(program: StoredProgram, current: Map<String, Int>, onSave: (Map<
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 tests.forEachIndexed { i, test ->
+                    if (test.options.isNotEmpty()) {
+                        val chosen = program.optionOn(test.id, today)
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            test.options.forEach { o ->
+                                FilterChip(
+                                    selected = chosen == o.id,
+                                    onClick = {
+                                        when {
+                                            chosen == o.id -> Unit
+                                            // Premier choix : c'est ce qui a été fait depuis le début, rien à refaire.
+                                            chosen == null -> onChangeOption(test.id, o.id, null)
+                                            else -> switching = test.id to o.id
+                                        }
+                                    },
+                                    label = { Text(o.name) },
+                                )
+                            }
+                        }
+                    }
                     // Le clavier s'ouvre après la prise de focus : on attend qu'il ait réduit l'écran avant de défiler.
                     val bringIntoView = remember { BringIntoViewRequester() }
                     OutlinedTextField(
                         value = results[test.id].orEmpty(),
                         onValueChange = { v -> results = results + (test.id to v.filter(Char::isDigit).take(4)) },
-                        label = { Text(test.name) },
+                        label = { Text(program.testName(test, today)) },
                         suffix = { Text(if (test.isSeconds) "s" else "reps") },
                         // Boutons −/+ : pas besoin du clavier pour ajuster.
                         leadingIcon = {
@@ -282,7 +313,7 @@ fun TestsDialog(program: StoredProgram, current: Map<String, Int>, onSave: (Map<
                             val palier = levelled[test.id]?.let { e ->
                                 val i = e.levelIndexFor(results[test.id]?.toIntOrNull())
                                 val at = e.atLevel(i)
-                                "→ ${e.name} : niveau ${i + 1}/${e.levels.size}" +
+                                "→ ${program.exerciseName(e.name, today)} : niveau ${i + 1}/${e.levels.size}" +
                                     listOfNotNull(at.sets?.let { "$it ×" }, at.reps ?: at.duration).joinToString(" ", prefix = " · ")
                             }
                             Text(listOfNotNull(test.description, palier).joinToString("\n"))
@@ -310,10 +341,43 @@ fun TestsDialog(program: StoredProgram, current: Map<String, Int>, onSave: (Map<
                     Text("Derniers résultats", style = MaterialTheme.typography.labelLarge)
                     retested.forEach { t ->
                         val v = current.getValue(t.id)
-                        Text("${t.name} : ${if (t.isSeconds) Measures.formatSeconds(v) else "$v reps"}", style = MaterialTheme.typography.bodyMedium)
+                        Text("${program.testName(t, today)} : ${if (t.isSeconds) Measures.formatSeconds(v) else "$v reps"}", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
         }
+    }
+
+    switching?.let { (testId, optionId) ->
+        val test = tests.first { it.id == testId }
+        val option = test.option(optionId) ?: return@let
+        var max by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { switching = null },
+            title = { Text("Passer aux ${option.name.lowercase()} ?") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "Fais le test maintenant (bien échauffé, à fond) et note ton max : tes séances se recalent dès la prochaine. " +
+                            "Sans max, ton niveau actuel reste jusqu'au prochain test. Ta courbe garde les deux, séparées.",
+                    )
+                    OutlinedTextField(
+                        value = max,
+                        onValueChange = { v -> max = v.filter(Char::isDigit).take(4) },
+                        label = { Text("Max de ${option.name.lowercase()} (facultatif)") },
+                        suffix = { Text(if (test.isSeconds) "s" else "reps") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onChangeOption(testId, optionId, max.toIntOrNull()?.takeIf { it > 0 })
+                    switching = null
+                }) { Text("Changer") }
+            },
+            dismissButton = { TextButton(onClick = { switching = null }) { Text("Annuler") } },
+        )
     }
 }

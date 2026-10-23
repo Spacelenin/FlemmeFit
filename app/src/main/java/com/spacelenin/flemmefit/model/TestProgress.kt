@@ -2,7 +2,8 @@ package com.spacelenin.flemmefit.model
 
 import java.time.LocalDate
 
-data class TestPoint(val date: LocalDate, val value: Int)
+/** Un résultat de test, avec l'exercice au choix fait ce jour-là (crunch, sit-up…) s'il y en a. */
+data class TestPoint(val date: LocalDate, val value: Int, val option: String? = null)
 
 /** Où en est un exercice à niveaux rattaché au test, et ce qu'il faut au test pour passer au suivant. */
 data class LevelGoal(
@@ -23,10 +24,19 @@ data class TestProgress(
     /** Prochaine séance où le test est refait, s'il y en a une de prévue. */
     val nextDate: LocalDate?,
     val goals: List<LevelGoal>,
+    /** Nom affiché : celui de l'exercice au choix en cours. */
+    val name: String = test.name,
 ) {
+    /** Les résultats depuis le dernier changement d'exercice : départ et record ne comparent que ceux-là. */
+    val segment: List<TestPoint> get() = points.takeLastWhile { it.option == points.last().option }
     val current: Int? get() = points.lastOrNull()?.value
-    val first: Int? get() = points.firstOrNull()?.value
-    val best: Int? get() = points.maxOfOrNull { it.value }
+    val first: Int? get() = segment.firstOrNull()?.value
+    val best: Int? get() = segment.maxOfOrNull { it.value }
+    /** Premier résultat avec l'exercice en cours, s'il en a changé. */
+    val switchedAt: TestPoint? get() = segment.firstOrNull()?.takeIf { segment.size < points.size }
+
+    /** Index des points où l'exercice change (un repère sur la courbe). */
+    val switches: List<Int> get() = points.indices.filter { it > 0 && points[it].option != points[it - 1].option }
 
     /** Ce qu'il manque au prochain test pour monter d'un niveau (sur l'exercice le plus proche), null si rien à gagner. */
     val toNextLevel: Int? get() = goals.mapNotNull { it.nextFrom }.minOrNull()?.let { it - (current ?: 0) }?.takeIf { it > 0 }
@@ -48,13 +58,15 @@ fun ProgramSchedule.testProgress(): List<TestProgress> {
 
     return plan.tests.map { test ->
         val points = buildList {
-            program.tests[test.id]?.let { add(TestPoint(startDate, it)) }
+            fun point(date: LocalDate, value: Int) = TestPoint(date, value, program.optionOn(test.id, date))
+            program.tests[test.id]?.let { add(point(startDate, it)) }
             for (s in past) {
                 s.prescriptions.forEachIndexed { e, p ->
-                    if (p.isTest && p.exercise.test == test.id) program.logOf(s.index, e)?.max?.let { add(TestPoint(s.date, it)) }
+                    if (p.isTest && p.exercise.test == test.id) program.logOf(s.index, e)?.max?.let { add(point(s.date, it)) }
                 }
             }
-        }
+            program.testChanges.filter { it.test == test.id && it.result != null }.forEach { add(point(LocalDate.parse(it.date), it.result!!)) }
+        }.sortedBy { it.date }
         val nextDate = ((lastIndex + 1)..(lastIndex + LOOK_AHEAD_DAYS)).firstNotNullOfOrNull { i ->
             sessionAt(i)?.takeIf { s ->
                 s.prescriptions.withIndex().any { (e, p) -> p.isTest && p.exercise.test == test.id && program.logOf(s.index, e)?.max == null }
@@ -68,7 +80,7 @@ fun ProgramSchedule.testProgress(): List<TestProgress> {
                 val level = ex.levelIndexFor(result)
                 val next = ex.levels.getOrNull(level + 1)
                 LevelGoal(
-                    exercise = ex.name,
+                    exercise = program.exerciseName(ex.name, today),
                     level = level,
                     levelCount = ex.levels.size,
                     nextFrom = next?.from,
@@ -77,6 +89,6 @@ fun ProgramSchedule.testProgress(): List<TestProgress> {
                     },
                 )
             }
-        TestProgress(test, points, nextDate, goals)
+        TestProgress(test, points, nextDate, goals, name = program.testName(test, today))
     }
 }

@@ -138,6 +138,9 @@ class ProgramRepository(dir: File) {
 
     fun setColor(id: String, colorIndex: Int) = updateProgram(id) { it.copy(colorIndex = colorIndex) }
 
+    fun changeTestOption(id: String, testId: String, option: String, result: Int?) =
+        updateProgram(id) { it.changeTestOption(testId, option, LocalDate.now(), result) }
+
     fun setTests(id: String, results: Map<String, Int>) = updateProgram(id) { it.withTests(results) }
 
     companion object {

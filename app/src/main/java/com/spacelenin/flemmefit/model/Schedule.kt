@@ -146,6 +146,9 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     private val bonus = HashMap<String, Int>()
     private val lastMax = HashMap<String, Int>()
     private val testResults = HashMap(program.tests)
+    // Max refaits en changeant d'exercice de test : appliqués à la première séance qui suit.
+    private val appliedChanges = HashSet<Int>()
+    private val optionTests = plan.tests.filter { it.options.isNotEmpty() }
     private val levelOf = HashMap<String, Int>()
     private val levelSince = HashMap<String, Int>()
     // Dernier choix « avec / sans poids » dit pour chaque exercice : proposé par défaut ensuite.
@@ -277,13 +280,20 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         val planWeek = plan.weeks[cycleWeek]
         val day = planWeek.days.firstOrNull { it.day == i % DAYS_PER_WEEK + 1 } ?: return
         val date = dateOf(i)
+        program.testChanges.forEachIndexed { k, c ->
+            if (c.result != null && k !in appliedChanges && !date.isBefore(LocalDate.parse(c.date))) {
+                testResults[c.test] = c.result
+                appliedChanges += k
+            }
+        }
         val deload = isDeloadWeek(week)
         // Le Boss ne se dévoile que la veille : avant, la séance est affichée normalement.
         val boss = !deload && isBossWeek(week) && bossIndexOfWeek(week) == i && !date.isAfter(today.plusDays(1))
         val weeksBefore = if (deloadEvery > 0) week - week / deloadEvery else week
         val burst = !boss && !deload && i in program.bursts
 
-        fun prescribe(e: Int, ex: Exercise): Prescription {
+        fun prescribe(e: Int, original: Exercise): Prescription {
+            val ex = named(original, date)
             val weighted = ex.weights?.let { w ->
                 val said = program.weightsChoice(i, e)
                 if (said != null) lastWeights[ex.key] = said
@@ -386,6 +396,12 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             lastMax[key] = max
             adjustBonus(pr, max)
         }
+    }
+
+    /** `{id du test}` dans les noms : le choix d'exercice en cours pour ce test (« crunch »). */
+    private fun named(ex: Exercise, date: LocalDate): Exercise {
+        if (optionTests.isEmpty() || '{' !in ex.name) return ex
+        return ex.copy(name = program.exerciseName(ex.name, date))
     }
 
     /** Variantes (de la routine et perso) : leurs max notés et leur taux. */
