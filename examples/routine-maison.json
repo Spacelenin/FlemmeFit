@@ -1,7 +1,7 @@
 {
   "format": "flemmefit",
   "version": 1,
-  "revision": 6,
+  "revision": 7,
   "name": "Routine maison",
   "description": "5 séances par semaine (jours 4 et 7 : repos, ou rien selon la fatigue). Paliers inspirés de 100pompes, 50tractions, musclesabdominaux et musclesdesjambes : un test de départ choisit ton palier, la dernière série va souvent au max, et la 4e semaine allège tout de moitié et refait les tests pour passer au palier suivant. Échauffement et étirements d'après echauffez-vous et etirez-vous.",
   "repeat": "forever",
@@ -22,9 +22,9 @@
     },
     {
       "id": "abdos",
-      "name": "Crunchs",
+      "name": "Crunchs ou sit-ups",
       "unit": "reps",
-      "description": "Crunchs d'affilée, sans pause en bas."
+      "description": "Celui que tu préfères, mais toujours le même à chaque test. D'affilée, sans pause en bas."
     },
     {
       "id": "gainage",
@@ -683,9 +683,9 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
             },
             {
-              "name": "Abdos (crunch)",
+              "name": "Abdos (crunch ou sit-up)",
               "id": "abdos",
-              "description": "Crunchs : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Décolle les omoplates en soufflant, redescends lentement. Dernière série : le max possible.",
+              "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
               "rest": "60s",
               "test": "abdos",
               "amrap": true,
@@ -1339,9 +1339,9 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
             },
             {
-              "name": "Abdos (crunch)",
+              "name": "Abdos (crunch ou sit-up)",
               "id": "abdos",
-              "description": "Crunchs : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Décolle les omoplates en soufflant, redescends lentement. Dernière série : le max possible.",
+              "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
               "rest": "60s",
               "test": "abdos",
               "amrap": true,
@@ -1995,9 +1995,9 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
             },
             {
-              "name": "Abdos (crunch)",
+              "name": "Abdos (crunch ou sit-up)",
               "id": "abdos",
-              "description": "Crunchs : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Décolle les omoplates en soufflant, redescends lentement. Dernière série : le max possible.",
+              "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
               "rest": "60s",
               "test": "abdos",
               "amrap": true,
@@ -2271,7 +2271,7 @@
               "id": "test-abdos",
               "test": "abdos",
               "retest": true,
-              "description": "Crunchs d'affilée, sans pause en bas.",
+              "description": "Crunchs ou sit-ups : celui que tu préfères, mais toujours le même à chaque test. D'affilée, sans pause en bas.",
               "counter": "Abdos"
             },
             {
@@ -2691,9 +2691,9 @@
               "counter": "Squats"
             },
             {
-              "name": "Abdos (crunch)",
+              "name": "Abdos (crunch ou sit-up)",
               "id": "abdos",
-              "description": "Crunchs : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Décolle les omoplates en soufflant, redescends lentement. Dernière série : le max possible.",
+              "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
               "rest": "60s",
               "test": "abdos",
               "amrap": true,
