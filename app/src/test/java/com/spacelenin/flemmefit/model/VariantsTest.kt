@@ -16,13 +16,13 @@ class VariantsTest {
         (PlanParser.parse(file.readText()) as ParseResult.Success).plan
     }
 
-    private val strong = mapOf("pompes" to 60, "tractions" to 10, "abdos" to 60, "gainage" to 180, "squat" to 10)
+    private val strong = mapOf("pompes" to 60, "tractions" to 10, "abdos" to 60, "gainage" to 180, "squats" to 40)
 
     private fun schedule(program: StoredProgram, today: LocalDate = start.plusYears(1)) = ProgramSchedule(program, today)
 
     @Test
     fun `the routine describes its families and variants`() {
-        assertEquals(7, routine.variants.size)
+        assertEquals(8, routine.variants.size)
         val keys = routine.weeks.flatMap { w -> w.days.flatMap { d -> d.exercises.map { it.key } } }.toSet()
         routine.families.forEach { f -> f.exercises.forEach { assertTrue("${f.id} : $it", it in keys) } }
     }
@@ -33,7 +33,8 @@ class VariantsTest {
         for (cycle in 0 until 3) {
             val sessions = (cycle * 28 until (cycle + 1) * 28).mapNotNull(s::sessionAt)
             val picked = sessions.mapNotNull { it.variantIndex?.let { i -> it.prescriptions[i].variant!!.id } }
-            routine.variants.forEach { v -> assertTrue("cycle $cycle : ${v.id} absent", v.id in picked) }
+            // Les jambes (variante à la place de tout l'exercice) ont leur propre rythme, testé à part.
+            routine.variants.filter { it.family != "jambes" }.forEach { v -> assertTrue("cycle $cycle : ${v.id} absent", v.id in picked) }
             sessions.filter { it.isDeload }.forEach { assertNull(it.variantIndex) }
             sessions.forEach { assertTrue(it.prescriptions.count { p -> p.variant != null } <= 1) }
         }
@@ -184,5 +185,33 @@ class VariantsTest {
         val updated = program.withPlan(routine.copy(revision = routine.revision + 1))
         assertTrue(updated.isDone(day.index, day.variantIndex!!))
         assertNotNull(schedule(updated).sessionAt(day.index)!!.variantIndex)
+    }
+
+    private fun legDays(tests: Map<String, Int>, cycles: Int = 2): List<Prescription> {
+        val s = schedule(StoredProgram("p", routine, start.toString(), tests = strong + tests))
+        return (0 until cycles * 28).mapNotNull(s::sessionAt).filter { !it.isDeload }
+            .mapNotNull { session -> session.prescriptions.firstOrNull { it.key == "squats-classiques" || it.variant?.whole == true } }
+    }
+
+    @Test
+    fun `legs are mostly variants, the classic squat once every two cycles`() {
+        val days = legDays(mapOf("squats" to 40))
+        assertEquals(6, days.size)
+        assertEquals(1, days.count { it.variant == null })
+        val block = days.first { it.variant != null }
+        assertTrue(block.variant!!.full && block.variant!!.whole)
+        // Le bloc prend la place de l'exercice de base, au même rang.
+        val s = schedule(StoredProgram("p", routine, start.toString(), tests = strong))
+        val session = (0 until 28).mapNotNull(s::sessionAt).first { it.variantIndex != null && it.prescriptions[it.variantIndex!!].variant!!.whole }
+        assertEquals(session.variantBaseIndex, session.variantIndex)
+        assertEquals(session.day.exercises.size, session.exerciseCount)
+    }
+
+    @Test
+    fun `a low squat test means easy variants one week out of two, or none at all`() {
+        val mid = legDays(mapOf("squats" to 20))
+        assertEquals(3, mid.count { it.variant != null })
+        assertTrue(mid.filter { it.variant != null }.all { !it.variant!!.full && it.exercise.name.contains("facile") })
+        assertTrue(legDays(mapOf("squats" to 10)).none { it.variant != null })
     }
 }

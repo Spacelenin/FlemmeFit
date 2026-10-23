@@ -24,8 +24,8 @@ data class Counter(
         "abdos" -> (reps / 200).takeIf { it >= 1 }?.let { "$it fois le défi des 200 abdos" }
         // Une traction monte le corps d'environ 40 cm, un étage fait environ 3 m.
         "tractions" -> climb(reps * 0.4)
-        // Un squat sur une jambe : environ 50 cm de descente et de remontée.
-        "squats" -> climb(reps * 0.5)
+        // Un squat : environ 40 cm de descente et de remontée.
+        "squats" -> climb(reps * 0.4)
         "boxe" -> (seconds / ROUND_SECONDS).takeIf { it >= 1 }?.let { rounds ->
             val fights = rounds / ROUNDS_PER_FIGHT
             "$rounds rounds de 3 min" + if (fights >= 1) ", soit $fights combat${plural(fights)} de 12 rounds" else ""

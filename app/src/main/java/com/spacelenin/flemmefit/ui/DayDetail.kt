@@ -138,7 +138,10 @@ fun LazyListScope.dayDetailItems(
         item(key = "ex-${session.index}-$i") {
             ExerciseRow(
                 tag = when {
-                    i == session.variantIndex -> "🎲 Variante : à la place de ta série max de ${session.prescriptions[session.variantBaseIndex!!].exercise.name.lowercase()}"
+                    i == session.variantIndex -> prescription.variant!!.let { v ->
+                        if (v.whole) "🎲 Variante : à la place de ${v.baseName.lowercase()}"
+                        else "🎲 Variante : à la place de ta série max de ${v.baseName.lowercase()}"
+                    }
                     i == session.otherIndex -> "⭐ Exo perso"
                     else -> prescription.replacedBy?.let { "🎲 Série max remplacée par : ${it.lowercase()}" }
                 },
@@ -224,11 +227,13 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
         Spacer(Modifier.height(12.dp))
     }
     session.variantIndex?.let { v ->
+        val info = session.prescriptions[v].variant!!
         val variant = session.prescriptions[v].exercise.name
-        val base = session.prescriptions[session.variantBaseIndex!!].exercise.name.lowercase()
+        val base = info.baseName.lowercase()
         Banner(
             "🎲 Variante du jour : $variant",
-            "Un peu moins de $base, puis un bloc de ${variant.lowercase()} à la place de ta série max. Sa dernière série au max ajuste la suite.",
+            if (info.whole) "Aujourd'hui, ${variant.lowercase()} à la place de $base. Sa dernière série au max ajuste la suite."
+            else "Un peu moins de $base, puis un bloc de ${variant.lowercase()} à la place de ta série max. Sa dernière série au max ajuste la suite.",
             BurstColor,
         )
         if (schedule.canSkipVariant(session)) {

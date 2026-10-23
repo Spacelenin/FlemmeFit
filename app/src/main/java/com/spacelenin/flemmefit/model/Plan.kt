@@ -101,6 +101,13 @@ data class PlanFamily(
     val test: String? = null,
     /** Compteur caché où s'ajoutent les variantes, en équivalent. */
     val counter: String? = null,
+    /**
+     * La variante prend toute la place de l'exercice de base (au lieu d'une partie de ses séries) : l'exercice
+     * de base sert surtout d'étalon. Elle tombe une semaine sur deux sous le seuil des variantes, presque toujours au-dessus.
+     */
+    val replace: Boolean = false,
+    /** En dessous de ce résultat au test, pas de variante dans cette famille. */
+    val minTest: Int? = null,
 )
 
 /**

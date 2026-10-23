@@ -213,6 +213,8 @@ Une famille regroupe des exercices de base et le test qui leur sert d'étalon :
 | `exercises`     | Ids des exercices de base. |
 | `test`          | Test de la famille : l'étalon des variantes. |
 | `counter`       | Compteur caché où les variantes s'ajoutent, en équivalent. |
+| `replace`       | `true` : la variante prend toute la place de l'exercice de base, qui sert surtout d'étalon. Elle tombe sur la moitié des séances de la famille sous le `from` des variantes, sur 5 sur 6 au-dessus (l'exercice de base revient une fois tous les 2 cycles sur 3 séances). |
+| `minTest`       | En dessous de ce résultat au test, pas de variante dans cette famille. |
 
 | Champ (variante) | Description |
 |------------------|-------------|

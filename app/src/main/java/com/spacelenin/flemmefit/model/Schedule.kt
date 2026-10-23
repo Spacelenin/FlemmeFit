@@ -161,6 +161,8 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     private val variantPicked = HashMap<String, Int>()
     // Part des passages voulus qui tient dans les séances de la famille sur le cycle.
     private val familyScale = HashMap<String, Double>()
+    // Familles où la variante prend toute la place : passages restants sur le cycle, toutes variantes confondues.
+    private val familyLeft = HashMap<String, Int>()
     private var variantCycle = -1
     private val otherLeft = HashMap<String, Int>()
     private var otherWeek = -1
@@ -205,6 +207,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             variantLeft.clear()
             variantPicked.clear()
             familyScale.clear()
+            familyLeft.clear()
         }
         val end = (cycle + 1) * variantCycleWeeks * DAYS_PER_WEEK
         fun wanted(v: Variant) = Variants.quota(v, plan.family(v.family)?.test?.let(testResults::get))
@@ -212,6 +215,15 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             val (v, custom) = pick
             if (custom != null && !custom.activeOn(date)) return@mapNotNull null
             if (baseIndex(day, v) == null) return@mapNotNull null
+            val family = plan.family(v.family)!!
+            if (family.replace) {
+                val slots = slotsLeft(i, end) { baseIndex(it, v) != null }
+                val left = familyLeft.getOrPut(v.family) {
+                    val share = Variants.replaceShare(family, variants.map { it.first }.filter { it.family == v.family }, family.test?.let(testResults::get))
+                    Variants.replaceCount(share, slots, cycle)
+                }
+                return@mapNotNull if (left <= 0) null else pick to left.toDouble() / slots.coerceAtLeast(1)
+            }
             val left = variantLeft.getOrPut(v.id) {
                 // Plus de passages voulus que de séances : chacun réduit d'autant, au moins un.
                 val scale = familyScale.getOrPut(v.family) {
@@ -223,10 +235,19 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             }
             if (left <= 0) return@mapNotNull null
             pick to left.toDouble() / slotsLeft(i, end) { baseIndex(it, v) != null }.coerceAtLeast(1)
+        }.let { list ->
+            // Toute la place : l'urgence est celle de la famille, partagée entre ses variantes (sauf urgence pleine).
+            list.map { (pick, u) ->
+                val family = plan.family(pick.first.family)!!
+                val share = if (family.replace && u < 1.0) list.count { it.first.first.family == pick.first.family } else 1
+                pick to u / share
+            }
         }
         if (i in program.variantSkips) return null
         return draw(i, VARIANT_SALT, candidates) { variantPicked[it.first.id] ?: 0 }?.also {
-            variantLeft[it.first.id] = variantLeft.getValue(it.first.id) - 1
+            val family = it.first.family
+            if (plan.family(family)?.replace == true) familyLeft[family] = familyLeft.getValue(family) - 1
+            else variantLeft[it.first.id] = variantLeft.getValue(it.first.id) - 1
             variantPicked[it.first.id] = (variantPicked[it.first.id] ?: 0) + 1
         }
     }
@@ -310,25 +331,32 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             val b = baseIndex(day, v)!!
             val family = plan.family(v.family)!!
             val base = prescriptions[b]
-            prescriptions[b] = base.copy(
-                sets = base.sets?.let(Variants::baseSets),
-                allOut = base.isBoss,
-                target = base.target.takeIf { base.isBoss },
-                replacedBy = v.name,
-            )
-            variantBase = b
-            variantIndex = prescriptions.size
-            prescriptions += Variants.block(
+            val block = Variants.block(
                 v, family, base.exercise, family.test?.let(testResults::get), ratios[v.id] ?: v.ratio, v.ratio,
                 custom = custom != null, testSeconds = plan.test(family.test)?.isSeconds == true,
             )
+            variantBase = b
+            if (family.replace) {
+                // La variante prend la place de l'exercice de base, au même rang.
+                prescriptions[b] = block
+                variantIndex = b
+            } else {
+                prescriptions[b] = base.copy(
+                    sets = base.sets?.let(Variants::baseSets),
+                    allOut = base.isBoss,
+                    target = base.target.takeIf { base.isBoss },
+                    replacedBy = v.name,
+                )
+                variantIndex = prescriptions.size
+                prescriptions += block
+            }
         }
         if (shown && otherPick != null) {
             otherIndex = prescriptions.size
             prescriptions += prescribe(otherIndex, otherPick.asExercise())
         }
         val order = (0 until n).toMutableList()
-        variantIndex?.let { order.add(order.indexOf(variantBase!!) + 1, it) }
+        variantIndex?.takeIf { it != variantBase }?.let { order.add(order.indexOf(variantBase!!) + 1, it) }
         // L'exercice perso passe avant le dernier de la séance (les étirements).
         otherIndex?.let { if (n >= 2) order.add(order.indexOf(n - 1), it) else order.add(it) }
         resolved[i] = Session(
