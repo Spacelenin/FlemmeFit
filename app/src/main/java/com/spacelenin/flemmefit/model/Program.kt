@@ -36,6 +36,10 @@ data class ExerciseLog(
     }
 }
 
+/** Passage d'un test à un autre exercice au choix, à partir de [date], avec le max refait ce jour-là. */
+@Serializable
+data class TestChange(val test: String, val option: String, val date: String, val result: Int? = null)
+
 /**
  * Un programme importé et son suivi.
  *
@@ -70,6 +74,8 @@ data class StoredProgram(
     val custom: List<CustomExercise> = emptyList(),
     /** Jours variante refusés (« Pas aujourd'hui ») : la variante est replacée plus tard dans le cycle. */
     val variantSkips: Set<Int> = emptySet(),
+    /** Choix d'exercice des tests à options (crunch ou sit-up), dans l'ordre où ils ont été faits. */
+    val testChanges: List<TestChange> = emptyList(),
 ) {
     val start: LocalDate get() = LocalDate.parse(startDate)
 
@@ -183,6 +189,30 @@ data class StoredProgram(
             }
         }
         return result
+    }
+
+    /** Le choix en cours pour [testId] à [date], null tant que rien n'est dit. */
+    fun optionOn(testId: String, date: LocalDate): String? =
+        testChanges.lastOrNull { it.test == testId && !date.isBefore(LocalDate.parse(it.date)) }?.option
+
+    /** Nom d'exercice tel qu'affiché à [date] : `{id du test}` remplacé par le choix en cours (« crunch »). */
+    fun exerciseName(name: String, date: LocalDate): String =
+        plan.tests.filter { it.options.isNotEmpty() }.fold(name) { acc, t -> acc.replace("{${t.id}}", t.optionLabel(optionOn(t.id, date))) }
+
+    /** Nom du test tel qu'affiché à [date] : celui du choix en cours, sinon celui de la routine. */
+    fun testName(test: PlanTest, date: LocalDate): String = test.option(optionOn(test.id, date))?.name ?: test.name
+
+    /**
+     * Change l'exercice d'un test. Le premier choix vaut depuis le début (c'est ce qui a été fait) ; les suivants
+     * à partir de [today], avec le max refait tout de suite s'il y en a un : il devient la référence du test.
+     */
+    fun changeTestOption(testId: String, option: String, today: LocalDate, result: Int? = null): StoredProgram {
+        val current = optionOn(testId, today)
+        if (current == option) return this
+        val first = testChanges.none { it.test == testId }
+        val change = if (first) TestChange(testId, option, startDate)
+        else TestChange(testId, option, today.toString(), result?.takeIf { it > 0 })
+        return copy(testChanges = testChanges.filterNot { !first && it.test == testId && it.date == change.date } + change)
     }
 
     fun withTests(results: Map<String, Int>) = copy(tests = results.filterKeys { id -> plan.tests.any { it.id == id } })

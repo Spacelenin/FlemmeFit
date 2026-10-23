@@ -247,7 +247,7 @@ private fun HomeContent(
                 Column(Modifier.padding(12.dp)) {
                     Text("📏 Tests de niveau à faire", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Text(
-                        program.missingTests.joinToString { it.name } +
+                        program.missingTests.joinToString { program.testName(it, today) } +
                             " : en attendant, tu es au niveau le plus facile. Touche pour saisir tes résultats.",
                         style = MaterialTheme.typography.bodyMedium,
                     )
@@ -326,6 +326,7 @@ private fun HomeContent(
                 repository.setTests(program.id, results)
                 editTests = false
             },
+            onChangeOption = { test, option, result -> repository.changeTestOption(program.id, test, option, result) },
             onDismiss = { editTests = false },
         )
     }

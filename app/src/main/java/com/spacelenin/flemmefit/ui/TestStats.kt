@@ -61,7 +61,7 @@ private fun TestCard(t: TestProgress, color: Color) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row {
                 Column(Modifier.weight(1f)) {
-                    Text(t.test.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(t.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     val first = t.first
                     val best = t.best
                     if (first != null && best != null && t.points.size > 1) {
@@ -79,7 +79,14 @@ private fun TestCard(t: TestProgress, color: Color) {
                     color = color,
                 )
             }
-            if (t.points.size > 1) TestCurve(t.points, t::format, color)
+            if (t.points.size > 1) TestCurve(t.points, t::format, color, switches = t.switches)
+            t.switchedAt?.let {
+                Text(
+                    "↔ ${t.name} depuis le ${it.date.format(TestDay)} : départ et record repartent de là.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
 
             t.toNextLevel?.let { missing ->
                 Text(
@@ -151,9 +158,11 @@ private fun VariantCard(v: VariantProgress, color: Color) {
 
 /** Courbe simple : un point par test, régulièrement espacés, valeur au-dessus. */
 @Composable
-private fun TestCurve(all: List<TestPoint>, format: (Int) -> String, color: Color) {
+private fun TestCurve(all: List<TestPoint>, format: (Int) -> String, color: Color, switches: List<Int> = emptyList()) {
     // Les 8 derniers points : au-delà, les étiquettes ne tiennent plus.
     val points = all.takeLast(8)
+    val shift = all.size - points.size
+    val marks = switches.map { it - shift }.filter { it in 1..points.lastIndex }
     val values = points.map { it.value }
     val top = values.max()
     val bottom = values.min()
@@ -179,8 +188,14 @@ private fun TestCurve(all: List<TestPoint>, format: (Int) -> String, color: Colo
                 Offset(step * (i + 0.5f), size.height * (1f - (p.value - bottom).toFloat() / span))
             }
             drawLine(track, Offset(0f, size.height), Offset(size.width, size.height), strokeWidth = 1.dp.toPx())
+            // Changement d'exercice (crunch → sit-up) : un trait vertical entre les deux points.
+            marks.forEach { m ->
+                val x = step * m
+                drawLine(track, Offset(x, 0f), Offset(x, size.height), strokeWidth = 2.dp.toPx())
+            }
             val path = Path().apply {
-                pts.forEachIndexed { i, o -> if (i == 0) moveTo(o.x, o.y) else lineTo(o.x, o.y) }
+                // La courbe repart à chaque changement d'exercice : les deux ne se comparent pas.
+                pts.forEachIndexed { i, o -> if (i == 0 || i in marks) moveTo(o.x, o.y) else lineTo(o.x, o.y) }
             }
             drawPath(path, color, style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round))
             pts.forEach { drawCircle(color, radius = 5.dp.toPx(), center = it) }

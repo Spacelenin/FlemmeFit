@@ -75,7 +75,7 @@ private val Pages = listOf(
         listOf(
             "Certaines routines démarrent d'un test : ton résultat choisit ton niveau (les chiffres de départ).",
             "Les tests sont refaits en semaine récup et te font changer de niveau.",
-            "Tu peux corriger tes résultats via ⋮ › « Tests de niveau ».",
+            "Tu peux corriger tes résultats via ⋮ › « Tests de niveau ». Abdos : choisis-y crunch ou sit-up, et change quand tu veux (ton max refait recale la suite).",
             "Onglet Stats : la courbe de chaque test, ton record, la date du prochain test et ce qu'il te manque pour passer au niveau suivant.",
         ),
     ),

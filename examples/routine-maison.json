@@ -1,7 +1,7 @@
 {
   "format": "flemmefit",
   "version": 1,
-  "revision": 7,
+  "revision": 8,
   "name": "Routine maison",
   "description": "5 séances par semaine (jours 4 et 7 : repos, ou rien selon la fatigue). Paliers inspirés de 100pompes, 50tractions, musclesabdominaux et musclesdesjambes : un test de départ choisit ton palier, la dernière série va souvent au max, et la 4e semaine allège tout de moitié et refait les tests pour passer au palier suivant. Échauffement et étirements d'après echauffez-vous et etirez-vous.",
   "repeat": "forever",
@@ -24,7 +24,19 @@
       "id": "abdos",
       "name": "Crunchs ou sit-ups",
       "unit": "reps",
-      "description": "Celui que tu préfères, mais toujours le même à chaque test. D'affilée, sans pause en bas."
+      "description": "Celui que tu préfères, mais toujours le même à chaque test. D'affilée, sans pause en bas.",
+      "options": [
+        {
+          "id": "crunch",
+          "name": "Crunchs",
+          "short": "crunch"
+        },
+        {
+          "id": "situp",
+          "name": "Sit-ups",
+          "short": "sit-up"
+        }
+      ]
     },
     {
       "id": "gainage",
@@ -683,7 +695,7 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
             },
             {
-              "name": "Abdos (crunch ou sit-up)",
+              "name": "Abdos ({abdos})",
               "id": "abdos",
               "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
               "rest": "60s",
@@ -1339,7 +1351,7 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
             },
             {
-              "name": "Abdos (crunch ou sit-up)",
+              "name": "Abdos ({abdos})",
               "id": "abdos",
               "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
               "rest": "60s",
@@ -1995,7 +2007,7 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
             },
             {
-              "name": "Abdos (crunch ou sit-up)",
+              "name": "Abdos ({abdos})",
               "id": "abdos",
               "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
               "rest": "60s",
@@ -2267,7 +2279,7 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
             },
             {
-              "name": "Test abdos",
+              "name": "Test abdos ({abdos})",
               "id": "test-abdos",
               "test": "abdos",
               "retest": true,
@@ -2691,7 +2703,7 @@
               "counter": "Squats"
             },
             {
-              "name": "Abdos (crunch ou sit-up)",
+              "name": "Abdos ({abdos})",
               "id": "abdos",
               "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
               "rest": "60s",
