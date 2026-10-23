@@ -93,7 +93,7 @@ class LevelsTest {
         val program = StoredProgram("r", routine, start.toString(), tests = mapOf("pompes" to 8, "gainage" to 50))
         val s = ProgramSchedule(program, start)
         val day1 = s.sessionAt(0)!!.prescriptions
-        assertEquals(listOf("Échauffement", "Pompes lentes et contrôlées", "Shadow boxing léger", "Étirements"), day1.map { it.exercise.name })
+        assertEquals(listOf("Échauffement", "Pompes lentes (tempo)", "Shadow boxing léger", "Étirements"), day1.map { it.exercise.name })
         assertEquals("4 × 2 · repos 90s", day1[1].summary())
         val gainage = s.sessionAt(1)!!.prescriptions.first { it.key == "gainage" }
         assertEquals(35, gainage.seconds)
