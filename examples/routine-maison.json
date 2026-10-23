@@ -1,7 +1,7 @@
 {
   "format": "flemmefit",
   "version": 1,
-  "revision": 4,
+  "revision": 5,
   "name": "Routine maison",
   "description": "5 séances par semaine (jours 4 et 7 : repos, ou rien selon la fatigue). Paliers inspirés de 100pompes, 50tractions, musclesabdominaux et musclesdesjambes : un test de départ choisit ton palier, la dernière série va souvent au max, et la 4e semaine allège tout de moitié et refait les tests pour passer au palier suivant. Échauffement et étirements d'après echauffez-vous et etirez-vous.",
   "repeat": "forever",
@@ -16,19 +16,19 @@
     },
     {
       "id": "tractions",
-      "name": "Tractions sous une table",
+      "name": "Tractions sous une table (rowing inversé)",
       "unit": "reps",
       "description": "D'affilée, corps droit, poitrine jusqu'au plateau."
     },
     {
       "id": "abdos",
-      "name": "Abdos",
+      "name": "Abdos (crunch)",
       "unit": "reps",
       "description": "Crunchs d'affilée, sans pause en bas."
     },
     {
       "id": "gainage",
-      "name": "Gainage",
+      "name": "Gainage (planche)",
       "unit": "seconds",
       "description": "Planche sur les avant-bras, le plus longtemps possible en restant droit."
     },
@@ -132,7 +132,7 @@
     },
     {
       "id": "battements",
-      "name": "Battements de jambes gainés",
+      "name": "Battements de jambes gainés (flutter kicks)",
       "family": "abdos",
       "ratio": 0.5,
       "unit": "seconds",
@@ -140,7 +140,7 @@
     },
     {
       "id": "gainage-bras-plies",
-      "name": "Gainage bras pliés",
+      "name": "Gainage bras pliés (planche basse)",
       "family": "gainage",
       "ratio": 3,
       "from": 45,
@@ -164,7 +164,7 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
             },
             {
-              "name": "Pompes lentes et contrôlées",
+              "name": "Pompes lentes (tempo)",
               "id": "pompes-lentes",
               "description": "3 s pour descendre, 1 s de pause poitrine à un poing du sol, 3 s pour remonter. Corps gainé du talon à la tête, coudes à 45° du corps. Si la forme casse, arrête la série : la lenteur compte plus que le nombre.",
               "rest": "90s",
@@ -276,7 +276,7 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
             },
             {
-              "name": "Abdos bras tendus",
+              "name": "Abdos bras tendus (V-up)",
               "id": "abdos-bras-tendus",
               "description": "Allongé sur le dos, bras tendus au-dessus de la tête. Remonte buste et bras tendus en même temps que les jambes se ramènent vers toi, mains vers les pieds, puis redescends lentement sans poser complètement. Bas du dos plaqué au sol, souffle en montant.",
               "rest": "60s",
@@ -353,7 +353,7 @@
               "counter": "Abdos"
             },
             {
-              "name": "Obliques en planche latérale",
+              "name": "Obliques en planche latérale (hip dips)",
               "id": "obliques",
               "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : fais tout un côté, puis l'autre.",
               "rest": "45s",
@@ -398,7 +398,7 @@
               "counter": "Abdos"
             },
             {
-              "name": "Gainage",
+              "name": "Gainage (planche)",
               "id": "gainage",
               "description": "Planche sur les avant-bras, corps parfaitement droit : fesses ni en l'air ni affaissées, ventre et fessiers serrés, regard vers le sol. La dernière série dure aussi longtemps que possible en restant droit : dès que ça s'affaisse, stop.",
               "rest": "60s",
@@ -466,7 +466,7 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
             },
             {
-              "name": "Tractions sous une table",
+              "name": "Tractions sous une table (rowing inversé)",
               "id": "tractions-table",
               "description": "Allongé sous une table bien solide (vérifie qu'elle ne bascule pas), mains au bord du plateau. Corps droit, talons au sol, tire la poitrine jusqu'au plateau puis redescends en 2 s. Alterne d'une série à l'autre : mains écartées sur les côtés (dos large), puis mains serrées paumes vers toi (biceps).",
               "rest": "2min",
@@ -668,7 +668,7 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
             },
             {
-              "name": "Abdos",
+              "name": "Abdos (crunch)",
               "id": "abdos",
               "description": "Crunchs : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Décolle les omoplates en soufflant, redescends lentement. Dernière série : le max possible.",
               "rest": "60s",
@@ -746,7 +746,7 @@
               "counter": "Abdos"
             },
             {
-              "name": "Squats sur une jambe",
+              "name": "Squats sur une jambe (pistol squat)",
               "id": "squat-une-jambe",
               "description": "Sur une jambe, l'autre tendue devant toi, descends le bassin dans l'axe le plus bas possible en contrôlant, genou dans l'axe du pied (il ne rentre pas vers l'intérieur), talon au sol, puis remonte. Les reps sont par jambe.",
               "rest": "90s",
@@ -816,7 +816,7 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
             },
             {
-              "name": "Pompes lentes et contrôlées",
+              "name": "Pompes lentes (tempo)",
               "id": "pompes-lentes",
               "description": "3 s pour descendre, 1 s de pause poitrine à un poing du sol, 3 s pour remonter. Corps gainé du talon à la tête, coudes à 45° du corps. Si la forme casse, arrête la série : la lenteur compte plus que le nombre.",
               "rest": "90s",
@@ -928,7 +928,7 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
             },
             {
-              "name": "Abdos bras tendus",
+              "name": "Abdos bras tendus (V-up)",
               "id": "abdos-bras-tendus",
               "description": "Allongé sur le dos, bras tendus au-dessus de la tête. Remonte buste et bras tendus en même temps que les jambes se ramènent vers toi, mains vers les pieds, puis redescends lentement sans poser complètement. Bas du dos plaqué au sol, souffle en montant.",
               "rest": "60s",
@@ -1005,7 +1005,7 @@
               "counter": "Abdos"
             },
             {
-              "name": "Obliques en planche latérale",
+              "name": "Obliques en planche latérale (hip dips)",
               "id": "obliques",
               "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : fais tout un côté, puis l'autre.",
               "rest": "45s",
@@ -1050,7 +1050,7 @@
               "counter": "Abdos"
             },
             {
-              "name": "Gainage",
+              "name": "Gainage (planche)",
               "id": "gainage",
               "description": "Planche sur les avant-bras, corps parfaitement droit : fesses ni en l'air ni affaissées, ventre et fessiers serrés, regard vers le sol. La dernière série dure aussi longtemps que possible en restant droit : dès que ça s'affaisse, stop.",
               "rest": "60s",
@@ -1118,7 +1118,7 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
             },
             {
-              "name": "Tractions sous une table",
+              "name": "Tractions sous une table (rowing inversé)",
               "id": "tractions-table",
               "description": "Allongé sous une table bien solide (vérifie qu'elle ne bascule pas), mains au bord du plateau. Corps droit, talons au sol, tire la poitrine jusqu'au plateau puis redescends en 2 s. Alterne d'une série à l'autre : mains écartées sur les côtés (dos large), puis mains serrées paumes vers toi (biceps).",
               "rest": "2min",
@@ -1320,7 +1320,7 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
             },
             {
-              "name": "Abdos",
+              "name": "Abdos (crunch)",
               "id": "abdos",
               "description": "Crunchs : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Décolle les omoplates en soufflant, redescends lentement. Dernière série : le max possible.",
               "rest": "60s",
@@ -1398,7 +1398,7 @@
               "counter": "Abdos"
             },
             {
-              "name": "Squats sur une jambe",
+              "name": "Squats sur une jambe (pistol squat)",
               "id": "squat-une-jambe",
               "description": "Sur une jambe, l'autre tendue devant toi, descends le bassin dans l'axe le plus bas possible en contrôlant, genou dans l'axe du pied (il ne rentre pas vers l'intérieur), talon au sol, puis remonte. Les reps sont par jambe.",
               "rest": "90s",
@@ -1468,7 +1468,7 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
             },
             {
-              "name": "Pompes lentes et contrôlées",
+              "name": "Pompes lentes (tempo)",
               "id": "pompes-lentes",
               "description": "3 s pour descendre, 1 s de pause poitrine à un poing du sol, 3 s pour remonter. Corps gainé du talon à la tête, coudes à 45° du corps. Si la forme casse, arrête la série : la lenteur compte plus que le nombre.",
               "rest": "90s",
@@ -1580,7 +1580,7 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
             },
             {
-              "name": "Abdos bras tendus",
+              "name": "Abdos bras tendus (V-up)",
               "id": "abdos-bras-tendus",
               "description": "Allongé sur le dos, bras tendus au-dessus de la tête. Remonte buste et bras tendus en même temps que les jambes se ramènent vers toi, mains vers les pieds, puis redescends lentement sans poser complètement. Bas du dos plaqué au sol, souffle en montant.",
               "rest": "60s",
@@ -1657,7 +1657,7 @@
               "counter": "Abdos"
             },
             {
-              "name": "Obliques en planche latérale",
+              "name": "Obliques en planche latérale (hip dips)",
               "id": "obliques",
               "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : fais tout un côté, puis l'autre.",
               "rest": "45s",
@@ -1702,7 +1702,7 @@
               "counter": "Abdos"
             },
             {
-              "name": "Gainage",
+              "name": "Gainage (planche)",
               "id": "gainage",
               "description": "Planche sur les avant-bras, corps parfaitement droit : fesses ni en l'air ni affaissées, ventre et fessiers serrés, regard vers le sol. La dernière série dure aussi longtemps que possible en restant droit : dès que ça s'affaisse, stop.",
               "rest": "60s",
@@ -1770,7 +1770,7 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
             },
             {
-              "name": "Tractions sous une table",
+              "name": "Tractions sous une table (rowing inversé)",
               "id": "tractions-table",
               "description": "Allongé sous une table bien solide (vérifie qu'elle ne bascule pas), mains au bord du plateau. Corps droit, talons au sol, tire la poitrine jusqu'au plateau puis redescends en 2 s. Alterne d'une série à l'autre : mains écartées sur les côtés (dos large), puis mains serrées paumes vers toi (biceps).",
               "rest": "2min",
@@ -1972,7 +1972,7 @@
               "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
             },
             {
-              "name": "Abdos",
+              "name": "Abdos (crunch)",
               "id": "abdos",
               "description": "Crunchs : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Décolle les omoplates en soufflant, redescends lentement. Dernière série : le max possible.",
               "rest": "60s",
@@ -2050,7 +2050,7 @@
               "counter": "Abdos"
             },
             {
-              "name": "Squats sur une jambe",
+              "name": "Squats sur une jambe (pistol squat)",
               "id": "squat-une-jambe",
               "description": "Sur une jambe, l'autre tendue devant toi, descends le bassin dans l'axe le plus bas possible en contrôlant, genou dans l'axe du pied (il ne rentre pas vers l'intérieur), talon au sol, puis remonte. Les reps sont par jambe.",
               "rest": "90s",
@@ -2128,7 +2128,7 @@
               "counter": "Pompes"
             },
             {
-              "name": "Pompes lentes et contrôlées",
+              "name": "Pompes lentes (tempo)",
               "id": "pompes-lentes",
               "description": "3 s pour descendre, 1 s de pause poitrine à un poing du sol, 3 s pour remonter. Corps gainé du talon à la tête, coudes à 45° du corps. Si la forme casse, arrête la série : la lenteur compte plus que le nombre.",
               "rest": "90s",
@@ -2256,7 +2256,7 @@
               "counter": "Gainage"
             },
             {
-              "name": "Abdos bras tendus",
+              "name": "Abdos bras tendus (V-up)",
               "id": "abdos-bras-tendus",
               "description": "Allongé sur le dos, bras tendus au-dessus de la tête. Remonte buste et bras tendus en même temps que les jambes se ramènent vers toi, mains vers les pieds, puis redescends lentement sans poser complètement. Bas du dos plaqué au sol, souffle en montant.",
               "rest": "60s",
@@ -2333,7 +2333,7 @@
               "counter": "Abdos"
             },
             {
-              "name": "Obliques en planche latérale",
+              "name": "Obliques en planche latérale (hip dips)",
               "id": "obliques",
               "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : fais tout un côté, puis l'autre.",
               "rest": "45s",
@@ -2378,7 +2378,7 @@
               "counter": "Abdos"
             },
             {
-              "name": "Gainage",
+              "name": "Gainage (planche)",
               "id": "gainage",
               "description": "Planche sur les avant-bras, corps parfaitement droit : fesses ni en l'air ni affaissées, ventre et fessiers serrés, regard vers le sol. La dernière série dure aussi longtemps que possible en restant droit : dès que ça s'affaisse, stop.",
               "rest": "60s",
@@ -2454,7 +2454,7 @@
               "counter": "Tractions"
             },
             {
-              "name": "Tractions sous une table",
+              "name": "Tractions sous une table (rowing inversé)",
               "id": "tractions-table",
               "description": "Allongé sous une table bien solide (vérifie qu'elle ne bascule pas), mains au bord du plateau. Corps droit, talons au sol, tire la poitrine jusqu'au plateau puis redescends en 2 s. Alterne d'une série à l'autre : mains écartées sur les côtés (dos large), puis mains serrées paumes vers toi (biceps).",
               "rest": "2min",
@@ -2664,7 +2664,7 @@
               "counter": "Squats"
             },
             {
-              "name": "Abdos",
+              "name": "Abdos (crunch)",
               "id": "abdos",
               "description": "Crunchs : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Décolle les omoplates en soufflant, redescends lentement. Dernière série : le max possible.",
               "rest": "60s",
@@ -2742,7 +2742,7 @@
               "counter": "Abdos"
             },
             {
-              "name": "Squats sur une jambe",
+              "name": "Squats sur une jambe (pistol squat)",
               "id": "squat-une-jambe",
               "description": "Sur une jambe, l'autre tendue devant toi, descends le bassin dans l'axe le plus bas possible en contrôlant, genou dans l'axe du pied (il ne rentre pas vers l'intérieur), talon au sol, puis remonte. Les reps sont par jambe.",
               "rest": "90s",
