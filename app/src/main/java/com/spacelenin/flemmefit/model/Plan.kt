@@ -161,6 +161,10 @@ data class Level(
     val rest: String? = null,
     /** Ajouté à la description (variante plus facile, consigne…). */
     val note: String? = null,
+    /** Autre exercice à ce palier (« Abdos ({abdos}) » au lieu du V-up tant que le test est trop bas). */
+    val name: String? = null,
+    /** Remplace la description de l'exercice à ce palier (avec [name]). */
+    val description: String? = null,
 )
 
 @Serializable
@@ -222,7 +226,8 @@ data class Exercise(
             duration = l.duration ?: duration,
             load = l.load ?: load,
             rest = l.rest ?: rest,
-            description = listOfNotNull(description, l.note).joinToString("\n\n").ifEmpty { null },
+            name = l.name ?: name,
+            description = listOfNotNull(l.description ?: description, l.note).joinToString("\n\n").ifEmpty { null },
         )
     }
 }

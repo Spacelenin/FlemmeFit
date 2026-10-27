@@ -1,7 +1,7 @@
 {
   "format": "flemmefit",
   "version": 1,
-  "revision": 10,
+  "revision": 11,
   "name": "Routine maison",
   "description": "5 séances par semaine (jours 4 et 7 : repos, ou rien selon la fatigue). Paliers inspirés de 100pompes, 50tractions, musclesabdominaux et musclesdesjambes : un test de départ choisit ton palier, la dernière série va souvent au max, et la 4e semaine allège tout de moitié et refait les tests pour passer au palier suivant. Échauffement et étirements d'après echauffez-vous et etirez-vous.",
   "repeat": "forever",
@@ -210,7 +210,8 @@
                 {
                   "from": 6,
                   "sets": 4,
-                  "reps": "2"
+                  "reps": "2",
+                  "note": "Palier facile : pompes sur les genoux, ou mains sur une table."
                 },
                 {
                   "from": 11,
@@ -316,69 +317,74 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 6,
+                  "sets": 4,
                   "reps": "3",
-                  "note": "Palier facile : jambes pliées, ne ramène que le buste."
+                  "name": "Abdos ({abdos})",
+                  "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
+                  "note": "Le V-up arrive à partir de 20 au test d'abdos : en attendant, ton exercice du test."
                 },
                 {
                   "from": 11,
-                  "sets": 6,
-                  "reps": "6"
+                  "sets": 4,
+                  "reps": "5",
+                  "name": "Abdos ({abdos})",
+                  "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
+                  "note": "Le V-up arrive à partir de 20 au test d'abdos : en attendant, ton exercice du test."
                 },
                 {
-                  "from": 21,
-                  "sets": 6,
-                  "reps": "8"
+                  "from": 20,
+                  "sets": 4,
+                  "reps": "2",
+                  "note": "Palier facile : jambes pliées, ne ramène que le buste."
                 },
                 {
                   "from": 31,
-                  "sets": 6,
-                  "reps": "9"
+                  "sets": 4,
+                  "reps": "4"
                 },
                 {
                   "from": 41,
-                  "sets": 6,
-                  "reps": "11"
+                  "sets": 4,
+                  "reps": "5"
                 },
                 {
                   "from": 51,
-                  "sets": 6,
-                  "reps": "13"
+                  "sets": 4,
+                  "reps": "6"
                 },
                 {
                   "from": 61,
-                  "sets": 6,
-                  "reps": "15"
+                  "sets": 4,
+                  "reps": "7"
                 },
                 {
                   "from": 71,
-                  "sets": 6,
-                  "reps": "17"
+                  "sets": 4,
+                  "reps": "8"
                 },
                 {
                   "from": 81,
-                  "sets": 6,
-                  "reps": "20"
+                  "sets": 4,
+                  "reps": "9"
                 },
                 {
                   "from": 91,
-                  "sets": 6,
-                  "reps": "22"
+                  "sets": 4,
+                  "reps": "10"
                 },
                 {
                   "from": 101,
-                  "sets": 8,
-                  "reps": "20",
-                  "rest": "45s"
+                  "sets": 4,
+                  "reps": "11"
                 },
                 {
                   "from": 116,
-                  "sets": 8,
-                  "reps": "23",
-                  "rest": "45s"
+                  "sets": 4,
+                  "reps": "12"
                 }
               ],
               "progression": {
+                "every": 2,
                 "reps": 1
               },
               "counter": "Abdos"
@@ -446,27 +452,27 @@
                 {
                   "from": 30,
                   "sets": 3,
-                  "duration": "25s"
+                  "duration": "18s"
                 },
                 {
                   "from": 45,
                   "sets": 3,
-                  "duration": "35s"
+                  "duration": "25s"
                 },
                 {
                   "from": 60,
                   "sets": 3,
-                  "duration": "45s"
+                  "duration": "35s"
                 },
                 {
                   "from": 90,
                   "sets": 3,
-                  "duration": "1min"
+                  "duration": "50s"
                 },
                 {
                   "from": 120,
                   "sets": 3,
-                  "duration": "1min15"
+                  "duration": "1min05"
                 },
                 {
                   "from": 180,
@@ -475,7 +481,8 @@
                 }
               ],
               "progression": {
-                "duration": "5s"
+                "duration": "5s",
+                "every": 2
               },
               "counter": "Gainage"
             },
@@ -516,57 +523,58 @@
                 {
                   "from": 4,
                   "sets": 5,
-                  "reps": "3",
+                  "reps": "2",
                   "note": "Encore en négatives si la forme casse : montée avec les jambes, descente en 3 s."
                 },
                 {
                   "from": 6,
-                  "sets": 5,
-                  "reps": "4"
+                  "sets": 4,
+                  "reps": "3"
                 },
                 {
                   "from": 9,
-                  "sets": 5,
-                  "reps": "6"
+                  "sets": 3,
+                  "reps": "5"
                 },
                 {
                   "from": 12,
-                  "sets": 5,
-                  "reps": "8"
+                  "sets": 3,
+                  "reps": "7"
                 },
                 {
                   "from": 16,
-                  "sets": 5,
-                  "reps": "10"
+                  "sets": 3,
+                  "reps": "9"
                 },
                 {
                   "from": 21,
-                  "sets": 5,
-                  "reps": "13"
+                  "sets": 3,
+                  "reps": "12"
                 },
                 {
                   "from": 26,
-                  "sets": 5,
-                  "reps": "16"
+                  "sets": 3,
+                  "reps": "15"
                 },
                 {
                   "from": 31,
-                  "sets": 5,
-                  "reps": "19"
+                  "sets": 3,
+                  "reps": "18"
                 },
                 {
                   "from": 36,
-                  "sets": 5,
-                  "reps": "22"
+                  "sets": 3,
+                  "reps": "21"
                 },
                 {
                   "from": 41,
-                  "sets": 5,
-                  "reps": "25"
+                  "sets": 3,
+                  "reps": "24"
                 }
               ],
               "progression": {
-                "reps": 1
+                "reps": 1,
+                "every": 2
               },
               "counter": "Tractions"
             },
@@ -600,67 +608,64 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 5,
+                  "sets": 3,
                   "reps": "2",
                   "note": "Palier facile : sur les genoux, ou mains sur une table."
                 },
                 {
                   "from": 6,
-                  "sets": 5,
+                  "sets": 3,
                   "reps": "5"
                 },
                 {
                   "from": 11,
-                  "sets": 5,
-                  "reps": "8"
+                  "sets": 3,
+                  "reps": "7"
                 },
                 {
                   "from": 21,
-                  "sets": 5,
-                  "reps": "13"
+                  "sets": 3,
+                  "reps": "12"
                 },
                 {
                   "from": 26,
-                  "sets": 5,
-                  "reps": "16"
+                  "sets": 3,
+                  "reps": "15"
                 },
                 {
                   "from": 31,
-                  "sets": 5,
-                  "reps": "20"
+                  "sets": 3,
+                  "reps": "18"
                 },
                 {
                   "from": 36,
-                  "sets": 8,
-                  "reps": "14",
-                  "rest": "45s"
+                  "sets": 3,
+                  "reps": "21"
                 },
                 {
                   "from": 41,
-                  "sets": 8,
-                  "reps": "16",
-                  "rest": "45s"
+                  "sets": 3,
+                  "reps": "24"
                 },
                 {
                   "from": 46,
-                  "sets": 8,
-                  "reps": "18",
-                  "rest": "45s"
+                  "sets": 3,
+                  "reps": "27"
                 },
                 {
                   "from": 51,
-                  "sets": 5,
-                  "reps": "32"
+                  "sets": 3,
+                  "reps": "30"
                 },
                 {
                   "from": 56,
-                  "sets": 5,
-                  "reps": "38"
+                  "sets": 3,
+                  "reps": "33"
                 },
                 {
                   "from": 61,
-                  "sets": 5,
-                  "reps": "44"
+                  "sets": 3,
+                  "reps": "36"
                 }
               ],
               "progression": {
@@ -715,66 +720,64 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 6,
-                  "reps": "3",
+                  "sets": 4,
+                  "reps": "4",
                   "note": "Palier facile : mains le long du corps, petite amplitude."
                 },
                 {
                   "from": 11,
-                  "sets": 6,
-                  "reps": "6"
+                  "sets": 4,
+                  "reps": "7"
                 },
                 {
                   "from": 21,
-                  "sets": 6,
-                  "reps": "8"
-                },
-                {
-                  "from": 31,
-                  "sets": 6,
-                  "reps": "9"
-                },
-                {
-                  "from": 41,
-                  "sets": 6,
+                  "sets": 4,
                   "reps": "11"
                 },
                 {
-                  "from": 51,
-                  "sets": 6,
-                  "reps": "13"
-                },
-                {
-                  "from": 61,
-                  "sets": 6,
+                  "from": 31,
+                  "sets": 4,
                   "reps": "15"
                 },
                 {
-                  "from": 71,
-                  "sets": 6,
-                  "reps": "17"
-                },
-                {
-                  "from": 81,
-                  "sets": 6,
+                  "from": 41,
+                  "sets": 4,
                   "reps": "20"
                 },
                 {
+                  "from": 51,
+                  "sets": 4,
+                  "reps": "25"
+                },
+                {
+                  "from": 61,
+                  "sets": 4,
+                  "reps": "30"
+                },
+                {
+                  "from": 71,
+                  "sets": 4,
+                  "reps": "35"
+                },
+                {
+                  "from": 81,
+                  "sets": 4,
+                  "reps": "40"
+                },
+                {
                   "from": 91,
-                  "sets": 6,
-                  "reps": "22"
+                  "sets": 4,
+                  "reps": "45"
                 },
                 {
                   "from": 101,
-                  "sets": 8,
-                  "reps": "20",
-                  "rest": "45s"
+                  "sets": 4,
+                  "reps": "50"
                 },
                 {
                   "from": 116,
-                  "sets": 8,
-                  "reps": "23",
-                  "rest": "45s"
+                  "sets": 4,
+                  "reps": "57"
                 }
               ],
               "progression": {
@@ -800,7 +803,7 @@
                 {
                   "from": 15,
                   "sets": 3,
-                  "reps": "12"
+                  "reps": "9"
                 },
                 {
                   "from": 25,
@@ -875,7 +878,8 @@
                 {
                   "from": 6,
                   "sets": 4,
-                  "reps": "2"
+                  "reps": "2",
+                  "note": "Palier facile : pompes sur les genoux, ou mains sur une table."
                 },
                 {
                   "from": 11,
@@ -981,69 +985,74 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 6,
+                  "sets": 4,
                   "reps": "3",
-                  "note": "Palier facile : jambes pliées, ne ramène que le buste."
+                  "name": "Abdos ({abdos})",
+                  "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
+                  "note": "Le V-up arrive à partir de 20 au test d'abdos : en attendant, ton exercice du test."
                 },
                 {
                   "from": 11,
-                  "sets": 6,
-                  "reps": "6"
+                  "sets": 4,
+                  "reps": "5",
+                  "name": "Abdos ({abdos})",
+                  "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
+                  "note": "Le V-up arrive à partir de 20 au test d'abdos : en attendant, ton exercice du test."
                 },
                 {
-                  "from": 21,
-                  "sets": 6,
-                  "reps": "8"
+                  "from": 20,
+                  "sets": 4,
+                  "reps": "2",
+                  "note": "Palier facile : jambes pliées, ne ramène que le buste."
                 },
                 {
                   "from": 31,
-                  "sets": 6,
-                  "reps": "9"
+                  "sets": 4,
+                  "reps": "4"
                 },
                 {
                   "from": 41,
-                  "sets": 6,
-                  "reps": "11"
+                  "sets": 4,
+                  "reps": "5"
                 },
                 {
                   "from": 51,
-                  "sets": 6,
-                  "reps": "13"
+                  "sets": 4,
+                  "reps": "6"
                 },
                 {
                   "from": 61,
-                  "sets": 6,
-                  "reps": "15"
+                  "sets": 4,
+                  "reps": "7"
                 },
                 {
                   "from": 71,
-                  "sets": 6,
-                  "reps": "17"
+                  "sets": 4,
+                  "reps": "8"
                 },
                 {
                   "from": 81,
-                  "sets": 6,
-                  "reps": "20"
+                  "sets": 4,
+                  "reps": "9"
                 },
                 {
                   "from": 91,
-                  "sets": 6,
-                  "reps": "22"
+                  "sets": 4,
+                  "reps": "10"
                 },
                 {
                   "from": 101,
-                  "sets": 8,
-                  "reps": "20",
-                  "rest": "45s"
+                  "sets": 4,
+                  "reps": "11"
                 },
                 {
                   "from": 116,
-                  "sets": 8,
-                  "reps": "23",
-                  "rest": "45s"
+                  "sets": 4,
+                  "reps": "12"
                 }
               ],
               "progression": {
+                "every": 2,
                 "reps": 1
               },
               "counter": "Abdos"
@@ -1111,27 +1120,27 @@
                 {
                   "from": 30,
                   "sets": 3,
-                  "duration": "25s"
+                  "duration": "18s"
                 },
                 {
                   "from": 45,
                   "sets": 3,
-                  "duration": "35s"
+                  "duration": "25s"
                 },
                 {
                   "from": 60,
                   "sets": 3,
-                  "duration": "45s"
+                  "duration": "35s"
                 },
                 {
                   "from": 90,
                   "sets": 3,
-                  "duration": "1min"
+                  "duration": "50s"
                 },
                 {
                   "from": 120,
                   "sets": 3,
-                  "duration": "1min15"
+                  "duration": "1min05"
                 },
                 {
                   "from": 180,
@@ -1140,7 +1149,8 @@
                 }
               ],
               "progression": {
-                "duration": "5s"
+                "duration": "5s",
+                "every": 2
               },
               "counter": "Gainage"
             },
@@ -1181,57 +1191,58 @@
                 {
                   "from": 4,
                   "sets": 5,
-                  "reps": "3",
+                  "reps": "2",
                   "note": "Encore en négatives si la forme casse : montée avec les jambes, descente en 3 s."
                 },
                 {
                   "from": 6,
-                  "sets": 5,
-                  "reps": "4"
+                  "sets": 4,
+                  "reps": "3"
                 },
                 {
                   "from": 9,
-                  "sets": 5,
-                  "reps": "6"
+                  "sets": 3,
+                  "reps": "5"
                 },
                 {
                   "from": 12,
-                  "sets": 5,
-                  "reps": "8"
+                  "sets": 3,
+                  "reps": "7"
                 },
                 {
                   "from": 16,
-                  "sets": 5,
-                  "reps": "10"
+                  "sets": 3,
+                  "reps": "9"
                 },
                 {
                   "from": 21,
-                  "sets": 5,
-                  "reps": "13"
+                  "sets": 3,
+                  "reps": "12"
                 },
                 {
                   "from": 26,
-                  "sets": 5,
-                  "reps": "16"
+                  "sets": 3,
+                  "reps": "15"
                 },
                 {
                   "from": 31,
-                  "sets": 5,
-                  "reps": "19"
+                  "sets": 3,
+                  "reps": "18"
                 },
                 {
                   "from": 36,
-                  "sets": 5,
-                  "reps": "22"
+                  "sets": 3,
+                  "reps": "21"
                 },
                 {
                   "from": 41,
-                  "sets": 5,
-                  "reps": "25"
+                  "sets": 3,
+                  "reps": "24"
                 }
               ],
               "progression": {
-                "reps": 1
+                "reps": 1,
+                "every": 2
               },
               "counter": "Tractions"
             },
@@ -1265,67 +1276,64 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 5,
+                  "sets": 3,
                   "reps": "2",
                   "note": "Palier facile : sur les genoux, ou mains sur une table."
                 },
                 {
                   "from": 6,
-                  "sets": 5,
+                  "sets": 3,
                   "reps": "5"
                 },
                 {
                   "from": 11,
-                  "sets": 5,
-                  "reps": "8"
+                  "sets": 3,
+                  "reps": "7"
                 },
                 {
                   "from": 21,
-                  "sets": 5,
-                  "reps": "13"
+                  "sets": 3,
+                  "reps": "12"
                 },
                 {
                   "from": 26,
-                  "sets": 5,
-                  "reps": "16"
+                  "sets": 3,
+                  "reps": "15"
                 },
                 {
                   "from": 31,
-                  "sets": 5,
-                  "reps": "20"
+                  "sets": 3,
+                  "reps": "18"
                 },
                 {
                   "from": 36,
-                  "sets": 8,
-                  "reps": "14",
-                  "rest": "45s"
+                  "sets": 3,
+                  "reps": "21"
                 },
                 {
                   "from": 41,
-                  "sets": 8,
-                  "reps": "16",
-                  "rest": "45s"
+                  "sets": 3,
+                  "reps": "24"
                 },
                 {
                   "from": 46,
-                  "sets": 8,
-                  "reps": "18",
-                  "rest": "45s"
+                  "sets": 3,
+                  "reps": "27"
                 },
                 {
                   "from": 51,
-                  "sets": 5,
-                  "reps": "32"
+                  "sets": 3,
+                  "reps": "30"
                 },
                 {
                   "from": 56,
-                  "sets": 5,
-                  "reps": "38"
+                  "sets": 3,
+                  "reps": "33"
                 },
                 {
                   "from": 61,
-                  "sets": 5,
-                  "reps": "44"
+                  "sets": 3,
+                  "reps": "36"
                 }
               ],
               "progression": {
@@ -1380,66 +1388,64 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 6,
-                  "reps": "3",
+                  "sets": 4,
+                  "reps": "4",
                   "note": "Palier facile : mains le long du corps, petite amplitude."
                 },
                 {
                   "from": 11,
-                  "sets": 6,
-                  "reps": "6"
+                  "sets": 4,
+                  "reps": "7"
                 },
                 {
                   "from": 21,
-                  "sets": 6,
-                  "reps": "8"
-                },
-                {
-                  "from": 31,
-                  "sets": 6,
-                  "reps": "9"
-                },
-                {
-                  "from": 41,
-                  "sets": 6,
+                  "sets": 4,
                   "reps": "11"
                 },
                 {
-                  "from": 51,
-                  "sets": 6,
-                  "reps": "13"
-                },
-                {
-                  "from": 61,
-                  "sets": 6,
+                  "from": 31,
+                  "sets": 4,
                   "reps": "15"
                 },
                 {
-                  "from": 71,
-                  "sets": 6,
-                  "reps": "17"
-                },
-                {
-                  "from": 81,
-                  "sets": 6,
+                  "from": 41,
+                  "sets": 4,
                   "reps": "20"
                 },
                 {
+                  "from": 51,
+                  "sets": 4,
+                  "reps": "25"
+                },
+                {
+                  "from": 61,
+                  "sets": 4,
+                  "reps": "30"
+                },
+                {
+                  "from": 71,
+                  "sets": 4,
+                  "reps": "35"
+                },
+                {
+                  "from": 81,
+                  "sets": 4,
+                  "reps": "40"
+                },
+                {
                   "from": 91,
-                  "sets": 6,
-                  "reps": "22"
+                  "sets": 4,
+                  "reps": "45"
                 },
                 {
                   "from": 101,
-                  "sets": 8,
-                  "reps": "20",
-                  "rest": "45s"
+                  "sets": 4,
+                  "reps": "50"
                 },
                 {
                   "from": 116,
-                  "sets": 8,
-                  "reps": "23",
-                  "rest": "45s"
+                  "sets": 4,
+                  "reps": "57"
                 }
               ],
               "progression": {
@@ -1465,7 +1471,7 @@
                 {
                   "from": 15,
                   "sets": 3,
-                  "reps": "12"
+                  "reps": "9"
                 },
                 {
                   "from": 25,
@@ -1540,7 +1546,8 @@
                 {
                   "from": 6,
                   "sets": 4,
-                  "reps": "2"
+                  "reps": "2",
+                  "note": "Palier facile : pompes sur les genoux, ou mains sur une table."
                 },
                 {
                   "from": 11,
@@ -1646,69 +1653,74 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 6,
+                  "sets": 4,
                   "reps": "3",
-                  "note": "Palier facile : jambes pliées, ne ramène que le buste."
+                  "name": "Abdos ({abdos})",
+                  "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
+                  "note": "Le V-up arrive à partir de 20 au test d'abdos : en attendant, ton exercice du test."
                 },
                 {
                   "from": 11,
-                  "sets": 6,
-                  "reps": "6"
+                  "sets": 4,
+                  "reps": "5",
+                  "name": "Abdos ({abdos})",
+                  "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
+                  "note": "Le V-up arrive à partir de 20 au test d'abdos : en attendant, ton exercice du test."
                 },
                 {
-                  "from": 21,
-                  "sets": 6,
-                  "reps": "8"
+                  "from": 20,
+                  "sets": 4,
+                  "reps": "2",
+                  "note": "Palier facile : jambes pliées, ne ramène que le buste."
                 },
                 {
                   "from": 31,
-                  "sets": 6,
-                  "reps": "9"
+                  "sets": 4,
+                  "reps": "4"
                 },
                 {
                   "from": 41,
-                  "sets": 6,
-                  "reps": "11"
+                  "sets": 4,
+                  "reps": "5"
                 },
                 {
                   "from": 51,
-                  "sets": 6,
-                  "reps": "13"
+                  "sets": 4,
+                  "reps": "6"
                 },
                 {
                   "from": 61,
-                  "sets": 6,
-                  "reps": "15"
+                  "sets": 4,
+                  "reps": "7"
                 },
                 {
                   "from": 71,
-                  "sets": 6,
-                  "reps": "17"
+                  "sets": 4,
+                  "reps": "8"
                 },
                 {
                   "from": 81,
-                  "sets": 6,
-                  "reps": "20"
+                  "sets": 4,
+                  "reps": "9"
                 },
                 {
                   "from": 91,
-                  "sets": 6,
-                  "reps": "22"
+                  "sets": 4,
+                  "reps": "10"
                 },
                 {
                   "from": 101,
-                  "sets": 8,
-                  "reps": "20",
-                  "rest": "45s"
+                  "sets": 4,
+                  "reps": "11"
                 },
                 {
                   "from": 116,
-                  "sets": 8,
-                  "reps": "23",
-                  "rest": "45s"
+                  "sets": 4,
+                  "reps": "12"
                 }
               ],
               "progression": {
+                "every": 2,
                 "reps": 1
               },
               "counter": "Abdos"
@@ -1776,27 +1788,27 @@
                 {
                   "from": 30,
                   "sets": 3,
-                  "duration": "25s"
+                  "duration": "18s"
                 },
                 {
                   "from": 45,
                   "sets": 3,
-                  "duration": "35s"
+                  "duration": "25s"
                 },
                 {
                   "from": 60,
                   "sets": 3,
-                  "duration": "45s"
+                  "duration": "35s"
                 },
                 {
                   "from": 90,
                   "sets": 3,
-                  "duration": "1min"
+                  "duration": "50s"
                 },
                 {
                   "from": 120,
                   "sets": 3,
-                  "duration": "1min15"
+                  "duration": "1min05"
                 },
                 {
                   "from": 180,
@@ -1805,7 +1817,8 @@
                 }
               ],
               "progression": {
-                "duration": "5s"
+                "duration": "5s",
+                "every": 2
               },
               "counter": "Gainage"
             },
@@ -1846,57 +1859,58 @@
                 {
                   "from": 4,
                   "sets": 5,
-                  "reps": "3",
+                  "reps": "2",
                   "note": "Encore en négatives si la forme casse : montée avec les jambes, descente en 3 s."
                 },
                 {
                   "from": 6,
-                  "sets": 5,
-                  "reps": "4"
+                  "sets": 4,
+                  "reps": "3"
                 },
                 {
                   "from": 9,
-                  "sets": 5,
-                  "reps": "6"
+                  "sets": 3,
+                  "reps": "5"
                 },
                 {
                   "from": 12,
-                  "sets": 5,
-                  "reps": "8"
+                  "sets": 3,
+                  "reps": "7"
                 },
                 {
                   "from": 16,
-                  "sets": 5,
-                  "reps": "10"
+                  "sets": 3,
+                  "reps": "9"
                 },
                 {
                   "from": 21,
-                  "sets": 5,
-                  "reps": "13"
+                  "sets": 3,
+                  "reps": "12"
                 },
                 {
                   "from": 26,
-                  "sets": 5,
-                  "reps": "16"
+                  "sets": 3,
+                  "reps": "15"
                 },
                 {
                   "from": 31,
-                  "sets": 5,
-                  "reps": "19"
+                  "sets": 3,
+                  "reps": "18"
                 },
                 {
                   "from": 36,
-                  "sets": 5,
-                  "reps": "22"
+                  "sets": 3,
+                  "reps": "21"
                 },
                 {
                   "from": 41,
-                  "sets": 5,
-                  "reps": "25"
+                  "sets": 3,
+                  "reps": "24"
                 }
               ],
               "progression": {
-                "reps": 1
+                "reps": 1,
+                "every": 2
               },
               "counter": "Tractions"
             },
@@ -1930,67 +1944,64 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 5,
+                  "sets": 3,
                   "reps": "2",
                   "note": "Palier facile : sur les genoux, ou mains sur une table."
                 },
                 {
                   "from": 6,
-                  "sets": 5,
+                  "sets": 3,
                   "reps": "5"
                 },
                 {
                   "from": 11,
-                  "sets": 5,
-                  "reps": "8"
+                  "sets": 3,
+                  "reps": "7"
                 },
                 {
                   "from": 21,
-                  "sets": 5,
-                  "reps": "13"
+                  "sets": 3,
+                  "reps": "12"
                 },
                 {
                   "from": 26,
-                  "sets": 5,
-                  "reps": "16"
+                  "sets": 3,
+                  "reps": "15"
                 },
                 {
                   "from": 31,
-                  "sets": 5,
-                  "reps": "20"
+                  "sets": 3,
+                  "reps": "18"
                 },
                 {
                   "from": 36,
-                  "sets": 8,
-                  "reps": "14",
-                  "rest": "45s"
+                  "sets": 3,
+                  "reps": "21"
                 },
                 {
                   "from": 41,
-                  "sets": 8,
-                  "reps": "16",
-                  "rest": "45s"
+                  "sets": 3,
+                  "reps": "24"
                 },
                 {
                   "from": 46,
-                  "sets": 8,
-                  "reps": "18",
-                  "rest": "45s"
+                  "sets": 3,
+                  "reps": "27"
                 },
                 {
                   "from": 51,
-                  "sets": 5,
-                  "reps": "32"
+                  "sets": 3,
+                  "reps": "30"
                 },
                 {
                   "from": 56,
-                  "sets": 5,
-                  "reps": "38"
+                  "sets": 3,
+                  "reps": "33"
                 },
                 {
                   "from": 61,
-                  "sets": 5,
-                  "reps": "44"
+                  "sets": 3,
+                  "reps": "36"
                 }
               ],
               "progression": {
@@ -2045,66 +2056,64 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 6,
-                  "reps": "3",
+                  "sets": 4,
+                  "reps": "4",
                   "note": "Palier facile : mains le long du corps, petite amplitude."
                 },
                 {
                   "from": 11,
-                  "sets": 6,
-                  "reps": "6"
+                  "sets": 4,
+                  "reps": "7"
                 },
                 {
                   "from": 21,
-                  "sets": 6,
-                  "reps": "8"
-                },
-                {
-                  "from": 31,
-                  "sets": 6,
-                  "reps": "9"
-                },
-                {
-                  "from": 41,
-                  "sets": 6,
+                  "sets": 4,
                   "reps": "11"
                 },
                 {
-                  "from": 51,
-                  "sets": 6,
-                  "reps": "13"
-                },
-                {
-                  "from": 61,
-                  "sets": 6,
+                  "from": 31,
+                  "sets": 4,
                   "reps": "15"
                 },
                 {
-                  "from": 71,
-                  "sets": 6,
-                  "reps": "17"
-                },
-                {
-                  "from": 81,
-                  "sets": 6,
+                  "from": 41,
+                  "sets": 4,
                   "reps": "20"
                 },
                 {
+                  "from": 51,
+                  "sets": 4,
+                  "reps": "25"
+                },
+                {
+                  "from": 61,
+                  "sets": 4,
+                  "reps": "30"
+                },
+                {
+                  "from": 71,
+                  "sets": 4,
+                  "reps": "35"
+                },
+                {
+                  "from": 81,
+                  "sets": 4,
+                  "reps": "40"
+                },
+                {
                   "from": 91,
-                  "sets": 6,
-                  "reps": "22"
+                  "sets": 4,
+                  "reps": "45"
                 },
                 {
                   "from": 101,
-                  "sets": 8,
-                  "reps": "20",
-                  "rest": "45s"
+                  "sets": 4,
+                  "reps": "50"
                 },
                 {
                   "from": 116,
-                  "sets": 8,
-                  "reps": "23",
-                  "rest": "45s"
+                  "sets": 4,
+                  "reps": "57"
                 }
               ],
               "progression": {
@@ -2130,7 +2139,7 @@
                 {
                   "from": 15,
                   "sets": 3,
-                  "reps": "12"
+                  "reps": "9"
                 },
                 {
                   "from": 25,
@@ -2213,7 +2222,8 @@
                 {
                   "from": 6,
                   "sets": 4,
-                  "reps": "2"
+                  "reps": "2",
+                  "note": "Palier facile : pompes sur les genoux, ou mains sur une table."
                 },
                 {
                   "from": 11,
@@ -2335,69 +2345,74 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 6,
+                  "sets": 4,
                   "reps": "3",
-                  "note": "Palier facile : jambes pliées, ne ramène que le buste."
+                  "name": "Abdos ({abdos})",
+                  "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
+                  "note": "Le V-up arrive à partir de 20 au test d'abdos : en attendant, ton exercice du test."
                 },
                 {
                   "from": 11,
-                  "sets": 6,
-                  "reps": "6"
+                  "sets": 4,
+                  "reps": "5",
+                  "name": "Abdos ({abdos})",
+                  "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
+                  "note": "Le V-up arrive à partir de 20 au test d'abdos : en attendant, ton exercice du test."
                 },
                 {
-                  "from": 21,
-                  "sets": 6,
-                  "reps": "8"
+                  "from": 20,
+                  "sets": 4,
+                  "reps": "2",
+                  "note": "Palier facile : jambes pliées, ne ramène que le buste."
                 },
                 {
                   "from": 31,
-                  "sets": 6,
-                  "reps": "9"
+                  "sets": 4,
+                  "reps": "4"
                 },
                 {
                   "from": 41,
-                  "sets": 6,
-                  "reps": "11"
+                  "sets": 4,
+                  "reps": "5"
                 },
                 {
                   "from": 51,
-                  "sets": 6,
-                  "reps": "13"
+                  "sets": 4,
+                  "reps": "6"
                 },
                 {
                   "from": 61,
-                  "sets": 6,
-                  "reps": "15"
+                  "sets": 4,
+                  "reps": "7"
                 },
                 {
                   "from": 71,
-                  "sets": 6,
-                  "reps": "17"
+                  "sets": 4,
+                  "reps": "8"
                 },
                 {
                   "from": 81,
-                  "sets": 6,
-                  "reps": "20"
+                  "sets": 4,
+                  "reps": "9"
                 },
                 {
                   "from": 91,
-                  "sets": 6,
-                  "reps": "22"
+                  "sets": 4,
+                  "reps": "10"
                 },
                 {
                   "from": 101,
-                  "sets": 8,
-                  "reps": "20",
-                  "rest": "45s"
+                  "sets": 4,
+                  "reps": "11"
                 },
                 {
                   "from": 116,
-                  "sets": 8,
-                  "reps": "23",
-                  "rest": "45s"
+                  "sets": 4,
+                  "reps": "12"
                 }
               ],
               "progression": {
+                "every": 2,
                 "reps": 1
               },
               "counter": "Abdos"
@@ -2465,27 +2480,27 @@
                 {
                   "from": 30,
                   "sets": 3,
-                  "duration": "25s"
+                  "duration": "18s"
                 },
                 {
                   "from": 45,
                   "sets": 3,
-                  "duration": "35s"
+                  "duration": "25s"
                 },
                 {
                   "from": 60,
                   "sets": 3,
-                  "duration": "45s"
+                  "duration": "35s"
                 },
                 {
                   "from": 90,
                   "sets": 3,
-                  "duration": "1min"
+                  "duration": "50s"
                 },
                 {
                   "from": 120,
                   "sets": 3,
-                  "duration": "1min15"
+                  "duration": "1min05"
                 },
                 {
                   "from": 180,
@@ -2494,7 +2509,8 @@
                 }
               ],
               "progression": {
-                "duration": "5s"
+                "duration": "5s",
+                "every": 2
               },
               "counter": "Gainage"
             },
@@ -2543,57 +2559,58 @@
                 {
                   "from": 4,
                   "sets": 5,
-                  "reps": "3",
+                  "reps": "2",
                   "note": "Encore en négatives si la forme casse : montée avec les jambes, descente en 3 s."
                 },
                 {
                   "from": 6,
-                  "sets": 5,
-                  "reps": "4"
+                  "sets": 4,
+                  "reps": "3"
                 },
                 {
                   "from": 9,
-                  "sets": 5,
-                  "reps": "6"
+                  "sets": 3,
+                  "reps": "5"
                 },
                 {
                   "from": 12,
-                  "sets": 5,
-                  "reps": "8"
+                  "sets": 3,
+                  "reps": "7"
                 },
                 {
                   "from": 16,
-                  "sets": 5,
-                  "reps": "10"
+                  "sets": 3,
+                  "reps": "9"
                 },
                 {
                   "from": 21,
-                  "sets": 5,
-                  "reps": "13"
+                  "sets": 3,
+                  "reps": "12"
                 },
                 {
                   "from": 26,
-                  "sets": 5,
-                  "reps": "16"
+                  "sets": 3,
+                  "reps": "15"
                 },
                 {
                   "from": 31,
-                  "sets": 5,
-                  "reps": "19"
+                  "sets": 3,
+                  "reps": "18"
                 },
                 {
                   "from": 36,
-                  "sets": 5,
-                  "reps": "22"
+                  "sets": 3,
+                  "reps": "21"
                 },
                 {
                   "from": 41,
-                  "sets": 5,
-                  "reps": "25"
+                  "sets": 3,
+                  "reps": "24"
                 }
               ],
               "progression": {
-                "reps": 1
+                "reps": 1,
+                "every": 2
               },
               "counter": "Tractions"
             },
@@ -2627,67 +2644,64 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 5,
+                  "sets": 3,
                   "reps": "2",
                   "note": "Palier facile : sur les genoux, ou mains sur une table."
                 },
                 {
                   "from": 6,
-                  "sets": 5,
+                  "sets": 3,
                   "reps": "5"
                 },
                 {
                   "from": 11,
-                  "sets": 5,
-                  "reps": "8"
+                  "sets": 3,
+                  "reps": "7"
                 },
                 {
                   "from": 21,
-                  "sets": 5,
-                  "reps": "13"
+                  "sets": 3,
+                  "reps": "12"
                 },
                 {
                   "from": 26,
-                  "sets": 5,
-                  "reps": "16"
+                  "sets": 3,
+                  "reps": "15"
                 },
                 {
                   "from": 31,
-                  "sets": 5,
-                  "reps": "20"
+                  "sets": 3,
+                  "reps": "18"
                 },
                 {
                   "from": 36,
-                  "sets": 8,
-                  "reps": "14",
-                  "rest": "45s"
+                  "sets": 3,
+                  "reps": "21"
                 },
                 {
                   "from": 41,
-                  "sets": 8,
-                  "reps": "16",
-                  "rest": "45s"
+                  "sets": 3,
+                  "reps": "24"
                 },
                 {
                   "from": 46,
-                  "sets": 8,
-                  "reps": "18",
-                  "rest": "45s"
+                  "sets": 3,
+                  "reps": "27"
                 },
                 {
                   "from": 51,
-                  "sets": 5,
-                  "reps": "32"
+                  "sets": 3,
+                  "reps": "30"
                 },
                 {
                   "from": 56,
-                  "sets": 5,
-                  "reps": "38"
+                  "sets": 3,
+                  "reps": "33"
                 },
                 {
                   "from": 61,
-                  "sets": 5,
-                  "reps": "44"
+                  "sets": 3,
+                  "reps": "36"
                 }
               ],
               "progression": {
@@ -2750,66 +2764,64 @@
               "levels": [
                 {
                   "from": 0,
-                  "sets": 6,
-                  "reps": "3",
+                  "sets": 4,
+                  "reps": "4",
                   "note": "Palier facile : mains le long du corps, petite amplitude."
                 },
                 {
                   "from": 11,
-                  "sets": 6,
-                  "reps": "6"
+                  "sets": 4,
+                  "reps": "7"
                 },
                 {
                   "from": 21,
-                  "sets": 6,
-                  "reps": "8"
-                },
-                {
-                  "from": 31,
-                  "sets": 6,
-                  "reps": "9"
-                },
-                {
-                  "from": 41,
-                  "sets": 6,
+                  "sets": 4,
                   "reps": "11"
                 },
                 {
-                  "from": 51,
-                  "sets": 6,
-                  "reps": "13"
-                },
-                {
-                  "from": 61,
-                  "sets": 6,
+                  "from": 31,
+                  "sets": 4,
                   "reps": "15"
                 },
                 {
-                  "from": 71,
-                  "sets": 6,
-                  "reps": "17"
-                },
-                {
-                  "from": 81,
-                  "sets": 6,
+                  "from": 41,
+                  "sets": 4,
                   "reps": "20"
                 },
                 {
+                  "from": 51,
+                  "sets": 4,
+                  "reps": "25"
+                },
+                {
+                  "from": 61,
+                  "sets": 4,
+                  "reps": "30"
+                },
+                {
+                  "from": 71,
+                  "sets": 4,
+                  "reps": "35"
+                },
+                {
+                  "from": 81,
+                  "sets": 4,
+                  "reps": "40"
+                },
+                {
                   "from": 91,
-                  "sets": 6,
-                  "reps": "22"
+                  "sets": 4,
+                  "reps": "45"
                 },
                 {
                   "from": 101,
-                  "sets": 8,
-                  "reps": "20",
-                  "rest": "45s"
+                  "sets": 4,
+                  "reps": "50"
                 },
                 {
                   "from": 116,
-                  "sets": 8,
-                  "reps": "23",
-                  "rest": "45s"
+                  "sets": 4,
+                  "reps": "57"
                 }
               ],
               "progression": {
@@ -2835,7 +2847,7 @@
                 {
                   "from": 15,
                   "sets": 3,
-                  "reps": "12"
+                  "reps": "9"
                 },
                 {
                   "from": 25,
