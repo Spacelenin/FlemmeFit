@@ -98,8 +98,10 @@ if (newKeystore != null) {
             )
 
             fun run(vararg args: String) {
-                val process = ProcessBuilder(listOf(apksigner.path) + args).inheritIO().start()
-                check(process.waitFor() == 0) { "apksigner ${args.first()} a échoué" }
+                val process = ProcessBuilder(listOf(apksigner.path) + args).redirectErrorStream(true).start()
+                val output = process.inputStream.bufferedReader().readText()
+                logger.lifecycle(output)
+                check(process.waitFor() == 0) { "apksigner ${args.first()} a échoué :\n$output" }
             }
             lineage.delete()
             run(*(listOf("rotate", "--out", lineage.path, "--old-signer") + oldSigner + listOf("--set-rollback", "false", "--new-signer") + newSigner).toTypedArray())
