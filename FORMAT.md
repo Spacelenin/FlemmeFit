@@ -94,6 +94,8 @@ Ce sont des **textes libres** (tu peux écrire `"12"`, `"8-10"`, `"max"`, `"10 p
 | `retest`      | booléen | non (défaut `false`) | `true` | L'exercice **est** le test : une série à fond, son résultat devient la nouvelle référence. |
 | `weights`     | objet  | non         | `{ "default": true, "factor": 0.85 }` | Exercice faisable **avec ou sans petits poids**, à dire le jour même dans l'app. `default` : choix proposé tant que rien n'est dit (ensuite, le dernier choix). `factor` (0 à 1, défaut `0.85`) : avec poids, chaque cran de progression ne vaut que cette part du pas. Même plafond, atteint plus tard ; arrondi vers le bas (minute au-delà de 10 min, 5 s en dessous). |
 | `counter`     | texte  | non         | `"Pompes"` | Compteur caché où s'additionne ce qui est fait (reps ou temps). Les exercices qui portent le même nom sont regroupés. Les compteurs se dévoilent dans les Réglages quand l'un d'eux passe 1 000 reps ou 10 h. |
+| `optional`    | booléen | non (défaut `false`) | `true` | **Facultatif** (échauffement, étirements) : le passer ne compte pas contre la séance. Elle est finie quand tout le reste est fait. |
+| `sides`       | texte  | non         | `"Bras droit, puis bras gauche."` | Exercice d'**un côté à la fois** : quels membres travaillent. Affiché en évidence en séance et dans le détail. |
 
 Affichage dans l'app : `sets × reps · load · repos rest`, par ex. **4 × 8-10 · 60 kg · repos 90s**.
 
@@ -231,6 +233,7 @@ Une famille regroupe des exercices de base et le test qui leur sert d'étalon :
 | `ratio`          | Une rep (ou une seconde) de la variante vaut `ratio` unités du test : max estimé = test ÷ `ratio`. Absent : le premier passage est une seule série au max, qui le mesure. |
 | `unit`           | `"reps"` (défaut) ou `"seconds"`. |
 | `from`           | Vraie version à partir de ce résultat au test ; en dessous, version facile (`easy`), comptée deux fois plus facile. |
+| `sides`          | Variante d'un côté à la fois : quels membres travaillent (« Les deux bras : bras droit, puis bras gauche »). |
 
 - **Jours variante** : tirés au sort séance par séance, seulement les jours où un exercice de base est prévu, au plus
   un par séance, jamais en semaine de décharge, et dévoilés le jour même. Sur un cycle (`deloadEvery` semaines, 4 sinon),
@@ -252,9 +255,10 @@ Elle ne fait pas progresser et n'a jamais de Boss.
 
 Toutes les **3 à 4 semaines**, une séance tirée au hasard devient un Boss (tirage fixe : rouvrir l'app ne le
 change pas ; repousser la séance déplace le Boss avec elle). Il se dévoile **la veille**.
-- Chiffres de la semaine prochaine (+1 cran de progression), et **dernière série à fond** sur chaque exercice.
+- Plus dur qu'un Burst : **+3 crans de progression**, et **dernière série à fond** sur chaque exercice.
 - En cochant un exercice, l'app demande le **max** fait sur la série à fond. Objectif affiché : dernier max + 1.
-- Boss entièrement validé = **Boss vaincu** dans les stats.
+- Boss entièrement validé = **Boss vaincu** dans les stats. Fait aux **trois quarts** (exercices facultatifs à part) :
+  la journée est sauvée, la série 🔥 tient sans avancer, mais pas de point ni de Boss vaincu.
 
 ## Suivi dans l'app
 

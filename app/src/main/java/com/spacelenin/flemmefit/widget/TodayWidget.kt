@@ -64,15 +64,16 @@ class TodayWidget : AppWidgetProvider() {
                     )
                 }
                 else -> {
-                    val done = schedule.doneCount(session)
+                    val done = schedule.requiredDone(session)
                     val badge = when {
                         session.isBoss -> "💀 BOSS"
                         session.isBurst -> "🚀 BURST"
+                        session.isChill -> "🛋 CHILL"
                         session.isDeload -> "🌿 RÉCUP"
-                        done == session.exerciseCount -> "✓ FAIT"
+                        schedule.isComplete(session) -> "✓ FAIT"
                         else -> "AUJOURD'HUI"
                     }
-                    Triple(badge, session.day.title ?: "Séance", "$done/${session.exerciseCount} exos · $streak")
+                    Triple(badge, session.day.title ?: "Séance", "$done/${session.requiredCount} exos · $streak")
                 }
             }
         }

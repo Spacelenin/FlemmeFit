@@ -65,6 +65,8 @@ data class Stats(
     val exploits: List<Exploit> = emptyList(),
     /** Compteurs cachés, par famille d'exercices. */
     val counters: List<Counter> = emptyList(),
+    /** Séances Burst terminées. */
+    val burstsDone: Int = 0,
 ) {
     val isEmpty get() = sessionsDone == 0 && exercises.isEmpty()
 
@@ -108,6 +110,7 @@ data class Stats(
                 history = all.flatMap { it.history }.sortedByDescending { it.date }.take(HISTORY_SIZE),
                 exploits = all.flatMap { it.exploits }.sortedByDescending { it.date },
                 counters = Counter.merge(all.map { it.counters }),
+                burstsDone = all.sumOf { it.burstsDone },
             )
         }
 
@@ -132,7 +135,7 @@ data class Stats(
             val weekBoss = HashSet<LocalDate>()
             val weekDeload = HashSet<LocalDate>()
             var totalSets = 0; var totalReps = 0; var totalSeconds = 0
-            var sessionsDone = 0; var bossDefeated = 0; var bossMet = 0
+            var sessionsDone = 0; var bossDefeated = 0; var bossMet = 0; var burstsDone = 0
             var bestStreak = 0; var run = 0
             val history = ArrayList<HistoryEntry>()
             val exploits = ArrayList<Exploit>()
@@ -140,9 +143,9 @@ data class Stats(
 
             for (s in sessions) {
                 val monday = s.date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-                val done = schedule.doneCount(s)
-                val complete = done == s.exerciseCount
+                val complete = schedule.isComplete(s)
                 if (complete) sessionsDone++
+                if (complete && s.isBurst) burstsDone++
                 if (s.isBoss && !s.date.isAfter(today)) {
                     bossMet++
                     weekBoss += monday
@@ -150,7 +153,7 @@ data class Stats(
                 }
                 if (s.isDeload) weekDeload += monday
                 if (!s.date.isAfter(today)) {
-                    if (complete) run++ else if (s.date != today) run = 0
+                    if (complete) run++ else if (s.date != today && !schedule.isSaved(s)) run = 0
                     bestStreak = maxOf(bestStreak, run)
                 }
 
@@ -212,7 +215,7 @@ data class Stats(
                 }
                 if (touched) {
                     history += HistoryEntry(
-                        program.plan.name, program.colorIndex, s.day.title ?: "Séance", s.date, done, s.exerciseCount, s.isBoss,
+                        program.plan.name, program.colorIndex, s.day.title ?: "Séance", s.date, schedule.requiredDone(s), s.requiredCount, s.isBoss,
                     )
                 }
             }
@@ -236,6 +239,7 @@ data class Stats(
                 history = history.sortedByDescending { it.date }.take(HISTORY_SIZE),
                 exploits = exploits.sortedByDescending { it.date },
                 counters = counters.values.sortedBy { it.isTime },
+                burstsDone = burstsDone,
             )
         }
     }

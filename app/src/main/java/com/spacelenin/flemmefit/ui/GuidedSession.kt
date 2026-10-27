@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -100,6 +101,7 @@ fun GuidedSession(
     val feedback = remember { TimerFeedback(context) }
     // Repos ou série au temps : la notification prend le relais si le téléphone est verrouillé.
     TimerNotification(run?.let { it.copy(title = prescription?.exercise?.name ?: it.title) })
+    AskNotifications()
     DisposableEffect(Unit) { onDispose(feedback::release) }
 
     fun startRest(seconds: Int?) {
@@ -181,14 +183,18 @@ fun GuidedSession(
         }
     }
 
-    Dialog(onDismissRequest = ::close, properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = false)) {
+    // Plein écran, sous les barres système : le contenu se pousse lui-même hors de la barre de navigation.
+    Dialog(
+        onDismissRequest = ::close,
+        properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = false, decorFitsSystemWindows = false),
+    ) {
         val view = LocalView.current
         DisposableEffect(view) {
             view.keepScreenOn = true
             onDispose { view.keepScreenOn = false }
         }
         Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) {
-            Box(contentAlignment = Alignment.TopCenter) {
+            Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.safeDrawingPadding()) {
                 Column(
                     Modifier.widthIn(max = 560.dp).fillMaxSize().padding(horizontal = 20.dp, vertical = 12.dp),
                 ) {
@@ -257,7 +263,7 @@ fun GuidedSession(
                                 nextExercise(rest = null)
                             },
                             modifier = Modifier.align(Alignment.CenterHorizontally),
-                        ) { Text("Passer l'exercice") }
+                        ) { Text(if (prescription.exercise.optional) "Passer (facultatif)" else "Passer l'exercice") }
                     }
                 }
             }
@@ -289,10 +295,16 @@ private fun SetContent(
                 if (guided.sets > 1) "Série ${set + 1} sur ${guided.sets}" else null,
                 p.loadLabel,
                 if (p.isTest) "test" else null,
+                if (p.exercise.optional) "facultatif" else null,
             ).joinToString(" · "),
             style = MaterialTheme.typography.titleMedium,
             color = color,
         )
+        // Un côté à la fois : quels membres travaillent, à ne pas rater.
+        p.exercise.sides?.let {
+            Spacer(Modifier.height(8.dp))
+            Text("↔ $it", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
+        }
         // Jour variante : rappelé au moment des séries concernées.
         val reminder = p.variant?.let {
             if (it.whole) "🎲 Variante, à la place de ${it.baseName.lowercase()}" else "🎲 Variante, à la place de ta série max de ${it.baseName.lowercase()}"
@@ -376,8 +388,8 @@ private fun SetContent(
 
 @Composable
 private fun EndContent(schedule: ProgramSchedule, session: Session, onClose: () -> Unit) {
-    val done = schedule.doneCount(session)
-    val all = done == session.exerciseCount
+    val done = schedule.requiredDone(session)
+    val all = schedule.isComplete(session)
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(Modifier.height(40.dp))
         Text(if (all) "💪" else "⏸", style = MaterialTheme.typography.displayLarge)
@@ -387,7 +399,7 @@ private fun EndContent(schedule: ProgramSchedule, session: Session, onClose: () 
             fontWeight = FontWeight.ExtraBold,
         )
         Text(
-            if (all) "Tout est fait. Bien joué." else "$done exercice${if (done > 1) "s" else ""} sur ${session.exerciseCount} de fait. Le reste t'attend.",
+            if (all) "Tout est fait. Bien joué." else "$done exercice${if (done > 1) "s" else ""} sur ${session.requiredCount} de fait. Le reste t'attend.",
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
         )

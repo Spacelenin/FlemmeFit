@@ -401,7 +401,7 @@ private fun TodayCard(
             val (title, sub) = when {
                 finished -> "Programme terminé 🎉" to "${progress.doneSessions}/${progress.totalSessions} séances faites"
                 notStarted -> "Ça commence le ${schedule.startDate.shortLabel()}" to (next?.let { "Première séance : ${it.title()}" } ?: "")
-                session != null -> session.title() to "${schedule.doneCount(session)}/${session.exerciseCount} exos faits"
+                session != null -> session.title() to "${schedule.requiredDone(session)}/${session.requiredCount} exos faits"
                 next != null -> "Repos aujourd'hui" to "Prochaine : ${next.date.shortLabel()} · ${next.title()}"
                 else -> "Repos aujourd'hui" to "Plus de séance à venir"
             }
@@ -411,7 +411,7 @@ private fun TodayCard(
                     if (sub.isNotEmpty()) Text(sub, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
                 }
                 if (session != null && !finished) {
-                    val ratio = if (session.exerciseCount == 0) 0f else schedule.doneCount(session).toFloat() / session.exerciseCount
+                    val ratio = if (session.requiredCount == 0) 0f else schedule.requiredDone(session).toFloat() / session.requiredCount
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.size(56.dp)) {
                         CircularProgressIndicator(
                             progress = { ratio },
@@ -440,7 +440,10 @@ private fun TodayCard(
                         if (schedule.canBurst(session)) {
                             OutlinedButton(onClick = { dayActions.onBurst(session, true) }) { Text("🚀 Burst") }
                         }
-                        if (schedule.doneCount(session) < session.exerciseCount) {
+                        if (schedule.canChill(session)) {
+                            OutlinedButton(onClick = { dayActions.onChill(session, true) }) { Text("🛋 Chill") }
+                        }
+                        if (!schedule.isComplete(session)) {
                             OutlinedButton(onClick = { dayActions.onPostpone(session) }) { Text("Décaler") }
                         }
                     }
@@ -454,7 +457,7 @@ private fun TodayCard(
                     Box(Modifier.size(8.dp).clip(CircleShape).background(programColor(p.colorIndex)))
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        p.plan.name + " : " + (o?.let { "${it.title()} (${s.doneCount(it)}/${it.exerciseCount})" } ?: "repos aujourd'hui"),
+                        p.plan.name + " : " + (o?.let { "${it.title()} (${s.requiredDone(it)}/${it.requiredCount})" } ?: "repos aujourd'hui"),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                         maxLines = 1,

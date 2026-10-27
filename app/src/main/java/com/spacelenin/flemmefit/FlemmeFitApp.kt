@@ -39,6 +39,7 @@ class FlemmeFitApp : Application() {
         reminders = ReminderScheduler(this)
         reminders.reschedule()
         social = SocialSync(this, repository)
+        social.onBossNews = { names -> reminders.announceBosses(names) }
         social.publishIfNeeded()
         // Le widget suit le suivi : chaque exercice coché le met à jour.
         widgetScope.launch {

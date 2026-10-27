@@ -77,19 +77,48 @@ class ReminderScheduler(private val context: Context) {
         val s = _settings.value
         schedule(ACTION_DAILY, if (s.enabled) s.dailyMinutes else null)
         schedule(ACTION_EVENING, if (s.enabled && s.eveningEnabled) s.eveningMinutes else null)
+        scheduleFriendsCheck()
+    }
+
+    /** Coup d'œil au canal des potes toutes les 3 h en journée, pour annoncer les Boss battus (à peu près à l'heure suffit). */
+    private fun scheduleFriendsCheck() {
+        val zone = ZoneId.systemDefault()
+        val now = LocalDateTime.now(zone)
+        val next = (0..1).flatMap { d -> FRIENDS_HOURS.map { LocalDateTime.of(now.toLocalDate().plusDays(d.toLong()), LocalTime.of(it, 0)) } }
+            .first { it.isAfter(now.plusMinutes(1)) }
+        val at = next.atZone(zone).toInstant().toEpochMilli()
+        alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, alarmIntent(ACTION_FRIENDS, at))
+    }
+
+    /** Potes qui viennent de battre un Boss : une notification à part. */
+    fun announceBosses(names: List<String>) {
+        Reminders.bossMessage(names)?.let { notify(it, withSnooze = false) }
     }
 
     /** Rappel du jour décalé d'une heure (« Plus tard »). */
     fun snooze() {
         val at = System.currentTimeMillis() + SNOOZE_MS
-        alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, alarmIntent(ACTION_SNOOZE))
+        setExact(at, alarmIntent(ACTION_SNOOZE, at))
     }
 
     private fun schedule(action: String, minutes: Int?) {
-        val pending = alarmIntent(action)
-        alarms.cancel(pending)
+        alarms.cancel(alarmIntent(action, 0L))
         if (minutes == null) return
-        alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, nextOccurrence(minutes), pending)
+        val at = nextOccurrence(minutes)
+        setExact(at, alarmIntent(action, at))
+    }
+
+    /** À l'heure pile : une alarme approximative peut être repoussée de plusieurs heures quand le téléphone dort. */
+    private fun setExact(at: Long, pending: PendingIntent) {
+        try {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarms.canScheduleExactAlarms()) {
+                alarms.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pending)
+                return
+            }
+        } catch (_: SecurityException) {
+            // Alarmes exactes refusées : l'approximative fait de son mieux.
+        }
+        alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pending)
     }
 
     private fun nextOccurrence(minutes: Int): Long {
@@ -100,18 +129,28 @@ class ReminderScheduler(private val context: Context) {
         return at.atZone(zone).toInstant().toEpochMilli()
     }
 
-    private fun alarmIntent(action: String): PendingIntent = PendingIntent.getBroadcast(
+    private fun alarmIntent(action: String, at: Long): PendingIntent = PendingIntent.getBroadcast(
         context,
         action.hashCode(),
-        Intent(context, ReminderReceiver::class.java).setAction(action),
+        Intent(context, ReminderReceiver::class.java).setAction(action).putExtra(EXTRA_AT, at),
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
     )
 
     /** Appelé par [ReminderReceiver]. */
-    internal fun fire(action: String) {
+    internal fun fire(action: String, scheduledAt: Long) {
         val s = _settings.value
+        if (action == ACTION_FRIENDS) {
+            try {
+                (context.applicationContext as FlemmeFitApp).social.checkInBackground()
+            } finally {
+                scheduleFriendsCheck()
+            }
+            return
+        }
+        // Rappel arrivé bien trop tard (téléphone endormi) : il parlerait de la mauvaise séance, on le saute.
+        val late = scheduledAt > 0 && System.currentTimeMillis() - scheduledAt > MAX_LATE_MS
         try {
-            if (s.enabled) {
+            if (s.enabled && !late) {
                 val programs = (context.applicationContext as FlemmeFitApp).repository.state.value.programs
                     .filterNot { it.id in s.mutedPrograms }
                 val today = LocalDate.now()
@@ -197,6 +236,12 @@ class ReminderScheduler(private val context: Context) {
         const val ACTION_EVENING = "com.spacelenin.flemmefit.REMINDER_EVENING"
         const val ACTION_SNOOZE = "com.spacelenin.flemmefit.REMINDER_SNOOZE"
         const val ACTION_SNOOZE_TAP = "com.spacelenin.flemmefit.REMINDER_SNOOZE_TAP"
+        const val ACTION_FRIENDS = "com.spacelenin.flemmefit.REMINDER_FRIENDS"
+        const val EXTRA_AT = "at"
+        /** Au-delà de ce retard, un rappel n'est plus envoyé. */
+        private const val MAX_LATE_MS = 2 * 60 * 60 * 1000L
+        /** Heures du coup d'œil aux potes. */
+        private val FRIENDS_HOURS = listOf(9, 12, 15, 18, 21)
         private const val CHANNEL_ID = "reminders"
         private const val SNOOZE_MS = 60 * 60 * 1000L
     }

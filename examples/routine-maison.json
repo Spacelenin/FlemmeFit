@@ -1,7 +1,7 @@
 {
   "format": "flemmefit",
   "version": 1,
-  "revision": 8,
+  "revision": 9,
   "name": "Routine maison",
   "description": "5 séances par semaine (jours 4 et 7 : repos, ou rien selon la fatigue). Paliers inspirés de 100pompes, 50tractions, musclesabdominaux et musclesdesjambes : un test de départ choisit ton palier, la dernière série va souvent au max, et la 4e semaine allège tout de moitié et refait les tests pour passer au palier suivant. Échauffement et étirements d'après echauffez-vous et etirez-vous.",
   "repeat": "forever",
@@ -128,7 +128,8 @@
       "ratio": 5,
       "from": 40,
       "description": "Pieds bien écartés, main sous l'épaule, l'autre dans le dos. Le buste reste face au sol sans tourner. Les reps sont par bras.",
-      "easy": "main posée sur une table, puis une chaise, puis une marche à mesure que ça devient facile."
+      "easy": "en inclinaison, la main qui travaille posée sur une table, puis une chaise, puis une marche à mesure que ça devient facile ; l'autre main dans le dos.",
+      "sides": "Les deux bras : toutes les reps bras droit, puis toutes bras gauche. Le nombre est par bras."
     },
     {
       "id": "squat-une-jambe",
@@ -137,7 +138,8 @@
       "ratio": 4,
       "from": 30,
       "description": "Sur une jambe, l'autre tendue devant toi, descends le bassin dans l'axe le plus bas possible en contrôlant, genou dans l'axe du pied (il ne rentre pas vers l'intérieur), talon au sol, puis remonte. Les reps sont par jambe.",
-      "easy": "tiens-toi à une porte ou une table, et descends jusqu'à t'asseoir sur une chaise."
+      "easy": "tiens-toi à une porte ou une table, et descends jusqu'à t'asseoir sur une chaise.",
+      "sides": "Les deux jambes : toutes les reps jambe droite, puis toutes jambe gauche. Le nombre est par jambe."
     },
     {
       "id": "cossack-squat",
@@ -146,7 +148,8 @@
       "ratio": 2.5,
       "description": "Pieds très écartés, descends sur une jambe en gardant l'autre tendue sur le côté, pointe du pied vers le haut, talon au sol. Une rep = un côté puis l'autre.",
       "from": 30,
-      "easy": "descends moins bas, une main sur une chaise si besoin."
+      "easy": "descends moins bas, une main sur une chaise si besoin.",
+      "sides": "Les deux jambes, en alternant : une rep = un côté puis l'autre."
     },
     {
       "id": "squat-saute",
@@ -187,8 +190,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras.",
+              "optional": true
             },
             {
               "name": "Pompes lentes (tempo)",
@@ -269,14 +273,14 @@
               "name": "Shadow boxing léger",
               "id": "shadow-boxing",
               "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids par défaut (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes. Sans poids ce jour-là ? Dis-le sur l'exercice.",
-              "sets": 3,
+              "sets": 2,
               "duration": "3min",
               "rest": "1min",
               "progression": {
                 "duration": "30s",
                 "maxDuration": "4min",
                 "addSets": 1,
-                "maxSets": 6
+                "maxSets": 5
               },
               "weights": {
                 "default": true,
@@ -287,8 +291,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos)."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos).",
+              "optional": true
             }
           ]
         },
@@ -299,8 +304,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux.",
+              "optional": true
             },
             {
               "name": "Abdos bras tendus (V-up)",
@@ -422,7 +428,8 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Abdos"
+              "counter": "Abdos",
+              "sides": "Un côté puis l'autre : toutes les reps côté droit, puis toutes côté gauche."
             },
             {
               "name": "Gainage (planche)",
@@ -477,8 +484,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant.",
+              "optional": true
             }
           ]
         },
@@ -489,8 +497,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus.",
+              "optional": true
             },
             {
               "name": "Tractions sous une table (rowing inversé)",
@@ -566,8 +575,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras.",
+              "optional": true
             }
           ]
         },
@@ -578,8 +588,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger.",
+              "optional": true
             },
             {
               "name": "Pompes classiques",
@@ -678,8 +689,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber.",
+              "optional": true
             }
           ]
         },
@@ -691,8 +703,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles.",
+              "optional": true
             },
             {
               "name": "Abdos ({abdos})",
@@ -826,8 +839,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets.",
+              "optional": true
             }
           ]
         }
@@ -843,8 +857,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras.",
+              "optional": true
             },
             {
               "name": "Pompes lentes (tempo)",
@@ -925,14 +940,14 @@
               "name": "Shadow boxing léger",
               "id": "shadow-boxing",
               "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids par défaut (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes. Sans poids ce jour-là ? Dis-le sur l'exercice.",
-              "sets": 3,
+              "sets": 2,
               "duration": "3min",
               "rest": "1min",
               "progression": {
                 "duration": "30s",
                 "maxDuration": "4min",
                 "addSets": 1,
-                "maxSets": 6
+                "maxSets": 5
               },
               "weights": {
                 "default": true,
@@ -943,8 +958,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos)."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos).",
+              "optional": true
             }
           ]
         },
@@ -955,8 +971,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux.",
+              "optional": true
             },
             {
               "name": "Abdos bras tendus (V-up)",
@@ -1078,7 +1095,8 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Abdos"
+              "counter": "Abdos",
+              "sides": "Un côté puis l'autre : toutes les reps côté droit, puis toutes côté gauche."
             },
             {
               "name": "Gainage (planche)",
@@ -1133,8 +1151,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant.",
+              "optional": true
             }
           ]
         },
@@ -1145,8 +1164,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus.",
+              "optional": true
             },
             {
               "name": "Tractions sous une table (rowing inversé)",
@@ -1222,8 +1242,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras.",
+              "optional": true
             }
           ]
         },
@@ -1234,8 +1255,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger.",
+              "optional": true
             },
             {
               "name": "Pompes classiques",
@@ -1334,8 +1356,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber.",
+              "optional": true
             }
           ]
         },
@@ -1347,8 +1370,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles.",
+              "optional": true
             },
             {
               "name": "Abdos ({abdos})",
@@ -1482,8 +1506,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets.",
+              "optional": true
             }
           ]
         }
@@ -1499,8 +1524,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras.",
+              "optional": true
             },
             {
               "name": "Pompes lentes (tempo)",
@@ -1581,14 +1607,14 @@
               "name": "Shadow boxing léger",
               "id": "shadow-boxing",
               "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids par défaut (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes. Sans poids ce jour-là ? Dis-le sur l'exercice.",
-              "sets": 3,
+              "sets": 2,
               "duration": "3min",
               "rest": "1min",
               "progression": {
                 "duration": "30s",
                 "maxDuration": "4min",
                 "addSets": 1,
-                "maxSets": 6
+                "maxSets": 5
               },
               "weights": {
                 "default": true,
@@ -1599,8 +1625,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos)."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos).",
+              "optional": true
             }
           ]
         },
@@ -1611,8 +1638,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux.",
+              "optional": true
             },
             {
               "name": "Abdos bras tendus (V-up)",
@@ -1734,7 +1762,8 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Abdos"
+              "counter": "Abdos",
+              "sides": "Un côté puis l'autre : toutes les reps côté droit, puis toutes côté gauche."
             },
             {
               "name": "Gainage (planche)",
@@ -1789,8 +1818,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant.",
+              "optional": true
             }
           ]
         },
@@ -1801,8 +1831,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus.",
+              "optional": true
             },
             {
               "name": "Tractions sous une table (rowing inversé)",
@@ -1878,8 +1909,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras.",
+              "optional": true
             }
           ]
         },
@@ -1890,8 +1922,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger.",
+              "optional": true
             },
             {
               "name": "Pompes classiques",
@@ -1990,8 +2023,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber.",
+              "optional": true
             }
           ]
         },
@@ -2003,8 +2037,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles.",
+              "optional": true
             },
             {
               "name": "Abdos ({abdos})",
@@ -2138,8 +2173,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets.",
+              "optional": true
             }
           ]
         }
@@ -2155,8 +2191,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table, et 20 s de moulinets de bras.",
+              "optional": true
             },
             {
               "name": "Test pompes",
@@ -2245,14 +2282,14 @@
               "name": "Shadow boxing léger",
               "id": "shadow-boxing",
               "description": "Rounds de boxe dans le vide : jab, direct, crochets, uppercuts, en bougeant sur les appuis. Garde haute, bras jamais verrouillés en fin de coup. Avec des petits poids par défaut (0,5 à 1 kg, ou bouteilles d'eau) : pas plus lourd, ça abîme les coudes. Sans poids ce jour-là ? Dis-le sur l'exercice.",
-              "sets": 3,
+              "sets": 2,
               "duration": "3min",
               "rest": "1min",
               "progression": {
                 "duration": "30s",
                 "maxDuration": "4min",
                 "addSets": 1,
-                "maxSets": 6
+                "maxSets": 5
               },
               "weights": {
                 "default": true,
@@ -2263,8 +2300,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos)."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Pectoraux contre un mur, épaules (bras croisé devant), triceps (main dans le dos).",
+              "optional": true
             }
           ]
         },
@@ -2275,8 +2313,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux.",
+              "optional": true
             },
             {
               "name": "Test abdos ({abdos})",
@@ -2414,7 +2453,8 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Abdos"
+              "counter": "Abdos",
+              "sides": "Un côté puis l'autre : toutes les reps côté droit, puis toutes côté gauche."
             },
             {
               "name": "Gainage (planche)",
@@ -2469,8 +2509,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Cobra allongé sur le ventre, flexion latérale debout de chaque côté, posture de l'enfant.",
+              "optional": true
             }
           ]
         },
@@ -2481,8 +2522,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 rétractions d'omoplates suspendu sous la table, bras tendus.",
+              "optional": true
             },
             {
               "name": "Test tractions",
@@ -2566,8 +2608,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Dorsaux (bras tendus sur un meuble, buste vers le sol), biceps contre un mur, avant-bras.",
+              "optional": true
             }
           ]
         },
@@ -2578,8 +2621,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 pompes faciles mains sur une table et 30 s de shadow très léger.",
+              "optional": true
             },
             {
               "name": "Pompes classiques",
@@ -2678,8 +2722,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Pectoraux contre un mur, épaules, mollets et quadriceps après Beat Saber.",
+              "optional": true
             }
           ]
         },
@@ -2691,8 +2736,9 @@
             {
               "name": "Échauffement",
               "id": "echauffement",
-              "duration": "10min",
-              "description": "Du haut vers le bas, 20 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 2 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles."
+              "duration": "5min",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 squats normaux lents et 10 fentes, pour préparer genoux et chevilles.",
+              "optional": true
             },
             {
               "name": "Test squats classiques",
@@ -2834,8 +2880,9 @@
             {
               "name": "Étirements",
               "id": "etirements",
-              "duration": "5min",
-              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 à 30 s en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets."
+              "duration": "3min",
+              "description": "Juste après la séance (les muscles sont chauds, pas besoin de se réchauffer), en douceur, sans à-coups ni douleur : tiens chaque position 20 s en respirant lentement. Quadriceps debout, ischios (jambe tendue sur une chaise), fessiers allongé, mollets.",
+              "optional": true
             }
           ]
         }

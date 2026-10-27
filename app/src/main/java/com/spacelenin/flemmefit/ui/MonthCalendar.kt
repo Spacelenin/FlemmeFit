@@ -123,6 +123,7 @@ private fun DayCell(
     val scheme = MaterialTheme.colorScheme
     val (background, content) = when (status) {
         SessionStatus.DONE -> color to Color(0xFF0F0F0F)
+        SessionStatus.SAVED -> color.copy(alpha = 0.65f) to Color(0xFF0F0F0F)
         SessionStatus.PARTIAL -> color.copy(alpha = 0.35f) to scheme.onSurface
         SessionStatus.MISSED -> scheme.errorContainer to scheme.onErrorContainer
         SessionStatus.PENDING, null -> Color.Transparent to
@@ -132,6 +133,7 @@ private fun DayCell(
         append(date.longLabel())
         when (status) {
             SessionStatus.DONE -> append(", séance faite")
+            SessionStatus.SAVED -> append(", Boss fait aux trois quarts")
             SessionStatus.PARTIAL -> append(", séance commencée")
             SessionStatus.MISSED -> append(", séance manquée")
             SessionStatus.PENDING -> append(", séance prévue")

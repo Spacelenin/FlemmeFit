@@ -64,6 +64,8 @@ data class StoredProgram(
     val tests: Map<String, Int> = emptyMap(),
     /** Jours (index) passés en Burst : séance renforcée, une par semaine au plus. */
     val bursts: List<Int> = emptyList(),
+    /** Jours (index) passés en Chill : séance allégée, une par semaine au plus. */
+    val chills: List<Int> = emptyList(),
     /** Choix « avec / sans poids » dit pour un exercice d'un jour, mêmes clés que [done]. */
     val weights: Map<String, Boolean> = emptyMap(),
     /** « J'ai fait autre chose » : activités en plus, par date ISO. Affichées, jamais comptées. */
@@ -131,6 +133,10 @@ data class StoredProgram(
     fun burst(dayIndex: Int) = if (dayIndex in bursts) this else copy(bursts = (bursts + dayIndex).sorted())
 
     fun undoBurst(dayIndex: Int) = copy(bursts = bursts - dayIndex)
+
+    fun chill(dayIndex: Int) = if (dayIndex in chills) this else copy(chills = (chills + dayIndex).sorted())
+
+    fun undoChill(dayIndex: Int) = copy(chills = chills - dayIndex)
 
     fun postpone(dayIndex: Int) = copy(postpones = (postpones + dayIndex).sorted())
 

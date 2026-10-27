@@ -73,16 +73,42 @@ object Reminders {
 
     const val FRIENDS_ID = "potes"
 
+    /**
+     * Potes qui ont battu un Boss depuis la dernière fois : [seen] garde le nombre de Boss vaincus déjà connu
+     * de chaque pseudo. Un pseudo jamais vu est noté sans rien annoncer.
+     */
+    fun newBosses(cards: List<FriendCard>, seen: Map<String, Int>): List<String> =
+        cards.filter { c -> seen[c.pseudo.trim().lowercase()]?.let { c.bossDefeated > it } == true }
+            .sortedByDescending { it.updatedAt }
+            .map { it.pseudo.trim() }
+
+    /** Ce que [seen] devient après avoir vu [cards]. */
+    fun seenBosses(cards: List<FriendCard>, seen: Map<String, Int>): Map<String, Int> =
+        seen + cards.associate { it.pseudo.trim().lowercase() to maxOf(it.bossDefeated, seen[it.pseudo.trim().lowercase()] ?: 0) }
+
+    /** « 💀 Bob a battu son Boss. » */
+    fun bossMessage(names: List<String>): ReminderMessage? {
+        val text = when (names.size) {
+            0 -> return null
+            1 -> "${names[0]} a battu son Boss. À toi de pas être le maillon faible."
+            2 -> "${names[0]} et ${names[1]} ont battu leur Boss. Ça commence à faire beaucoup."
+            else -> "${names[0]}, ${names[1]} et ${names.size - 2} autre${if (names.size > 3) "s" else ""} ont battu leur Boss."
+        }
+        return ReminderMessage(BOSS_NEWS_ID, "💀 Boss vaincu", text)
+    }
+
+    const val BOSS_NEWS_ID = "potes-boss"
+
     /** Rappel du jour : séance prévue et pas finie, sinon annonce du Boss du lendemain. */
     fun daily(programs: List<StoredProgram>, today: LocalDate): List<ReminderMessage> = programs.mapNotNull { p ->
         val schedule = ProgramSchedule(p, today)
         val session = schedule.sessionOn(today)
         val name = p.plan.name
         when {
-            session != null && schedule.doneCount(session) < session.exerciseCount -> {
+            session != null && !schedule.isComplete(session) -> {
                 val titre = session.day.title ?: "la séance"
                 val text = if (session.isBoss) pick(bossToday, p.id, today, 1)
-                else pick(daily, p.id, today, 0).fill("titre" to titre, "exos" to session.exerciseCount)
+                else pick(daily, p.id, today, 0).fill("titre" to titre, "exos" to session.requiredCount - schedule.requiredDone(session))
                 ReminderMessage(p.id, if (session.isBoss) "💀 Boss : $titre" else "💪 $name : $titre", text)
             }
             schedule.sessionOn(today.plusDays(1))?.isBoss == true ->
@@ -95,11 +121,12 @@ object Reminders {
     fun evening(programs: List<StoredProgram>, today: LocalDate): List<ReminderMessage> = programs.mapNotNull { p ->
         val schedule = ProgramSchedule(p, today)
         val session = schedule.sessionOn(today) ?: return@mapNotNull null
-        val remaining = session.exerciseCount - schedule.doneCount(session)
+        val remaining = session.requiredCount - schedule.requiredDone(session)
         if (remaining <= 0) return@mapNotNull null
         val streak = schedule.progress().streak
+        // Un Boss déjà sauvé (aux trois quarts) ne fait plus sauter la série.
         val text = pick(evening, p.id, today, 3).fill("reste" to remaining) +
-            if (streak > 0) " Tes $streak 🔥 d'affilée sautent à minuit." else ""
+            if (streak > 0 && !schedule.isSaved(session)) " Tes $streak 🔥 d'affilée sautent à minuit." else ""
         ReminderMessage(p.id, "⏰ ${p.plan.name} : ${session.day.title ?: "séance"} pas finie", text)
     }
 }
