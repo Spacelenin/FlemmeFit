@@ -1,7 +1,7 @@
 {
   "format": "flemmefit",
   "version": 1,
-  "revision": 9,
+  "revision": 10,
   "name": "Routine maison",
   "description": "5 séances par semaine (jours 4 et 7 : repos, ou rien selon la fatigue). Paliers inspirés de 100pompes, 50tractions, musclesabdominaux et musclesdesjambes : un test de départ choisit ton palier, la dernière série va souvent au max, et la 4e semaine allège tout de moitié et refait les tests pour passer au palier suivant. Échauffement et étirements d'après echauffez-vous et etirez-vous.",
   "repeat": "forever",
@@ -278,9 +278,7 @@
               "rest": "1min",
               "progression": {
                 "duration": "30s",
-                "maxDuration": "4min",
-                "addSets": 1,
-                "maxSets": 5
+                "maxDuration": "4min"
               },
               "weights": {
                 "default": true,
@@ -945,9 +943,7 @@
               "rest": "1min",
               "progression": {
                 "duration": "30s",
-                "maxDuration": "4min",
-                "addSets": 1,
-                "maxSets": 5
+                "maxDuration": "4min"
               },
               "weights": {
                 "default": true,
@@ -1612,9 +1608,7 @@
               "rest": "1min",
               "progression": {
                 "duration": "30s",
-                "maxDuration": "4min",
-                "addSets": 1,
-                "maxSets": 5
+                "maxDuration": "4min"
               },
               "weights": {
                 "default": true,
@@ -2287,9 +2281,7 @@
               "rest": "1min",
               "progression": {
                 "duration": "30s",
-                "maxDuration": "4min",
-                "addSets": 1,
-                "maxSets": 5
+                "maxDuration": "4min"
               },
               "weights": {
                 "default": true,

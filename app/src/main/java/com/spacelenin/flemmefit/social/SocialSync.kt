@@ -98,6 +98,21 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
         refresh()
     }
 
+    /**
+     * Pseudo déjà porté par quelqu'un d'autre ? Lit le canal (délai court) et les cartes gardées.
+     * Null si personne, ou si rien n'a pu être vérifié. À appeler hors du fil principal.
+     */
+    fun pseudoOwner(value: String): FriendCard? {
+        val fresh = try {
+            Social.parsePoll(httpGet("$BASE/${encoded()}/json?poll=1&since=12h", PSEUDO_TIMEOUT_MS))
+        } catch (e: Exception) {
+            Log.w(TAG, "Canal injoignable pour vérifier le pseudo", e)
+            emptyList()
+        }
+        val known = Social.decodeAll(prefs.getString(KEY_CACHE, null) ?: "[]")
+        return Social.pseudoOwner(known + fresh, value, myId, System.currentTimeMillis())
+    }
+
     /** Au lancement : republie seulement si la carte a changé ou date de plus de 6 h. */
     fun publishIfNeeded() {
         scope.launch { publish(force = false) }
@@ -230,5 +245,6 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
         /** Un rappel tient dans les quelques secondes qu'Android laisse à une alarme. */
         private const val REMINDER_TIMEOUT_MS = 3_000
         private const val BACKGROUND_TIMEOUT_MS = 6_000
+        private const val PSEUDO_TIMEOUT_MS = 5_000
     }
 }

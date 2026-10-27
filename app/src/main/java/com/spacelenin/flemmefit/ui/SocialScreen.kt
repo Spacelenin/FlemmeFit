@@ -42,6 +42,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -54,6 +55,9 @@ import com.spacelenin.flemmefit.model.Exploit
 import com.spacelenin.flemmefit.model.FriendCard
 import com.spacelenin.flemmefit.model.Social
 import com.spacelenin.flemmefit.social.SocialSync
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private val Medals = listOf("🥇", "🥈", "🥉")
 
@@ -67,6 +71,52 @@ private fun ago(updatedAt: Long, now: Long): String {
     }
 }
 
+/**
+ * Choisir un pseudo : vérifié auprès du canal avant d'être pris. Déjà porté par quelqu'un d'autre, on prévient ;
+ * « C'est moi » le garde quand même (ancien téléphone, réinstallation).
+ */
+@Composable
+fun rememberPseudoPicker(social: SocialSync, onAccepted: () -> Unit = {}): (String) -> Unit {
+    val scope = rememberCoroutineScope()
+    var checking by remember { mutableStateOf(false) }
+    var taken by remember { mutableStateOf<Pair<String, FriendCard>?>(null) }
+    taken?.let { (name, owner) ->
+        AlertDialog(
+            onDismissRequest = { taken = null },
+            title = { Text("Pseudo déjà pris") },
+            text = {
+                Text(
+                    "« ${owner.pseudo.trim()} » est déjà utilisé par quelqu'un d'autre (vu ${ago(owner.updatedAt, System.currentTimeMillis())}). " +
+                        "Choisis-en un autre. Si c'est toi sur un ancien téléphone ou avant une réinstallation, tu peux le garder.",
+                )
+            },
+            confirmButton = { TextButton(onClick = { taken = null }) { Text("En choisir un autre") } },
+            dismissButton = {
+                TextButton(onClick = {
+                    social.setPseudo(name)
+                    taken = null
+                    onAccepted()
+                }) { Text("C'est moi") }
+            },
+        )
+    }
+    return { name ->
+        if (!checking && name.isNotBlank()) {
+            scope.launch {
+                checking = true
+                val owner = withContext(Dispatchers.IO) { social.pseudoOwner(name) }
+                checking = false
+                if (owner == null) {
+                    social.setPseudo(name)
+                    onAccepted()
+                } else {
+                    taken = name to owner
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() -> Unit)? = null) {
@@ -76,6 +126,7 @@ fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() 
     val state by repository.state.collectAsStateWithLifecycle()
     val today = rememberToday()
     var settings by rememberSaveable { mutableStateOf(false) }
+    val pickPseudo = rememberPseudoPicker(social)
 
     LaunchedEffect(pseudo) { if (pseudo != null) social.refresh() }
 
@@ -94,7 +145,7 @@ fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() 
         },
     ) { padding ->
         if (pseudo == null) {
-            PseudoSetup(onDone = social::setPseudo, modifier = Modifier.padding(padding))
+            PseudoSetup(onDone = pickPseudo, modifier = Modifier.padding(padding))
         } else {
             val me = remember(state, today, pseudo) { social.myCard(today) }
             val ranking = Social.ranking(friends + listOfNotNull(me), today)
@@ -147,8 +198,9 @@ fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() 
             pseudo = pseudo.orEmpty(),
             topic = social.topic.collectAsStateWithLifecycle().value,
             onSave = { p, t ->
-                social.setPseudo(p)
                 social.setTopic(t)
+                // Même pseudo (à la casse près) : rien à vérifier.
+                if (p.trim().lowercase() != pseudo?.trim()?.lowercase()) pickPseudo(p) else social.setPseudo(p)
                 settings = false
             },
             onDismiss = { settings = false },
