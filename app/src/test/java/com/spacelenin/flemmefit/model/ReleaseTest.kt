@@ -39,4 +39,15 @@ class ReleaseTest {
         assertEquals("Mise à jour obligatoire\n\n- Installer ou quitter", Releases.cleanNotes(body))
         assertNull(Releases.cleanNotes("Co-Authored-By: X"))
     }
+
+    @Test
+    fun `skipped versions show every release's notes, newest first`() {
+        fun r(n: Int, notes: String?) = ReleaseInfo(n, "FlemmeFit build $n", notes, "u", 1, null)
+        val list = Releases.parseList("[" + release(tag = "build-9") + "," + release(tag = "nope") + "]")
+        assertEquals(listOf(9), list.map { it.versionCode })
+        val all = listOf(r(138, "Pseudo"), r(137, null), r(136, "Chill"), r(133, "Crunch"))
+        assertEquals("Build 138\nPseudo\n\nBuild 136\nChill", Releases.combinedNotes(all, after = 133, upTo = 138))
+        assertEquals("Pseudo", Releases.combinedNotes(all, after = 136, upTo = 138))
+        assertNull(Releases.combinedNotes(all, after = 138, upTo = 140))
+    }
 }

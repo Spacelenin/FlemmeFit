@@ -287,7 +287,7 @@ fun AppRoot(
     val calm = askTestsFor == null && parsed == null && !pasting && changelog == null
     // Pas encore de pseudo : on le demande dès l'ouverture, pour apparaître chez les potes sans y penser.
     if (pseudo == null && !pseudoSkipped && calm) {
-        PseudoPromptDialog(onSave = social::setPseudo, onLater = { pseudoSkipped = true })
+        PseudoPromptDialog(onSave = rememberPseudoPicker(social), onLater = { pseudoSkipped = true })
     }
     // Premier programme : on propose le tuto une fois, après les éventuels tests de départ et le pseudo.
     if (!tutorialOffered && state.programs.isNotEmpty() && calm && (pseudo != null || pseudoSkipped)) {

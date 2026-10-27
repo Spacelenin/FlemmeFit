@@ -78,7 +78,13 @@ class AppUpdater(private val context: Context) {
         scope.launch {
             try {
                 val release = Releases.parseLatest(httpGet("$TAG_URL$currentVersion"))
-                if (release?.notes != null) _changelog.value = release else markChangelogSeen()
+                // Versions sautées (mise à jour faite en retard) : leurs notes aussi.
+                val notes = if (seen > 0 && seen < currentVersion - 1) {
+                    Releases.combinedNotes(recentReleases(), after = seen, upTo = currentVersion) ?: release?.notes
+                } else {
+                    release?.notes
+                }
+                if (release != null && notes != null) _changelog.value = release.copy(notes = notes) else markChangelogSeen()
             } catch (e: Exception) {
                 // Hors ligne : on retentera au prochain lancement.
                 Log.w(TAG, "Notes de version indisponibles", e)
@@ -113,7 +119,7 @@ class AppUpdater(private val context: Context) {
                     release.versionCode > currentVersion -> {
                         // Une vérification demandée à la main réaffiche une version mise de côté avec « Plus tard ».
                         if (!silent) undismiss()
-                        State.Available(release)
+                        State.Available(withSkippedNotes(release))
                     }
                     else -> if (silent) State.Idle else State.UpToDate
                 }
@@ -123,6 +129,21 @@ class AppUpdater(private val context: Context) {
                 if (silent) State.Idle else State.Failed("Pas de connexion à GitHub (${e.message.orEmpty()}).")
             }
         }
+    }
+
+    /** Dernières versions publiées (vide si GitHub ne répond pas). */
+    private fun recentReleases(): List<ReleaseInfo> = try {
+        Releases.parseList(httpGet(LIST_URL))
+    } catch (e: Exception) {
+        Log.w(TAG, "Liste des versions indisponible", e)
+        emptyList()
+    }
+
+    /** Plusieurs versions d'écart : les notes de chacune, pas seulement de la dernière. */
+    private fun withSkippedNotes(release: ReleaseInfo): ReleaseInfo {
+        if (release.versionCode <= currentVersion + 1) return release
+        val notes = Releases.combinedNotes(recentReleases(), after = currentVersion, upTo = release.versionCode) ?: return release
+        return release.copy(notes = notes)
     }
 
     fun clearMessage() {
@@ -254,6 +275,7 @@ class AppUpdater(private val context: Context) {
         private const val KEY_LAST_CHECK = "lastCheck"
         private const val KEY_DISMISSED = "dismissedVersion"
         private const val KEY_SEEN_VERSION = "seenVersion"
+        private const val LIST_URL = "https://api.github.com/repos/$REPOSITORY/releases?per_page=30"
         private const val TAG_URL = "https://api.github.com/repos/$REPOSITORY/releases/tags/build-"
         private const val AUTO_CHECK_INTERVAL_MS = 10 * 60 * 1000L
     }

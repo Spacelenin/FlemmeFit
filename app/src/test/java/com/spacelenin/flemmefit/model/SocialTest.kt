@@ -2,6 +2,7 @@ package com.spacelenin.flemmefit.model
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
@@ -80,5 +81,19 @@ class SocialTest {
         // Chez les autres : un même pseudo ne garde que sa carte la plus récente.
         val newMe = oldMe.copy(id = "y", pseudo = "LENIN", updatedAt = now)
         assertEquals(listOf("y", "b"), Social.visible(listOf(oldMe, friend, newMe), "Al2", now).map { it.id })
+    }
+
+    @Test
+    fun `a pseudo is taken by someone else's recent card, not by mine or a forgotten one`() {
+        val now = 100L * 24 * 3600 * 1000
+        val day = 24L * 3600 * 1000
+        val bob = FriendCard(id = "b", pseudo = "Bob ", date = "2026-10-27", updatedAt = now - 3 * day)
+        val mine = FriendCard(id = "me", pseudo = "Lenin", date = "2026-10-27", updatedAt = now)
+        val old = FriendCard(id = "o", pseudo = "Al", date = "2026-10-01", updatedAt = now - 20 * day)
+        val cards = listOf(bob, mine, old)
+        assertEquals("b", Social.pseudoOwner(cards, "  bob", "me", now)?.id)
+        assertNull(Social.pseudoOwner(cards, "Lenin", "me", now))
+        assertNull(Social.pseudoOwner(cards, "Al", "me", now))
+        assertNull(Social.pseudoOwner(cards, "Zed", "me", now))
     }
 }

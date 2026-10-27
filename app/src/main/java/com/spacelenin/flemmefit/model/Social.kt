@@ -149,6 +149,17 @@ object Social {
             .sortedByDescending { it.updatedAt }
     }
 
+    /**
+     * Qui porte déjà ce pseudo, en dehors de moi ([myId]) : la carte la plus récente, null si personne.
+     * Seulement les cartes connues (12 h du canal, 14 jours de cache) : c'est une vérification approchée.
+     */
+    fun pseudoOwner(cards: List<FriendCard>, pseudo: String, myId: String, now: Long): FriendCard? {
+        val wanted = pseudo.trim().lowercase()
+        if (wanted.isEmpty()) return null
+        return cards.filter { it.id != myId && it.pseudo.trim().lowercase() == wanted && now - it.updatedAt <= FORGET_AFTER_MS }
+            .maxByOrNull { it.updatedAt }
+    }
+
     /** Classement : score décroissant, puis avancée du jour. */
     fun ranking(cards: List<FriendCard>, today: LocalDate): List<FriendCard> = cards.sortedWith(
         compareByDescending<FriendCard> { it.score }

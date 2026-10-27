@@ -3,6 +3,7 @@ package com.spacelenin.flemmefit.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.builtins.ListSerializer
 
 /** Une version publiée dans les Releases GitHub (tag `build-N`, N = versionCode). */
 data class ReleaseInfo(
@@ -53,6 +54,37 @@ object Releases {
         } catch (e: IllegalArgumentException) {
             return null
         }
+        return info(release)
+    }
+
+    /** Lit la réponse de `GET /repos/{owner}/{repo}/releases` : les versions utilisables, dans l'ordre reçu. */
+    fun parseList(json: String): List<ReleaseInfo> {
+        val releases = try {
+            PlanParser.json.decodeFromString(ListSerializer(GithubRelease.serializer()), json)
+        } catch (e: SerializationException) {
+            return emptyList()
+        } catch (e: IllegalArgumentException) {
+            return emptyList()
+        }
+        return releases.mapNotNull(::info)
+    }
+
+    /**
+     * Notes de toutes les versions après [after] jusqu'à [upTo] incluse, de la plus récente à la plus ancienne :
+     * qui saute des versions voit tout ce qu'il a raté. Une seule version : ses notes telles quelles.
+     */
+    fun combinedNotes(releases: List<ReleaseInfo>, after: Int, upTo: Int): String? {
+        val withNotes = releases.filter { it.versionCode in (after + 1)..upTo && it.notes != null }
+            .distinctBy { it.versionCode }
+            .sortedByDescending { it.versionCode }
+        return when (withNotes.size) {
+            0 -> null
+            1 -> withNotes[0].notes
+            else -> withNotes.joinToString("\n\n") { "Build ${it.versionCode}\n${it.notes}" }
+        }
+    }
+
+    private fun info(release: GithubRelease): ReleaseInfo? {
         if (release.draft || release.prerelease) return null
         val code = tagPattern.matchEntire(release.tagName)?.groupValues?.get(1)?.toIntOrNull() ?: return null
         val apk = release.assets.firstOrNull { it.name.endsWith(".apk", ignoreCase = true) } ?: return null
