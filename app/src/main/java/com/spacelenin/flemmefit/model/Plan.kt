@@ -137,6 +137,8 @@ data class Variant(
     /** Vraie version à partir de ce résultat au test ; en dessous, la version facile ([easy]). */
     val from: Int? = null,
     val easy: String? = null,
+    /** Exercice d'un côté à la fois : quels membres travaillent. */
+    val sides: String? = null,
 ) {
     val isSeconds get() = unit == PlanTest.UNIT_SECONDS
 }
@@ -200,6 +202,10 @@ data class Exercise(
     val weights: WeightsOption? = null,
     /** Compteur caché où s'additionne ce qui est fait (« Pompes ») : regroupe plusieurs exercices. */
     val counter: String? = null,
+    /** Facultatif (échauffement, étirements) : le passer ne compte pas contre la séance. */
+    val optional: Boolean = false,
+    /** Exercice d'un côté à la fois : quels membres travaillent (« Bras droit, puis bras gauche »). */
+    val sides: String? = null,
 ) {
     /** Clé de regroupement : stable entre jours et entre programmes. */
     val key: String get() = (id ?: name).trim().lowercase()

@@ -34,7 +34,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.spacelenin.flemmefit.model.BOSS_STEPS
 import com.spacelenin.flemmefit.model.BURST_STEPS
+import com.spacelenin.flemmefit.model.FriendCard
 
 private class TutorialPage(val icon: String, val title: String, val lines: List<String>)
 
@@ -56,6 +58,7 @@ private val Pages = listOf(
             "Touche la vignette d'un exercice pour le marquer comme fait, touche son nom pour le détail (chiffres, consigne, niveaux).",
             "Appui long ou ⋮ › « Saisir mes séries » : tu règles chaque série. En dessous du prévu, l'exercice est incomplet et la progression attend.",
             "Dans le détail ou le ⋮ : ⏱ chrono (séries et repos enchaînés) et minuteur de repos. Écran verrouillé ? Une notification décompte et sonne à la fin.",
+            "Échauffement et étirements sont facultatifs : les passer ne compte pas contre toi.",
             "Séance finie : dis comment c'était (😫 🙂 💪), ou passe.",
             "Besoin de souffler plus ? Réglages › Séance › Repos en plus : jusqu'au double du repos prévu, pour tous les exercices.",
             "Les séances à venir ne se marquent pas : on note ce qui est fait, le jour même.",
@@ -89,10 +92,11 @@ private val Pages = listOf(
         ),
     ),
     TutorialPage(
-        "💀", "Boss et Burst",
+        "💀", "Boss, Burst et Chill",
         listOf(
-            "Boss : une séance surprise toutes les 3-4 semaines, dévoilée la veille. Chiffres de la semaine suivante et dernière série à fond.",
-            "Burst 🚀 : une fois par semaine, tu peux renforcer la séance du jour (+$BURST_STEPS étapes, ou une série de plus). Annulable tant que rien n'est fait.",
+            "Boss : une séance surprise toutes les 3-4 semaines, dévoilée la veille. Plus dure qu'un Burst (+$BOSS_STEPS étapes) et dernière série à fond. Tout fait = Boss vaincu ; aux trois quarts, ta série 🔥 tient, sans points.",
+            "Burst 🚀 : une fois par semaine, tu peux renforcer la séance du jour (+$BURST_STEPS étapes, ou une série de plus). +${FriendCard.BURST_POINTS} points chez les potes. Annulable tant que rien n'est fait.",
+            "Chill 🛋 : une fois par semaine aussi, pour les jours mous : séries divisées par deux, la progression attend. Elle compte quand même pour ta série.",
         ),
     ),
     TutorialPage(
@@ -100,7 +104,7 @@ private val Pages = listOf(
         listOf(
             "Stats : le bilan, les badges 🏅 (10, 50, 100, 500, 1 000, 10 000 pompes, séances, Boss…), les courbes de tests et tous les chiffres.",
             "Exos : tes exos perso et les variantes de la routine, avec ton taux pour chacune.",
-            "Potes : classement entre amis avec un pseudo (séances, Boss vaincus, exploits). Tes rappels te disent qui a déjà fini.",
+            "Potes : classement entre amis avec un pseudo (séances, Boss vaincus, exploits, Bursts). Tes rappels te disent qui a déjà fini, et une notif prévient quand un pote bat son Boss.",
             "Réglages (roue dentée) : thème, rappels, sauvegarde (un fichier réécrit tout seul, si tu en choisis un), mises à jour, et ce tuto dans Aide.",
             "Routine modifiée ? Réimporte le fichier : l'appli propose de mettre à jour le programme en gardant ton suivi.",
         ),
@@ -113,7 +117,7 @@ fun TutorialOfferDialog(onYes: () -> Unit, onNo: () -> Unit) {
     AlertDialog(
         onDismissRequest = onNo,
         title = { Text("Un petit tour de l'appli ?") },
-        text = { Text("Sept écrans pour comprendre l'accueil, le mode séance, la progression, les niveaux, les variantes, les Boss et le Burst. Toujours dispo dans Réglages › Aide.") },
+        text = { Text("Sept écrans pour comprendre l'accueil, le mode séance, la progression, les niveaux, les variantes, les Boss, le Burst et le Chill. Toujours dispo dans Réglages › Aide.") },
         confirmButton = { TextButton(onClick = onYes) { Text("Oui, montre-moi") } },
         dismissButton = { TextButton(onClick = onNo) { Text("Non merci") } },
     )

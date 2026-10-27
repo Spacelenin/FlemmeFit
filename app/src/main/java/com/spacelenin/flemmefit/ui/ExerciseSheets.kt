@@ -136,6 +136,12 @@ fun ExerciseDetailSheet(
                     color = BossColor,
                 )
             }
+            exercise.sides?.let {
+                Text("↔ $it", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+            }
+            if (exercise.optional) {
+                Text("Facultatif : le passer ne compte pas contre la séance.", style = MaterialTheme.typography.bodyMedium)
+            }
             exercise.description?.let {
                 Text("Comment le faire", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text(it, style = MaterialTheme.typography.bodyLarge)
@@ -371,5 +377,22 @@ fun BurstDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
         },
         confirmButton = { TextButton(onClick = onConfirm) { Text("C'est parti") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Pas aujourd'hui") } },
+    )
+}
+
+/** Passer la séance du jour en Chill : allégée, une fois par semaine. */
+@Composable
+fun ChillDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("🛋 Chill aujourd'hui ?") },
+        text = {
+            Text(
+                "Pas en forme ? La séance du jour est allégée : séries divisées par deux, et la progression attend. " +
+                    "Elle compte quand même pour ta série 🔥. Une fois par semaine. Annulable tant que rien n'est fait.",
+            )
+        },
+        confirmButton = { TextButton(onClick = onConfirm) { Text("Je chill") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Non, ça va") } },
     )
 }

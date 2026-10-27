@@ -137,7 +137,7 @@ fun AppRoot(
             // Notification de rappel : directement la séance du jour.
             if (state.programs.any { it.id == id }) openDay(id, LocalDate.now())
             // Notification des potes : leur onglet.
-            else if (id == Reminders.FRIENDS_ID) tab = 3
+            else if (id == Reminders.FRIENDS_ID || id == Reminders.BOSS_NEWS_ID) tab = 3
             onOpenRequestConsumed()
         }
     }

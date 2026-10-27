@@ -31,9 +31,10 @@ data class FriendCard(
     val exploits: Int = 0,
     val lastExploit: String? = null,
     val build: Int = 0,
+    val bursts: Int = 0,
 ) {
-    /** Points du concours : un Boss vaut plus qu'un exploit, qui vaut plus qu'une séance. */
-    val score: Int get() = bossDefeated * BOSS_POINTS + exploits * EXPLOIT_POINTS + sessionsDone
+    /** Points du concours : un Boss vaut plus qu'un exploit, qui vaut plus qu'un Burst, qui vaut plus qu'une séance. */
+    val score: Int get() = bossDefeated * BOSS_POINTS + exploits * EXPLOIT_POINTS + bursts * BURST_POINTS + sessionsDone
 
     fun isToday(today: LocalDate) = date == today.toString()
 
@@ -43,6 +44,8 @@ data class FriendCard(
     companion object {
         const val BOSS_POINTS = 5
         const val EXPLOIT_POINTS = 3
+        /** En plus du point de la séance. */
+        const val BURST_POINTS = 2
         const val PSEUDO_MAX = 20
     }
 }
@@ -82,8 +85,8 @@ object Social {
         val stats = programs.map { p ->
             val schedule = ProgramSchedule(p, today)
             schedule.sessionOn(today)?.let { s ->
-                done += schedule.doneCount(s)
-                total += s.exerciseCount
+                done += schedule.requiredDone(s)
+                total += s.requiredCount
                 if (title == null) title = s.day.title ?: p.plan.name
             }
             Stats.of(schedule)
@@ -101,6 +104,7 @@ object Social {
             streak = all.currentStreak,
             sessionsDone = all.sessionsDone,
             bossDefeated = all.bossDefeated,
+            bursts = all.burstsDone,
             exploits = all.exploits.size,
             lastExploit = last?.label(),
             build = build,

@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import com.spacelenin.flemmefit.model.BOSS_STEPS
 import com.spacelenin.flemmefit.model.BURST_STEPS
 import com.spacelenin.flemmefit.model.ExerciseLog
 import com.spacelenin.flemmefit.model.ExerciseState
@@ -81,6 +82,8 @@ class DayActions(
     val onDetail: (session: Session, exerciseIndex: Int) -> Unit,
     /** Passer la séance du jour en Burst (ou l'annuler). */
     val onBurst: (session: Session, on: Boolean) -> Unit,
+    /** Passer la séance du jour en Chill (ou l'annuler). */
+    val onChill: (session: Session, on: Boolean) -> Unit,
     /** Lancer le mode séance (série par série, repos décompté). */
     val onGuided: (session: Session) -> Unit,
     /** Choix du jour avec / sans poids. */
@@ -143,6 +146,7 @@ fun LazyListScope.dayDetailItems(
                         else "🎲 Variante : à la place de ta série max de ${v.baseName.lowercase()}"
                     }
                     i == session.otherIndex -> "⭐ Exo perso"
+                    prescription.exercise.optional -> "Facultatif : le passer ne compte pas contre toi"
                     else -> prescription.replacedBy?.let { "🎲 Série max remplacée par : ${it.lowercase()}" }
                 },
                 locked = schedule.isLocked(session),
@@ -164,7 +168,7 @@ fun LazyListScope.dayDetailItems(
     item(key = "day-footer") {
         Text(
             if (schedule.isLocked(session)) "Séance à venir : elle se fera le jour même."
-            else if (session.isBoss) "Terminer un exercice Boss demande ton max. Tout le Boss fait = Boss vaincu."
+            else if (session.isBoss) "Terminer un exercice Boss demande ton max. Tout le Boss fait = Boss vaincu. Aux trois quarts, ta série 🔥 tient (sans points)."
             else "Touche la vignette pour marquer comme fait, l'exercice pour son détail. Appui long : saisir tes séries.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -204,8 +208,8 @@ private fun LazyListScope.extraItems(schedule: ProgramSchedule, date: LocalDate,
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Color, actions: DayActions) {
-    val done = schedule.doneCount(session)
-    val total = session.exerciseCount
+    val done = schedule.requiredDone(session)
+    val total = session.requiredCount
     val ratio = if (total == 0) 0f else done.toFloat() / total
     val postponed = schedule.program.postponeCount(session.index)
     val accent = if (session.isBoss) BossColor else color
@@ -213,8 +217,16 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
     if (session.isBurst) {
         Banner("🚀 Burst", "Séance renforcée : +$BURST_STEPS étapes de progression, ou une série de plus. Une fois par semaine.", BurstColor)
         Spacer(Modifier.height(12.dp))
+    } else if (session.isChill) {
+        Banner("🛋 Chill", "Séance allégée : séries divisées par deux, la progression attend. Elle compte pour ta série 🔥.", DeloadColor)
+        Spacer(Modifier.height(12.dp))
     } else if (session.isBoss) {
-        Banner("💀 Jour Boss", "Chiffres de la semaine prochaine, et dernière série à fond. Bats ton dernier max !", BossColor)
+        Banner(
+            "💀 Jour Boss",
+            "Attention, ça pique : +$BOSS_STEPS étapes de progression (plus dur qu'un Burst) et dernière série à fond. Bats ton dernier max ! " +
+                "Tout fait = Boss vaincu. Aux trois quarts, ta série 🔥 tient, mais sans points.",
+            BossColor,
+        )
         Spacer(Modifier.height(12.dp))
     } else if (session.isDeload) {
         val withTest = session.prescriptions.any { it.isTest }
@@ -281,6 +293,11 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
             AssistChip(onClick = { actions.onBurst(session, true) }, label = { Text("🚀 Burst") })
         } else if (schedule.canUndoBurst(session)) {
             AssistChip(onClick = { actions.onBurst(session, false) }, label = { Text("Annuler le Burst") })
+        }
+        if (schedule.canChill(session)) {
+            AssistChip(onClick = { actions.onChill(session, true) }, label = { Text("🛋 Chill") })
+        } else if (schedule.canUndoChill(session)) {
+            AssistChip(onClick = { actions.onChill(session, false) }, label = { Text("Annuler le Chill") })
         }
         AssistChip(
             onClick = { actions.onPostpone(session) },

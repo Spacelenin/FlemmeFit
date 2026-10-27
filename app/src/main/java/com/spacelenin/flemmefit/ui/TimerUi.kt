@@ -1,6 +1,8 @@
 package com.spacelenin.flemmefit.ui
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Build
@@ -8,6 +10,8 @@ import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,6 +49,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.core.content.ContextCompat
 import com.spacelenin.flemmefit.model.Measures
 import com.spacelenin.flemmefit.model.TimerPhase
 import com.spacelenin.flemmefit.model.TimerRun
@@ -127,11 +132,29 @@ fun TimerNotification(run: TimerRun?) {
     DisposableEffect(Unit) { onDispose { TimerAlarm.clear(context) } }
 }
 
+/**
+ * Demande l'autorisation de notifier si elle manque : sans elle, rien ne prévient de la fin d'un repos
+ * appli fermée. Android ne redemande plus de lui-même après deux refus.
+ */
+@Composable
+fun AskNotifications(active: Boolean = true) {
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    LaunchedEffect(active) {
+        if (active && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+}
+
 /** Le minuteur en cours, posé en bas de l'écran. L'écran reste allumé tant qu'il tourne. */
 @Composable
 fun TimerOverlay(timer: WorkoutTimer, modifier: Modifier = Modifier) {
     val run by timer.run.collectAsStateWithLifecycle()
     TimerNotification(run)
+    AskNotifications(run != null)
     val current = run ?: return
     HoldSession()
     val context = LocalContext.current

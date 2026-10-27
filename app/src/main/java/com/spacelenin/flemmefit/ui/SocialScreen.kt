@@ -110,7 +110,7 @@ fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() 
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Column {
                         Text(
-                            "Points : Boss 💀 = ${FriendCard.BOSS_POINTS}, exploit 🏆 = ${FriendCard.EXPLOIT_POINTS}, séance = 1. " +
+                            "Points : Boss 💀 = ${FriendCard.BOSS_POINTS}, exploit 🏆 = ${FriendCard.EXPLOIT_POINTS}, Burst 🚀 = +${FriendCard.BURST_POINTS}, séance = 1. " +
                                 "Exploit = un max au moins ${Exploit.FACTOR}× plus grand que la série prévue.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -207,7 +207,7 @@ private fun FriendRow(rank: Int, last: Boolean, card: FriendCard, isMe: Boolean,
                 LinearProgressIndicator(progress = { card.todayDone.toFloat() / card.todayTotal }, modifier = Modifier.fillMaxWidth())
             }
             Text(
-                "🔥 ${card.streak} · 💀 ${card.bossDefeated} · 🏆 ${card.exploits} · ${card.sessionsDone} séances",
+                "🔥 ${card.streak} · 💀 ${card.bossDefeated} · 🏆 ${card.exploits} · 🚀 ${card.bursts} · ${card.sessionsDone} séances",
                 style = MaterialTheme.typography.bodyMedium,
             )
             card.lastExploit?.let { Text("Dernier exploit : $it", style = MaterialTheme.typography.bodySmall) }

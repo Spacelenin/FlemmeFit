@@ -58,13 +58,14 @@ fun rememberDayActions(
     var detailDay by rememberSaveable(program.id) { mutableStateOf<Int?>(null) }
     var detailExercise by rememberSaveable(program.id) { mutableStateOf(0) }
     var burstAsk by rememberSaveable(program.id) { mutableStateOf<Int?>(null) }
+    var chillAsk by rememberSaveable(program.id) { mutableStateOf<Int?>(null) }
     var postponeIndex by rememberSaveable(program.id) { mutableStateOf<Int?>(null) }
     var guidedDay by rememberSaveable(program.id) { mutableStateOf<Int?>(null) }
     var extraFor by rememberSaveable(program.id) { mutableStateOf<Long?>(null) }
     // Ressenti : demandé quand la séance du jour vient d'être terminée (après le mode séance s'il est ouvert).
     var feelingFor by rememberSaveable(program.id) { mutableStateOf<Int?>(null) }
     val todaySession = schedule.sessionOn(today)
-    val todayComplete = todaySession != null && schedule.doneCount(todaySession) == todaySession.exerciseCount
+    val todayComplete = todaySession != null && schedule.isComplete(todaySession)
     var wasComplete by remember(program.id, todaySession?.index) { mutableStateOf(todayComplete) }
     LaunchedEffect(todayComplete) {
         if (todayComplete && !wasComplete && todaySession != null && program.feelingOf(todaySession.index) == null) {
@@ -93,6 +94,7 @@ fun rememberDayActions(
         onBossCheck = { s, i -> logDay = s.index; logExercise = i; logBoss = true },
         onDetail = { s, i -> detailDay = s.index; detailExercise = i },
         onBurst = { s, on -> if (on) burstAsk = s.index else repository.undoBurst(program.id, s.index) },
+        onChill = { s, on -> if (on) chillAsk = s.index else repository.undoChill(program.id, s.index) },
         onGuided = { s -> guidedDay = s.index },
         onWeights = { s, i, on -> repository.setWeights(program.id, s.index, i, on) },
         onAddExtra = { date -> extraFor = date.toEpochDay() },
@@ -210,6 +212,16 @@ fun rememberDayActions(
                 burstAsk = null
             },
             onDismiss = { burstAsk = null },
+        )
+    }
+
+    chillAsk?.let { index ->
+        ChillDialog(
+            onConfirm = {
+                repository.chill(program.id, index)
+                chillAsk = null
+            },
+            onDismiss = { chillAsk = null },
         )
     }
 

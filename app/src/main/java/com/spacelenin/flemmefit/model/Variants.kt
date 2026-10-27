@@ -214,6 +214,7 @@ object Variants {
             duration = per?.takeIf { v.isSeconds }?.let(Measures::formatSeconds),
             rest = base.rest,
             amrap = true,
+            sides = v.sides,
         )
         return Prescription(
             exercise,

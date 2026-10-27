@@ -5,6 +5,7 @@ import android.util.Log
 import com.spacelenin.flemmefit.BuildConfig
 import com.spacelenin.flemmefit.data.ProgramRepository
 import com.spacelenin.flemmefit.model.FriendCard
+import com.spacelenin.flemmefit.model.Reminders
 import com.spacelenin.flemmefit.model.Social
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -61,6 +62,10 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
     )
     /** Cartes reçues (la mienne exclue), dernière version connue de chacun. */
     val friends: StateFlow<List<FriendCard>> = _friends.asStateFlow()
+
+    /** Appelé avec les pseudos des potes qui viennent de battre un Boss. */
+    @Volatile
+    var onBossNews: ((List<String>) -> Unit)? = null
 
     private val _status = MutableStateFlow<Status>(Status.Idle)
     val status: StateFlow<Status> = _status.asStateFlow()
@@ -120,6 +125,30 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
         val merged = Social.visible(Social.merge(_friends.value, fresh), _pseudo.value, System.currentTimeMillis())
         prefs.edit().putString(KEY_CACHE, Social.encodeAll(merged)).apply()
         _friends.value = merged
+        announceBosses(merged)
+    }
+
+    /** Compare les Boss vaincus de chacun à ce qui était connu, et prévient s'il y en a de nouveaux. */
+    @Synchronized
+    private fun announceBosses(cards: List<FriendCard>) {
+        if (_pseudo.value == null) return
+        val seen = prefs.getStringSet(KEY_SEEN_BOSSES, emptySet()).orEmpty().associate {
+            it.substringAfter(':') to (it.substringBefore(':').toIntOrNull() ?: 0)
+        }
+        val news = Reminders.newBosses(cards, seen)
+        val updated = Reminders.seenBosses(cards, seen)
+        prefs.edit().putStringSet(KEY_SEEN_BOSSES, updated.map { (pseudo, n) -> "$n:$pseudo" }.toSet()).apply()
+        if (news.isNotEmpty()) onBossNews?.invoke(news)
+    }
+
+    /** Vérification de fond (alarme toutes les 3 h) : lit le canal pour annoncer les Boss battus. */
+    fun checkInBackground() {
+        if (_pseudo.value == null) return
+        try {
+            pull(BACKGROUND_TIMEOUT_MS)
+        } catch (e: Exception) {
+            Log.w(TAG, "Canal injoignable pour la vérification", e)
+        }
     }
 
     /**
@@ -195,9 +224,11 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
         private const val KEY_CACHE = "cache"
         private const val KEY_LAST = "lastPublished"
         private const val KEY_LAST_AT = "lastPublishedAt"
+        private const val KEY_SEEN_BOSSES = "seenBosses"
         private const val PUBLISH_DEBOUNCE_MS = 20_000L
         private const val REPUBLISH_AFTER_MS = 6 * 60 * 60 * 1000L
         /** Un rappel tient dans les quelques secondes qu'Android laisse à une alarme. */
         private const val REMINDER_TIMEOUT_MS = 3_000
+        private const val BACKGROUND_TIMEOUT_MS = 6_000
     }
 }
