@@ -139,6 +139,20 @@ class AppUpdater(private val context: Context) {
         emptyList()
     }
 
+    /**
+     * Toutes les versions publiées, de la plus récente à la plus ancienne, pour l'écran des notes de version.
+     * Lève une exception si GitHub ne répond pas. À appeler hors du fil principal.
+     */
+    fun allReleases(): List<ReleaseInfo> {
+        val all = ArrayList<ReleaseInfo>()
+        for (page in 1..MAX_PAGES) {
+            val releases = Releases.parseList(httpGet("$ALL_URL$page"))
+            if (releases.isEmpty()) break
+            all += releases
+        }
+        return all.distinctBy { it.versionCode }.sortedByDescending { it.versionCode }
+    }
+
     /** Plusieurs versions d'écart : les notes de chacune, pas seulement de la dernière. */
     private fun withSkippedNotes(release: ReleaseInfo): ReleaseInfo {
         if (release.versionCode <= currentVersion + 1) return release
@@ -276,6 +290,8 @@ class AppUpdater(private val context: Context) {
         private const val KEY_DISMISSED = "dismissedVersion"
         private const val KEY_SEEN_VERSION = "seenVersion"
         private const val LIST_URL = "https://api.github.com/repos/$REPOSITORY/releases?per_page=30"
+        private const val ALL_URL = "https://api.github.com/repos/$REPOSITORY/releases?per_page=100&page="
+        private const val MAX_PAGES = 5
         private const val TAG_URL = "https://api.github.com/repos/$REPOSITORY/releases/tags/build-"
         private const val AUTO_CHECK_INTERVAL_MS = 10 * 60 * 1000L
     }

@@ -83,6 +83,7 @@ fun SettingsScreen(
     val reminderSettings by reminders.settings.collectAsStateWithLifecycle()
     val pseudo by social.pseudo.collectAsStateWithLifecycle()
     var showReminders by remember { mutableStateOf(false) }
+    var showNotes by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -147,6 +148,7 @@ fun SettingsScreen(
                     }
                     TextButton(onClick = { updater.check() }) { Text("Vérifier") }
                 }
+                SettingRow(title = "Notes de version", subtitle = "Tout ce qui a changé, version par version", onClick = { showNotes = true })
 
                 Section("LES POTES")
                 SettingRow(title = "Pseudo et canal", subtitle = pseudo ?: "Pas encore choisi", onClick = onSocial)
@@ -198,6 +200,7 @@ fun SettingsScreen(
     }
 
     if (showReminders) RemindersDialog(reminders, programs, onDismiss = { showReminders = false })
+    if (showNotes) ReleaseNotesDialog(updater, onDismiss = { showNotes = false })
 }
 
 @Composable

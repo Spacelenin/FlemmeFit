@@ -334,7 +334,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             }
             val level = (steps + (bonus[ex.key] ?: 0)).coerceAtLeast(0) + extra
             return Prescription.of(
-                palier?.let(ex::atLevel) ?: ex, level, deload || chill, boss = boss, lastMax = lastMax[ex.key], palier = palier, burst = burst,
+                palier?.let { named(ex.atLevel(it), date) } ?: ex, level, deload || chill, boss = boss, lastMax = lastMax[ex.key], palier = palier, burst = burst,
                 weighted = weighted,
             )
         }

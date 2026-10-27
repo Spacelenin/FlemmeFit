@@ -96,8 +96,23 @@ class LevelsTest {
         assertEquals(listOf("Échauffement", "Pompes lentes (tempo)", "Shadow boxing léger", "Étirements"), day1.map { it.exercise.name })
         assertEquals("4 × 2 · repos 90s", day1[1].summary())
         val gainage = s.sessionAt(1)!!.prescriptions.first { it.key == "gainage" }
-        assertEquals(35, gainage.seconds)
+        assertEquals(25, gainage.seconds)
         assertTrue(gainage.maxIsSeconds)
+
+        // Sous 20 au test d'abdos, pas de V-up : l'exercice choisi au test, sous son nom.
+        fun tuesday(abdos: Int, option: String?): Prescription {
+            var p = StoredProgram("r", routine, start.toString(), tests = mapOf("pompes" to 8, "gainage" to 50, "abdos" to abdos))
+            if (option != null) p = p.changeTestOption("abdos", option, start)
+            return ProgramSchedule(p, start.plusDays(1)).sessionAt(1)!!.prescriptions.first { it.key == "abdos-bras-tendus" }
+        }
+        tuesday(12, "situp").let {
+            assertEquals("Abdos (sit-up)", it.exercise.name)
+            assertEquals(5, it.reps) // séries : 4, moins un jour variante
+        }
+        tuesday(25, "crunch").let {
+            assertEquals("Abdos bras tendus (V-up)", it.exercise.name)
+            assertEquals(2, it.reps)
+        }
         // Shadow : toujours 2 rounds, +30 s par séance validée de 3 à 4 min.
         val shadow = day1[2].exercise
         assertEquals(2 to 180, Prescription.of(shadow, 0, false, false, null).let { it.sets to it.seconds })

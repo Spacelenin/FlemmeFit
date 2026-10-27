@@ -191,6 +191,8 @@ et le test refait plus tard fait passer au palier suivant.
   Sans résultat : palier le plus facile.
 - **Palier** (`levels[]`) : le palier retenu est le dernier dont `from` ≤ résultat du test (`from` croissants).
   Ses champs `sets`, `reps`, `duration`, `load`, `rest` remplacent ceux de l'exercice ; `note` s'ajoute à la description.
+  `name` et `description` remplacent le nom et la consigne : un autre exercice à ce palier (par exemple des crunchs
+  tant que le test est trop bas pour le V-up). `name` accepte les `{id du test}`.
 - La `progression` s'applique **depuis le départ du palier**, et repart de zéro quand le palier change.
 - Un exercice `retest` met à jour le résultat du test avec le max noté : les séances suivantes changent de palier
   si besoin. Il n'est jamais allégé par la décharge, ce qui permet de placer les tests en semaine de décharge.
