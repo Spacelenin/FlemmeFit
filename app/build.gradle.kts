@@ -1,3 +1,5 @@
+import java.util.Base64
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -82,7 +84,7 @@ if (newKeystore != null) {
         doLast {
             val work = layout.buildDirectory.dir("rotation").get().asFile.apply { mkdirs() }
             val newKs = File(work, "new.keystore").apply {
-                writeBytes(java.util.Base64.getMimeDecoder().decode(newKeystore))
+                writeBytes(Base64.getMimeDecoder().decode(newKeystore))
             }
             val lineage = File(work, "lineage.bin")
             val apk = layout.buildDirectory.file("outputs/apk/release/app-release.apk").get().asFile
