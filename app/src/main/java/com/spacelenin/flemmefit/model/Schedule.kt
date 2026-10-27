@@ -305,7 +305,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         val chill = !boss && !deload && !burst && i in program.chills
 
         fun prescribe(e: Int, original: Exercise): Prescription {
-            val ex = named(original, date)
+            val ex = named(original, date).let { if (StoredProgram.doneKey(i, e) in program.excused) it.copy(optional = true) else it }
             val weighted = ex.weights?.let { w ->
                 val said = program.weightsChoice(i, e)
                 if (said != null) lastWeights[ex.key] = said
