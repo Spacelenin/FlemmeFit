@@ -1,7 +1,7 @@
 {
   "format": "flemmefit",
   "version": 1,
-  "revision": 11,
+  "revision": 12,
   "name": "Routine maison",
   "description": "5 séances par semaine (jours 4 et 7 : repos, ou rien selon la fatigue). Paliers inspirés de 100pompes, 50tractions, musclesabdominaux et musclesdesjambes : un test de départ choisit ton palier, la dernière série va souvent au max, et la 4e semaine allège tout de moitié et refait les tests pour passer au palier suivant. Échauffement et étirements d'après echauffez-vous et etirez-vous.",
   "repeat": "forever",
@@ -278,7 +278,8 @@
               "duration": "3min",
               "rest": "1min",
               "progression": {
-                "duration": "30s",
+                "every": 3,
+                "duration": "15s",
                 "maxDuration": "4min"
               },
               "weights": {
@@ -497,7 +498,7 @@
         },
         {
           "day": 3,
-          "title": "Tractions",
+          "title": "Tractions et superman",
           "exercises": [
             {
               "name": "Échauffement",
@@ -577,6 +578,19 @@
                 "every": 2
               },
               "counter": "Tractions"
+            },
+            {
+              "name": "Superman tenu",
+              "id": "superman",
+              "description": "Allongé sur le ventre, bras tendus devant toi. Décolle en même temps les bras, la poitrine et les jambes, regard vers le sol (la nuque reste dans l'axe), et tiens. Fessiers serrés, pas d'à-coups : c'est le bas du dos qui travaille, sans douleur. Ça tire dans les reins ? Décolle moins haut.",
+              "sets": 3,
+              "duration": "15s",
+              "rest": "45s",
+              "progression": {
+                "every": 2,
+                "duration": "5s",
+                "maxDuration": "45s"
+              }
             },
             {
               "name": "Étirements",
@@ -946,7 +960,8 @@
               "duration": "3min",
               "rest": "1min",
               "progression": {
-                "duration": "30s",
+                "every": 3,
+                "duration": "15s",
                 "maxDuration": "4min"
               },
               "weights": {
@@ -1165,7 +1180,7 @@
         },
         {
           "day": 3,
-          "title": "Tractions",
+          "title": "Tractions et superman",
           "exercises": [
             {
               "name": "Échauffement",
@@ -1245,6 +1260,19 @@
                 "every": 2
               },
               "counter": "Tractions"
+            },
+            {
+              "name": "Superman tenu",
+              "id": "superman",
+              "description": "Allongé sur le ventre, bras tendus devant toi. Décolle en même temps les bras, la poitrine et les jambes, regard vers le sol (la nuque reste dans l'axe), et tiens. Fessiers serrés, pas d'à-coups : c'est le bas du dos qui travaille, sans douleur. Ça tire dans les reins ? Décolle moins haut.",
+              "sets": 3,
+              "duration": "15s",
+              "rest": "45s",
+              "progression": {
+                "every": 2,
+                "duration": "5s",
+                "maxDuration": "45s"
+              }
             },
             {
               "name": "Étirements",
@@ -1614,7 +1642,8 @@
               "duration": "3min",
               "rest": "1min",
               "progression": {
-                "duration": "30s",
+                "every": 3,
+                "duration": "15s",
                 "maxDuration": "4min"
               },
               "weights": {
@@ -1833,7 +1862,7 @@
         },
         {
           "day": 3,
-          "title": "Tractions",
+          "title": "Tractions et superman",
           "exercises": [
             {
               "name": "Échauffement",
@@ -1913,6 +1942,19 @@
                 "every": 2
               },
               "counter": "Tractions"
+            },
+            {
+              "name": "Superman tenu",
+              "id": "superman",
+              "description": "Allongé sur le ventre, bras tendus devant toi. Décolle en même temps les bras, la poitrine et les jambes, regard vers le sol (la nuque reste dans l'axe), et tiens. Fessiers serrés, pas d'à-coups : c'est le bas du dos qui travaille, sans douleur. Ça tire dans les reins ? Décolle moins haut.",
+              "sets": 3,
+              "duration": "15s",
+              "rest": "45s",
+              "progression": {
+                "every": 2,
+                "duration": "5s",
+                "maxDuration": "45s"
+              }
             },
             {
               "name": "Étirements",
@@ -2290,7 +2332,8 @@
               "duration": "3min",
               "rest": "1min",
               "progression": {
-                "duration": "30s",
+                "every": 3,
+                "duration": "15s",
                 "maxDuration": "4min"
               },
               "weights": {
@@ -2525,7 +2568,7 @@
         },
         {
           "day": 3,
-          "title": "Tractions",
+          "title": "Tractions et superman",
           "exercises": [
             {
               "name": "Échauffement",
@@ -2613,6 +2656,19 @@
                 "every": 2
               },
               "counter": "Tractions"
+            },
+            {
+              "name": "Superman tenu",
+              "id": "superman",
+              "description": "Allongé sur le ventre, bras tendus devant toi. Décolle en même temps les bras, la poitrine et les jambes, regard vers le sol (la nuque reste dans l'axe), et tiens. Fessiers serrés, pas d'à-coups : c'est le bas du dos qui travaille, sans douleur. Ça tire dans les reins ? Décolle moins haut.",
+              "sets": 3,
+              "duration": "15s",
+              "rest": "45s",
+              "progression": {
+                "every": 2,
+                "duration": "5s",
+                "maxDuration": "45s"
+              }
             },
             {
               "name": "Étirements",

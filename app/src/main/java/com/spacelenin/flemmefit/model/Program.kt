@@ -78,6 +78,11 @@ data class StoredProgram(
     val variantSkips: Set<Int> = emptySet(),
     /** Choix d'exercice des tests à options (crunch ou sit-up), dans l'ordre où ils ont été faits. */
     val testChanges: List<TestChange> = emptyList(),
+    /**
+     * Exercices arrivés avec une nouvelle version de la routine sur des séances déjà terminées, mêmes clés
+     * que [done] : facultatifs sur ces séances, pour qu'elles restent validées.
+     */
+    val excused: Set<String> = emptySet(),
 ) {
     val start: LocalDate get() = LocalDate.parse(startDate)
 
@@ -162,8 +167,20 @@ data class StoredProgram(
             logs = logs.mapNotNull { (k, v) -> moved[k]?.let { it to v } }.toMap(),
             weights = weights.mapNotNull { (k, v) -> moved[k]?.let { it to v } }.toMap(),
             tests = tests.filterKeys { id -> newPlan.tests.any { it.id == id } },
+            excused = excused.mapNotNull { moved[it] }.toSet() + newOnFinishedDays(newPlan),
         )
     }
+
+    /** Exercices obligatoires de [newPlan] sans équivalent dans les séances où tout l'obligatoire était fait. */
+    private fun newOnFinishedDays(newPlan: Plan): Set<String> =
+        done.mapNotNull { it.substringBefore(':').toIntOrNull() }.distinct().flatMap { dayIndex ->
+            val old = plan.dayAt(dayIndex)?.exercises ?: return@flatMap emptyList()
+            val new = newPlan.dayAt(dayIndex)?.exercises ?: return@flatMap emptyList()
+            val finished = old.indices.all { old[it].optional || doneKey(dayIndex, it) in done || doneKey(dayIndex, it) in excused }
+            if (!finished) return@flatMap emptyList()
+            new.indices.filter { !new[it].optional && old.none { o -> o.key == new[it].key } }
+                .map { doneKey(dayIndex, it) }
+        }.toSet()
 
     /** Nombre de cases cochées ou saisies qui ne trouveraient plus leur exercice dans [newPlan]. */
     fun planUpdateLoss(newPlan: Plan): Int {
@@ -174,7 +191,7 @@ data class StoredProgram(
     /** Ancienne clé de suivi → nouvelle clé, pour les exercices retrouvés dans [newPlan]. */
     private fun remap(newPlan: Plan): Map<String, String> {
         val result = HashMap<String, String>()
-        (done + logs.keys + weights.keys).mapNotNull { key ->
+        (done + logs.keys + weights.keys + excused).mapNotNull { key ->
             val day = key.substringBefore(':').toIntOrNull() ?: return@mapNotNull null
             val ex = key.substringAfter(':').toIntOrNull() ?: return@mapNotNull null
             Triple(key, day, ex)

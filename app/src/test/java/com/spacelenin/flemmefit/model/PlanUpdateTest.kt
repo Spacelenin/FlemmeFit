@@ -1,7 +1,10 @@
 package com.spacelenin.flemmefit.model
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.LocalDate
 
 class PlanUpdateTest {
 
@@ -31,5 +34,23 @@ class PlanUpdateTest {
         assertEquals(mapOf("pompes" to 8), updated.tests)
         assertEquals(listOf(7), updated.postpones)
         assertEquals("2026-10-19", updated.startDate)
+    }
+
+    @Test
+    fun `an exercise added by an update does not undo finished sessions`() {
+        val old = StoredProgram("p", plan("Rowing", "Shadow"), "2026-10-19")
+            .toggle(0, 0).toggle(0, 1) // semaine 1 : tout fait
+            .toggle(7, 0) // semaine 2 : à moitié
+        val updated = old.withPlan(plan("Rowing", "Superman", "Shadow"))
+        assertEquals(setOf("0:0", "0:2", "7:0"), updated.done)
+        assertEquals(setOf("0:1"), updated.excused)
+
+        val s = ProgramSchedule(updated, LocalDate.of(2026, 11, 20))
+        assertTrue(s.isComplete(s.sessionAt(0)!!))
+        assertTrue(s.sessionAt(0)!!.prescriptions[1].exercise.optional)
+        assertFalse(s.isComplete(s.sessionAt(7)!!))
+        assertFalse(s.sessionAt(14)!!.prescriptions[1].exercise.optional)
+        // Une nouvelle version garde l'exception sur l'exercice, même déplacé.
+        assertEquals(setOf("0:2"), updated.withPlan(plan("Rowing", "Shadow", "Superman")).excused)
     }
 }

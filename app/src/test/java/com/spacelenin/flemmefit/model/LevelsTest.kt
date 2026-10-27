@@ -113,11 +113,12 @@ class LevelsTest {
             assertEquals("Abdos bras tendus (V-up)", it.exercise.name)
             assertEquals(2, it.reps)
         }
-        // Shadow : toujours 2 rounds, +30 s par séance validée de 3 à 4 min.
+        // Shadow : toujours 2 rounds, +15 s toutes les 3 séances validées, de 3 à 4 min.
         val shadow = day1[2].exercise
+        assertEquals(3, shadow.progression!!.every)
         assertEquals(2 to 180, Prescription.of(shadow, 0, false, false, null).let { it.sets to it.seconds })
-        assertEquals(2 to 210, Prescription.of(shadow, 1, false, false, null).let { it.sets to it.seconds })
-        assertEquals(2 to 240, Prescription.of(shadow, 2, false, false, null).let { it.sets to it.seconds })
+        assertEquals(2 to 195, Prescription.of(shadow, 1, false, false, null).let { it.sets to it.seconds })
+        assertEquals(2 to 240, Prescription.of(shadow, 4, false, false, null).let { it.sets to it.seconds })
         assertEquals(2 to 240, Prescription.of(shadow, 20, false, false, null).let { it.sets to it.seconds })
         // Beat Saber : de 40 à 90 min, +10 min toutes les 2 séances.
         val beatSaber = s.sessionAt(4)!!.prescriptions.first { it.key == "beatsaber" }.exercise
