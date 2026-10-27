@@ -46,7 +46,10 @@ class FlemmeFitApp : Application() {
         // Défis surprise : le jour et l'heure dépendent de cette installation.
         challenges = ChallengeManager(this, repository, social.myId.hashCode().toLong())
         social.challengesWon = challenges::wonCount
-        challenges.onWon = social::publishIfNeeded
+        challenges.onWon = {
+            social.publishIfNeeded()
+            backup.saveSoon()
+        }
         challenges.reschedule()
         social.publishIfNeeded()
         // Le widget suit le suivi : chaque exercice coché le met à jour.
