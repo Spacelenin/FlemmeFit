@@ -24,6 +24,11 @@ jobs:
 
       - name: Tests + APK
         run: ./gradlew --no-daemon testReleaseUnitTest assembleRelease
+        # Nouvelle clé de signature (rotation, voir app/build.gradle.kts). Sans ces secrets, l'ancienne clé seule.
+        env:
+          FLEMMEFIT_KEYSTORE_B64: ${{ secrets.FLEMMEFIT_KEYSTORE_B64 }}
+          FLEMMEFIT_KEYSTORE_PASSWORD: ${{ secrets.FLEMMEFIT_KEYSTORE_PASSWORD }}
+          FLEMMEFIT_KEY_ALIAS: flemmefit
 
       - name: Renommer l'APK
         run: cp app/build/outputs/apk/release/app-release.apk FlemmeFit-${{ github.run_number }}.apk
