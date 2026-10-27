@@ -37,8 +37,11 @@ class ReminderReceiver : BroadcastReceiver() {
 class RescheduleReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
-            Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED ->
-                (context.applicationContext as FlemmeFitApp).reminders.reschedule()
+            Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED -> {
+                val app = context.applicationContext as FlemmeFitApp
+                app.reminders.reschedule()
+                app.challenges.reschedule()
+            }
         }
     }
 }

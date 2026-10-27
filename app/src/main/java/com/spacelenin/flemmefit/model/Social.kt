@@ -32,9 +32,11 @@ data class FriendCard(
     val lastExploit: String? = null,
     val build: Int = 0,
     val bursts: Int = 0,
+    /** Défis surprise réussis. */
+    val defis: Int = 0,
 ) {
     /** Points du concours : un Boss vaut plus qu'un exploit, qui vaut plus qu'un Burst, qui vaut plus qu'une séance. */
-    val score: Int get() = bossDefeated * BOSS_POINTS + exploits * EXPLOIT_POINTS + bursts * BURST_POINTS + sessionsDone
+    val score: Int get() = bossDefeated * BOSS_POINTS + exploits * EXPLOIT_POINTS + bursts * BURST_POINTS + defis * Challenges.POINTS + sessionsDone
 
     fun isToday(today: LocalDate) = date == today.toString()
 
@@ -78,6 +80,7 @@ object Social {
         today: LocalDate,
         now: Long,
         build: Int,
+        challengesWon: Int = 0,
     ): FriendCard {
         var done = 0
         var total = 0
@@ -105,6 +108,7 @@ object Social {
             sessionsDone = all.sessionsDone,
             bossDefeated = all.bossDefeated,
             bursts = all.burstsDone,
+            defis = challengesWon,
             exploits = all.exploits.size,
             lastExploit = last?.label(),
             build = build,

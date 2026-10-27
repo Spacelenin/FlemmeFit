@@ -48,6 +48,7 @@ class MainActivity : ComponentActivity() {
                     social = app.social,
                     settings = app.settings,
                     backup = app.backup,
+                    challenges = app.challenges,
                     incoming = incoming,
                     onIncomingConsumed = { incoming = null },
                     openRequest = openRequest,

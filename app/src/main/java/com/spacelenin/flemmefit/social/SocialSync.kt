@@ -77,8 +77,12 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
         }
     }
 
+    /** Défis surprise réussis, pour les points (fourni par l'appli). */
+    @Volatile
+    var challengesWon: () -> Int = { 0 }
+
     fun myCard(today: LocalDate = LocalDate.now()): FriendCard? = _pseudo.value?.let {
-        Social.card(myId, it, repository.state.value.programs, today, System.currentTimeMillis(), BuildConfig.VERSION_CODE)
+        Social.card(myId, it, repository.state.value.programs, today, System.currentTimeMillis(), BuildConfig.VERSION_CODE, challengesWon())
     }
 
     fun setPseudo(value: String) {
