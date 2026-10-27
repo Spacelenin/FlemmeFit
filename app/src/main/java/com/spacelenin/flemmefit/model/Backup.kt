@@ -58,7 +58,7 @@ data class Backup(
         const val FILE_NAME = "flemmefit-sauvegarde.json"
 
         /** Préférences sauvegardées. Les mises à jour restent propres au téléphone. */
-        val PREF_FILES = listOf("settings", "reminders", "social")
+        val PREF_FILES = listOf("settings", "reminders", "social", "challenges")
 
         /** Clés propres à ce téléphone : où il sauvegarde (l'accès au fichier ne se transporte pas). */
         val LOCAL_KEYS = setOf("backup_uri", "backup_last", "backup_error")

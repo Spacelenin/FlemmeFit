@@ -62,6 +62,11 @@ class BackupManager(
         }
     }
 
+    /** Réécrit la sauvegarde pour un changement hors du suivi (points gagnés…). */
+    fun saveSoon() {
+        scope.launch { autoSave() }
+    }
+
     suspend fun autoSave(): Boolean {
         val uri = settings.backupUri.value ?: return false
         return try {
