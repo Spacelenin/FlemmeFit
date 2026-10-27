@@ -259,7 +259,8 @@ private fun FriendRow(rank: Int, last: Boolean, card: FriendCard, isMe: Boolean,
                 LinearProgressIndicator(progress = { card.todayDone.toFloat() / card.todayTotal }, modifier = Modifier.fillMaxWidth())
             }
             Text(
-                "🔥 ${card.streak} · 💀 ${card.bossDefeated} · 🏆 ${card.exploits} · 🚀 ${card.bursts} · ${card.sessionsDone} séances",
+                "🔥 ${card.streak} · 💀 ${card.bossDefeated} · 🏆 ${card.exploits} · 🚀 ${card.bursts}" +
+                    (if (card.defis > 0) " · 🎯 ${card.defis}" else "") + " · ${card.sessionsDone} séances",
                 style = MaterialTheme.typography.bodyMedium,
             )
             card.lastExploit?.let { Text("Dernier exploit : $it", style = MaterialTheme.typography.bodySmall) }

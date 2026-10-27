@@ -99,10 +99,12 @@ class SessionGuard {
 
     fun hold() {
         holds++
+        AppVisibility.sessionRunning = true
     }
 
     fun release() {
         holds = (holds - 1).coerceAtLeast(0)
+        AppVisibility.sessionRunning = holds > 0
     }
 }
 

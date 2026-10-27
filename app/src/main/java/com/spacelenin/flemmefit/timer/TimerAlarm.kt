@@ -19,6 +19,10 @@ import com.spacelenin.flemmefit.model.TimerRun
 object AppVisibility {
     @Volatile
     var foreground = false
+
+    /** Mode séance ouvert ou minuteur qui tourne. */
+    @Volatile
+    var sessionRunning = false
 }
 
 /**

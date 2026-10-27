@@ -1,6 +1,7 @@
 package com.spacelenin.flemmefit
 
 import android.app.Application
+import com.spacelenin.flemmefit.challenge.ChallengeManager
 import com.spacelenin.flemmefit.data.AppSettings
 import com.spacelenin.flemmefit.data.BackupManager
 import com.spacelenin.flemmefit.data.ProgramRepository
@@ -28,6 +29,8 @@ class FlemmeFitApp : Application() {
         private set
     lateinit var backup: BackupManager
         private set
+    lateinit var challenges: ChallengeManager
+        private set
 
     override fun onCreate() {
         super.onCreate()
@@ -40,6 +43,11 @@ class FlemmeFitApp : Application() {
         reminders.reschedule()
         social = SocialSync(this, repository)
         social.onBossNews = { names -> reminders.announceBosses(names) }
+        // Défis surprise : le jour et l'heure dépendent de cette installation.
+        challenges = ChallengeManager(this, repository, social.myId.hashCode().toLong())
+        social.challengesWon = challenges::wonCount
+        challenges.onWon = social::publishIfNeeded
+        challenges.reschedule()
         social.publishIfNeeded()
         // Le widget suit le suivi : chaque exercice coché le met à jour.
         widgetScope.launch {

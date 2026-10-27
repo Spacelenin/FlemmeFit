@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.spacelenin.flemmefit.challenge.ChallengeManager
 import com.spacelenin.flemmefit.data.AppSettings
 import com.spacelenin.flemmefit.data.BackupManager
 import com.spacelenin.flemmefit.data.ProgramRepository
@@ -60,6 +61,7 @@ fun AppRoot(
     social: SocialSync,
     settings: AppSettings,
     backup: BackupManager,
+    challenges: ChallengeManager,
     incoming: ImportSource?,
     onIncomingConsumed: () -> Unit,
     openRequest: String?,
@@ -89,6 +91,8 @@ fun AppRoot(
     val pseudo by social.pseudo.collectAsStateWithLifecycle()
     // « Plus tard » : on redemande au prochain lancement.
     var pseudoSkipped by rememberSaveable { mutableStateOf(false) }
+    // Page du défi demandée depuis sa notification.
+    var challengeRequested by rememberSaveable { mutableStateOf(false) }
     /** Bilan, tests et stats : l'onglet Stats. */
     fun openStats() {
         showSettings = false
@@ -138,6 +142,7 @@ fun AppRoot(
             if (state.programs.any { it.id == id }) openDay(id, LocalDate.now())
             // Notification des potes : leur onglet.
             else if (id == Reminders.FRIENDS_ID || id == Reminders.BOSS_NEWS_ID) tab = 3
+            else if (id == ChallengeManager.OPEN_ID) challengeRequested = true
             onOpenRequestConsumed()
         }
     }
@@ -285,6 +290,8 @@ fun AppRoot(
 
     val changelog by updater.changelog.collectAsStateWithLifecycle()
     val calm = askTestsFor == null && parsed == null && !pasting && changelog == null
+    ChallengeHost(challenges, requested = challengeRequested, onDismissRequest = { challengeRequested = false })
+
     // Pas encore de pseudo : on le demande dès l'ouverture, pour apparaître chez les potes sans y penser.
     if (pseudo == null && !pseudoSkipped && calm) {
         PseudoPromptDialog(onSave = rememberPseudoPicker(social), onLater = { pseudoSkipped = true })
