@@ -139,4 +139,20 @@ class AdaptationTest {
         assertEquals(360, g.withOvertime(0, 999)) // Stop oublié : jamais plus du double
         assertFalse(GuidedExercise(Prescription.of(shadow.copy(optional = true), 0, false, false, null)).overtime(0))
     }
+
+    @Test
+    fun `end of session announces what the adaptation changed, not the base curve`() {
+        val p = StoredProgram("p", plan, start.toString())
+        // Pile au prévu : rien à annoncer, même si la courbe de base avance.
+        assertTrue(ProgramSchedule.adaptationChanges(p.toggle(day(0), 0).toggle(day(0), 1), day(0), start).isEmpty())
+        // 12-12-12 pour 8 : pompes à la hausse, abdos (pile) rien.
+        val up = ProgramSchedule.adaptationChanges(p.sets(0, 0, 12, 12, 12).toggle(day(0), 1), day(0), start)
+        assertEquals(1, up.size)
+        assertEquals(AdaptChange.Kind.UP, up[0].kind)
+        assertEquals("💪 Pompes : 3 × 11 la prochaine fois (au lieu de 3 × 8)", up[0].message)
+        // En dessous : à la baisse.
+        val p2 = p.sets(0, 0, 8, 8, 8).sets(1, 0, 8, 8, 8).sets(2, 0, 9, 9, 9).sets(3, 0, 9, 9, 9)
+        val down = ProgramSchedule.adaptationChanges(p2.sets(4, 0, 6, 6, 6), day(4), start.plusDays(30))
+        assertEquals(AdaptChange.Kind.DOWN, down.single().kind)
+    }
 }
