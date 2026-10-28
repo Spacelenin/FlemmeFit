@@ -113,6 +113,9 @@ class ProgramRepository(dir: File) {
 
     fun setFeeling(id: String, dayIndex: Int, feeling: Int) = updateProgram(id) { it.withFeeling(dayIndex, feeling) }
 
+    fun setExerciseFeeling(id: String, dayIndex: Int, exerciseIndex: Int, feeling: Int?) =
+        updateProgram(id) { it.withExerciseFeeling(dayIndex, exerciseIndex, feeling) }
+
     fun setWeights(id: String, dayIndex: Int, exerciseIndex: Int, on: Boolean) =
         updateProgram(id) { it.withWeights(dayIndex, exerciseIndex, on) }
 

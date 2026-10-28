@@ -83,6 +83,8 @@ data class StoredProgram(
      * que [done] : facultatifs sur ces séances, pour qu'elles restent validées.
      */
     val excused: Set<String> = emptySet(),
+    /** Ressenti de chaque exercice fait, mêmes clés que [done] : voir [Adaptation.FEELING_HARD] et suivants. */
+    val exerciseFeelings: Map<String, Int> = emptyMap(),
 ) {
     val start: LocalDate get() = LocalDate.parse(startDate)
 
@@ -121,6 +123,13 @@ data class StoredProgram(
     }
 
     fun feelingOf(dayIndex: Int): Int? = feelings[dayIndex.toString()]
+
+    fun exerciseFeelingOf(dayIndex: Int, exerciseIndex: Int): Int? = exerciseFeelings[doneKey(dayIndex, exerciseIndex)]
+
+    fun withExerciseFeeling(dayIndex: Int, exerciseIndex: Int, feeling: Int?): StoredProgram {
+        val key = doneKey(dayIndex, exerciseIndex)
+        return copy(exerciseFeelings = if (feeling == null) exerciseFeelings - key else exerciseFeelings + (key to feeling.coerceIn(0, 2)))
+    }
 
     fun withFeeling(dayIndex: Int, feeling: Int) = copy(feelings = feelings + (dayIndex.toString() to feeling.coerceIn(0, 2)))
 
@@ -166,6 +175,7 @@ data class StoredProgram(
             done = done.mapNotNull { moved[it] }.toSet(),
             logs = logs.mapNotNull { (k, v) -> moved[k]?.let { it to v } }.toMap(),
             weights = weights.mapNotNull { (k, v) -> moved[k]?.let { it to v } }.toMap(),
+            exerciseFeelings = exerciseFeelings.mapNotNull { (k, v) -> moved[k]?.let { it to v } }.toMap(),
             tests = tests.filterKeys { id -> newPlan.tests.any { it.id == id } },
             excused = excused.mapNotNull { moved[it] }.toSet() + newOnFinishedDays(newPlan),
         )
@@ -191,7 +201,7 @@ data class StoredProgram(
     /** Ancienne clé de suivi → nouvelle clé, pour les exercices retrouvés dans [newPlan]. */
     private fun remap(newPlan: Plan): Map<String, String> {
         val result = HashMap<String, String>()
-        (done + logs.keys + weights.keys + excused).mapNotNull { key ->
+        (done + logs.keys + weights.keys + excused + exerciseFeelings.keys).mapNotNull { key ->
             val day = key.substringBefore(':').toIntOrNull() ?: return@mapNotNull null
             val ex = key.substringAfter(':').toIntOrNull() ?: return@mapNotNull null
             Triple(key, day, ex)

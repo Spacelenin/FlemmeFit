@@ -69,7 +69,8 @@ private val Pages = listOf(
         "📈", "La progression",
         listOf(
             "Chaque séance terminée fait monter les chiffres (reps, durée ou charge, selon la routine).",
-            "Dernière série « à fond » : saisis ton max. Bien au-dessus du prévu, ça accélère ; en dessous, ça ralentit.",
+            "Chaque exo se règle sur toi : note ce que tu fais vraiment (plus que prévu sur toutes les séries, ou en dessous), le temps en plus après 0 sur les exos en durée, et dis si c'était dur ou facile. Pile le prévu : le rythme est bon.",
+            "Ça bouge vite les premières semaines, puis ça se cale. Le réglage de chaque exo est dans l'onglet Exos.",
             "Toutes les 4 semaines : semaine récup 🌿, le volume est divisé par deux pour récupérer.",
         ),
     ),
@@ -77,7 +78,7 @@ private val Pages = listOf(
         "📏", "Tests et niveaux",
         listOf(
             "Certaines routines démarrent d'un test : ton résultat choisit ton niveau (les chiffres de départ).",
-            "Les tests sont refaits en semaine récup et te font changer de niveau.",
+            "Les tests sont refaits en semaine récup : ils te font changer de niveau et vérifient que le réglage ne va pas trop vite.",
             "Tu peux corriger tes résultats via ⋮ › « Tests de niveau ». Abdos : choisis-y crunch ou sit-up, et change quand tu veux (ton max refait recale la suite).",
             "Onglet Stats : la courbe de chaque test, ton record, la date du prochain test et ce qu'il te manque pour passer au niveau suivant.",
         ),
