@@ -118,4 +118,19 @@ class SidesTest {
         assertEquals(mapOf("tractions" to 10, "gainage" to 60, "pompes" to 20), perche.requires)
         assertEquals("bras", plan.variants.first { it.id == "pompes-une-main" }.perSide)
     }
+
+    @Test
+    fun `end of session announces the side falling behind`() {
+        var p = StoredProgram("p", plan, start.toString())
+        var announced: List<AdaptChange> = emptyList()
+        var n = 0
+        while (announced.none { it.kind == AdaptChange.Kind.BEHIND } && n < 10) {
+            p = p.does(n, 13, 11)
+            announced = ProgramSchedule.adaptationChanges(p, day(n), start.plusDays(400))
+            n++
+        }
+        val behind = announced.first { it.kind == AdaptChange.Kind.BEHIND }
+        assertEquals("↔ Hip dips : côté droit en retard. Il commence et fait une série de plus", behind.message)
+        assertEquals(3, n) // dès que l'écart a tenu 3 séances
+    }
 }

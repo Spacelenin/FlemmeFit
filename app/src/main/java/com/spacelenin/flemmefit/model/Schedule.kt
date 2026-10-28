@@ -640,6 +640,12 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         return balanceViews.values.toList()
     }
 
+    /** Réglage de chaque exercice juste après la séance [index] (ce schedule ne doit rien avoir construit au-delà). */
+    private fun snapshotAfter(index: Int): Map<String, Pair<AdaptBase, AdaptState>> {
+        ensure(index)
+        return adaptViews.mapNotNull { (k, v) -> adapt[k]?.let { k to (v to it) } }.toMap()
+    }
+
     /** Le réglage de chaque exercice à ce jour, comparé à sa courbe de base. */
     fun adaptations(): List<ExerciseAdaptation> {
         ensure(lastIndexOnOrBefore(today))
@@ -652,6 +658,49 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 v.exercise.name, adapted.perSetPlanned, plain.perSetPlanned, adapted.maxIsSeconds,
                 adapted.sets, plain.sets, state.applied, state.samples, state.stable,
             )
+        }
+    }
+
+    companion object {
+        /**
+         * Ce que la séance [index] a changé au réglage de ses exercices : le même programme sans rien de noté ce
+         * jour-là, puis avec. La progression normale n'y est pas : seulement ce qui vient de l'adaptation.
+         */
+        fun adaptationChanges(program: StoredProgram, index: Int, today: LocalDate): List<AdaptChange> {
+            val beforeSchedule = ProgramSchedule(program.withoutDay(index), today)
+            val afterSchedule = ProgramSchedule(program, today)
+            val before = beforeSchedule.snapshotAfter(index)
+            val after = afterSchedule.snapshotAfter(index)
+            val session = afterSchedule.resolved[index] ?: return emptyList()
+            val keys = session.prescriptions.filter { it.variant == null && !it.isTest && !it.exercise.optional && it.exercise.progression != null }
+                .map { it.key }.distinct()
+            return keys.flatMap { key ->
+                val (view, now) = after[key] ?: return@flatMap emptyList()
+                val was = before[key]?.second ?: AdaptState()
+                val changes = ArrayList<AdaptChange>()
+                fun label(applied: Int): String {
+                    val p = Prescription.of(view.exercise, (view.steps + applied).coerceAtLeast(0), false, false, null, weighted = view.weighted)
+                    val value = p.perSetPlanned?.let { if (p.maxIsSeconds) Measures.formatSeconds(it) else "$it" } ?: "?"
+                    return listOfNotNull(p.sets?.let { "$it ×" }, value).joinToString(" ") + (view.exercise.perSide?.let { " ${Sides.per(it)}" } ?: "")
+                }
+                val nowLabel = label(now.applied)
+                val wasLabel = label(was.applied)
+                if (nowLabel != wasLabel) {
+                    changes += AdaptChange(view.exercise.name, if (now.applied > was.applied) AdaptChange.Kind.UP else AdaptChange.Kind.DOWN, nowLabel, wasLabel)
+                }
+                val b = beforeSchedule.balance[key] ?: BalanceState()
+                val a = afterSchedule.balance[key] ?: BalanceState()
+                val limb = view.exercise.perSide
+                if (limb != null && b.mode == BalanceMode.EVEN && a.mode != BalanceMode.EVEN && a.weak != null) {
+                    changes += AdaptChange(
+                        view.exercise.name, AdaptChange.Kind.BEHIND, side = Sides.label(limb, a.weak).lowercase(),
+                        strongWaits = a.mode == BalanceMode.WEAK_ONLY,
+                    )
+                } else if (limb != null && b.mode != BalanceMode.EVEN && a.mode == BalanceMode.EVEN) {
+                    changes += AdaptChange(view.exercise.name, AdaptChange.Kind.EVEN)
+                }
+                changes
+            }
         }
     }
 

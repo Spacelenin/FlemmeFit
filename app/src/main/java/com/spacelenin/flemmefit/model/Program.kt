@@ -140,6 +140,17 @@ data class StoredProgram(
 
     fun feelingOf(dayIndex: Int): Int? = feelings[dayIndex.toString()]
 
+    /** Le programme sans rien de noté sur le jour [dayIndex] : de quoi voir ce que cette séance a changé. */
+    fun withoutDay(dayIndex: Int): StoredProgram {
+        fun mine(key: String) = key.substringBefore(':') == dayIndex.toString()
+        return copy(
+            done = done.filterNot(::mine).toSet(),
+            logs = logs.filterKeys { !mine(it) },
+            exerciseFeelings = exerciseFeelings.filterKeys { !mine(it) },
+            feelings = feelings - dayIndex.toString(),
+        )
+    }
+
     fun exerciseFeelingOf(dayIndex: Int, exerciseIndex: Int): Int? = exerciseFeelings[doneKey(dayIndex, exerciseIndex)]
 
     fun withExerciseFeeling(dayIndex: Int, exerciseIndex: Int, feeling: Int?): StoredProgram {

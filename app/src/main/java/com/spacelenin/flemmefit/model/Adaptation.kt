@@ -198,3 +198,27 @@ data class ExerciseAdaptation(
                 if (stable) "calé" else "en calibrage ($samples/${Adaptation.CALIBRATION})"
         }
 }
+
+/** Ce qu'une séance a changé au réglage d'un exercice, à annoncer en fin de séance. */
+data class AdaptChange(
+    val name: String,
+    val kind: Kind,
+    /** Ce qui sera demandé, et ce qui l'aurait été sans cette séance (« 3 × 14 », « 3 × 12 »). */
+    val now: String? = null,
+    val was: String? = null,
+    /** Côté en retard (« côté droit »), pour [Kind.BEHIND]. */
+    val side: String? = null,
+    /** Gros écart : le côté fort attend. */
+    val strongWaits: Boolean = false,
+) {
+    enum class Kind { UP, DOWN, BEHIND, EVEN }
+
+    val message: String
+        get() = when (kind) {
+            Kind.UP -> "💪 $name : $now la prochaine fois (au lieu de $was)"
+            Kind.DOWN -> "🌿 $name : $now la prochaine fois (au lieu de $was), on lève un peu le pied"
+            Kind.BEHIND -> "↔ $name : $side en retard. Il commence et fait une série de plus" +
+                if (strongWaits) ", l'autre côté attend" else ""
+            Kind.EVEN -> "✅ $name : côtés rééquilibrés, même nombre des deux côtés"
+        }
+}

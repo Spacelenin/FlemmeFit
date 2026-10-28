@@ -22,12 +22,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.spacelenin.flemmefit.data.ProgramRepository
+import com.spacelenin.flemmefit.model.AdaptChange
 import com.spacelenin.flemmefit.model.ExerciseLog
 import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.StoredProgram
@@ -64,12 +66,14 @@ fun rememberDayActions(
     var extraFor by rememberSaveable(program.id) { mutableStateOf<Long?>(null) }
     // Ressenti : demandé quand la séance du jour vient d'être terminée (après le mode séance s'il est ouvert).
     var feelingFor by rememberSaveable(program.id) { mutableStateOf<Int?>(null) }
+    // Puis ce que la séance a changé au réglage des exos, s'il y a quelque chose à dire.
+    var changesFor by rememberSaveable(program.id) { mutableStateOf<Int?>(null) }
     val todaySession = schedule.sessionOn(today)
     val todayComplete = todaySession != null && schedule.isComplete(todaySession)
     var wasComplete by remember(program.id, todaySession?.index) { mutableStateOf(todayComplete) }
     LaunchedEffect(todayComplete) {
-        if (todayComplete && !wasComplete && todaySession != null && program.feelingOf(todaySession.index) == null) {
-            feelingFor = todaySession.index
+        if (todayComplete && !wasComplete && todaySession != null) {
+            if (program.feelingOf(todaySession.index) == null) feelingFor = todaySession.index else changesFor = todaySession.index
         }
         wasComplete = todayComplete
     }
@@ -201,9 +205,28 @@ fun rememberDayActions(
             onPick = { f ->
                 repository.setFeeling(program.id, index, f)
                 feelingFor = null
+                changesFor = index
             },
-            onSkip = { feelingFor = null },
+            onSkip = {
+                feelingFor = null
+                changesFor = index
+            },
         )
+    }
+
+    changesFor?.takeIf { guidedDay == null && feelingFor == null }?.let { index ->
+        // Recalculé quand le ressenti tout juste donné arrive dans le programme : il compte aussi.
+        val changes = remember(program, index) { ProgramSchedule.adaptationChanges(program, index, today) }
+        if (changes.isEmpty()) {
+            LaunchedEffect(index) { changesFor = null }
+        } else {
+            val openExos = LocalOpenExos.current
+            AdaptChangesDialog(
+                changes,
+                onDetail = openExos?.let { open -> { changesFor = null; open() } },
+                onDismiss = { changesFor = null },
+            )
+        }
     }
 
     burstAsk?.let { index ->
@@ -282,6 +305,29 @@ private fun ExtraDialog(onSave: (String) -> Unit, onDismiss: () -> Unit) {
         },
         confirmButton = { TextButton(enabled = text.isNotBlank(), onClick = { onSave(text) }) { Text("Ajouter") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Annuler") } },
+    )
+}
+
+/** Ouvre l'onglet Exos (« Adapté à toi »), si l'écran le permet. */
+val LocalOpenExos = staticCompositionLocalOf<(() -> Unit)?> { null }
+
+/** Fin de séance : ce que l'adaptation a changé pour la suite, exo par exo. */
+@Composable
+private fun AdaptChangesDialog(changes: List<AdaptChange>, onDetail: (() -> Unit)?, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Ta prochaine séance s'adapte") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                changes.forEach { Text(it.message, style = MaterialTheme.typography.bodyLarge) }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("OK") } },
+        dismissButton = if (onDetail != null) {
+            { TextButton(onClick = onDetail) { Text("Voir le détail") } }
+        } else {
+            null
+        },
     )
 }
 

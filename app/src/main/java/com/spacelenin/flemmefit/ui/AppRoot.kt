@@ -191,7 +191,17 @@ fun AppRoot(
     )
 
     val dayProgram = state.programs.find { it.id == dayProgramId }
-    CompositionLocalProvider(LocalWorkoutTimer provides timer, LocalRestBonus provides restBonus, LocalSessionGuard provides guard) {
+    val openExos = {
+        dayProgramId = null
+        showSettings = false
+        tab = 2
+    }
+    CompositionLocalProvider(
+        LocalWorkoutTimer provides timer,
+        LocalRestBonus provides restBonus,
+        LocalSessionGuard provides guard,
+        LocalOpenExos provides openExos,
+    ) {
         Box(Modifier.fillMaxSize()) {
             when {
                 dayProgram != null -> {
