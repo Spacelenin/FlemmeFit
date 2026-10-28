@@ -47,6 +47,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.spacelenin.flemmefit.data.ProgramRepository
 import com.spacelenin.flemmefit.model.CustomExercise
+import com.spacelenin.flemmefit.model.ExerciseAdaptation
 import com.spacelenin.flemmefit.model.Plan
 import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.StoredProgram
@@ -63,7 +64,9 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
     val today = rememberToday()
     // Les exos perso vivent dans le programme qui a des familles (la routine).
     val program = programs.firstOrNull { it.plan.families.isNotEmpty() }
-    val progress = remember(program, today) { program?.let { ProgramSchedule(it, today).variantProgress() }.orEmpty() }
+    val schedule = remember(program, today) { program?.let { ProgramSchedule(it, today) } }
+    val progress = remember(schedule) { schedule?.variantProgress().orEmpty() }
+    val adapted = remember(schedule) { schedule?.adaptations().orEmpty().filter { it.samples > 0 } }
     var adding by rememberSaveable { mutableStateOf(false) }
     var deleting by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -98,6 +101,19 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(16.dp),
                     )
+                }
+                if (adapted.isNotEmpty()) {
+                    item(key = "adapt-title") { SectionTitle("Adapté à toi 🎯") }
+                    item(key = "adapt-intro") {
+                        Text(
+                            "Chaque exo se règle sur ce que tu notes en séance (séries faites, temps en plus) et sur ton ressenti. " +
+                                "Ça bouge vite les premières séances, puis ça se cale. Les tests de niveau vérifient que ça ne s'emballe pas.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        )
+                    }
+                    items(adapted, key = { "adapt-${it.name}" }) { a -> AdaptationRow(a) }
                 }
                 item(key = "mine-title") { SectionTitle("Mes exos ⭐") }
                 if (mine.isEmpty()) {
@@ -172,6 +188,22 @@ private fun VariantProgress.status(): String = listOfNotNull(
     if (points.isEmpty()) "pas encore fait" else "max ${format(points.last().value)}",
     ratio?.let { "taux : ${ratioLabel(it)}" } ?: "taux mesuré au premier passage",
 ).joinToString(" · ")
+
+@Composable
+private fun AdaptationRow(a: ExerciseAdaptation) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(a.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            Text(
+                a.headline,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = if (a.crans > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Text(a.detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
 
 @Composable
 private fun VariantRow(v: VariantProgress) {

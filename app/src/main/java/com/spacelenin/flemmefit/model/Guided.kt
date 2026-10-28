@@ -23,6 +23,19 @@ class GuidedExercise(val prescription: Prescription, restBonus: Int = 0) {
     /** Série au temps à rebours (la série à fond, elle, est chronométrée jusqu'à « Stop »). */
     fun countdown(set: Int): Int? = if (inSeconds && !isAllOut(set)) planned else null
 
+    /**
+     * Série à rebours qui continue après 0 (« + 0:12 ») jusqu'à « Stop » : le temps en plus compte pour le réglage
+     * de l'exercice. Seulement les exercices qui progressent, pas l'échauffement ni les étirements.
+     */
+    fun overtime(set: Int): Boolean =
+        countdown(set) != null && prescription.exercise.progression != null && !prescription.exercise.optional
+
+    /** Temps tenu au total pour [extra] secondes en plus : jamais plus du double du prévu (Stop oublié). */
+    fun withOvertime(set: Int, extra: Int): Int {
+        val base = countdown(set) ?: 0
+        return base + extra.coerceIn(0, base)
+    }
+
     /** Série au temps chronométrée : à fond, ou test au temps. */
     fun countUp(set: Int): Boolean = inSeconds && isAllOut(set)
 

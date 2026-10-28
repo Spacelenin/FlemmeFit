@@ -105,15 +105,6 @@ class ProgressionTest {
     }
 
     @Test
-    fun `big max speeds progression up and low max slows it`() {
-        val base = StoredProgram("id", plan(), start.toString())
-        val strong = base.saveLog(0, 0, ExerciseLog(max = 13), complete = true) // prévu 8, +5 ≥ 3 pas
-        assertEquals(10, ProgramSchedule(strong, start.plusDays(10)).sessionAt(3)!!.prescriptions[0].reps)
-        val weak = base.saveLog(0, 0, ExerciseLog(max = 5), complete = true)
-        assertEquals(8, ProgramSchedule(weak, start.plusDays(10)).sessionAt(3)!!.prescriptions[0].reps)
-    }
-
-    @Test
     fun `boss days come every 3 to 4 weeks, are reproducible and revealed the day before`() {
         val program = StoredProgram("boss-id", plan(boss = true), start.toString())
         val today = start.plusDays(7L * 60)

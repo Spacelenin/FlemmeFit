@@ -2,7 +2,6 @@ package com.spacelenin.flemmefit.ui
 
 import android.os.SystemClock
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -18,15 +16,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -46,8 +46,8 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.spacelenin.flemmefit.model.ExerciseLog
 import com.spacelenin.flemmefit.model.GuidedExercise
 import com.spacelenin.flemmefit.model.Measures
@@ -70,6 +70,7 @@ fun GuidedSession(
     color: Color,
     onSave: (exerciseIndex: Int, log: ExerciseLog, complete: Boolean) -> Unit,
     onWeights: (exerciseIndex: Int, on: Boolean) -> Unit,
+    onFeeling: (exerciseIndex: Int, feeling: Int?) -> Unit,
     onClose: () -> Unit,
 ) {
     HoldSession()
@@ -90,6 +91,12 @@ fun GuidedSession(
     var step by remember { mutableStateOf(if (queue.isEmpty()) Step.END else Step.SET) }
     var run by remember { mutableStateOf<TimerRun?>(null) }
     var now by remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
+    // Temps en plus : l'appli a-t-elle été quittée pendant ? Alors « Stop » demande ce qui a vraiment été tenu.
+    var awayDuringOvertime by remember { mutableStateOf(false) }
+    var confirmExtra by remember { mutableStateOf<Int?>(null) }
+    // Exercice qui vient d'être fini : son ressenti est proposé pendant le repos qui suit (ou à la fin).
+    var feelingFor by remember { mutableStateOf<Int?>(null) }
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { if (run?.index == 1) awayDuringOvertime = true }
 
     val exerciseIndex = queue.getOrNull(pos)
     val prescription = exerciseIndex?.let { session.prescriptions.getOrNull(it) }
@@ -149,7 +156,22 @@ fun GuidedSession(
         } else {
             val (log, complete) = g.result(values)
             exerciseIndex?.let { onSave(it, log, complete) }
+            feelingFor = exerciseIndex?.takeIf { g.prescription.exercise.progression != null && !g.prescription.exercise.optional }
             nextExercise(g.restSeconds)
+        }
+    }
+
+    /** « Stop » : le temps tenu, temps en plus compris ; à confirmer si l'appli était fermée pendant le temps en plus. */
+    fun stopSet() {
+        val g = guided ?: return
+        val r = run ?: return finishSet(0)
+        val elapsed = (r.elapsedMs(SystemClock.elapsedRealtime()) / 1000).toInt()
+        if (r.index == 0) return finishSet(elapsed)
+        if (awayDuringOvertime && elapsed > AWAY_CHECK_SECONDS) {
+            run = r.pause(SystemClock.elapsedRealtime())
+            confirmExtra = elapsed.coerceAtMost(g.countdown(set) ?: elapsed)
+        } else {
+            finishSet(g.withOvertime(set, elapsed))
         }
     }
 
@@ -176,6 +198,13 @@ fun GuidedSession(
                 }
                 break
             }
+            if (next.index != r.index) {
+                // Fin du temps prévu : ça sonne, et le chrono continue en temps en plus jusqu'à « Stop ».
+                feedback.phaseEnded(toRest = false)
+                awayDuringOvertime = false
+                run = next
+                break
+            }
             val left = r.leftSeconds(now)
             if (left != null && left in 1..3 && left != lastBeep) feedback.tick()
             lastBeep = left ?: -1
@@ -183,92 +212,121 @@ fun GuidedSession(
         }
     }
 
-    // Plein écran, sous les barres système : le contenu se pousse lui-même hors de la barre de navigation.
-    Dialog(
-        onDismissRequest = ::close,
-        properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = false, decorFitsSystemWindows = false),
-    ) {
+    FullScreenDialog(onDismissRequest = ::close, dismissOnClickOutside = false) {
         val view = LocalView.current
         DisposableEffect(view) {
             view.keepScreenOn = true
             onDispose { view.keepScreenOn = false }
         }
-        Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) {
-            Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.safeDrawingPadding()) {
-                Column(
-                    Modifier.widthIn(max = 560.dp).fillMaxSize().padding(horizontal = 20.dp, vertical = 12.dp),
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            if (step == Step.END) session.title() else "Exercice ${pos + 1} sur ${queue.size}",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.weight(1f),
-                        )
-                        IconButton(onClick = ::close) { Icon(Icons.Default.Close, "Quitter le mode séance") }
-                    }
-                    val total = queue.size.coerceAtLeast(1)
-                    val sets = guided?.sets ?: 1
-                    LinearProgressIndicator(
-                        progress = { if (step == Step.END) 1f else (pos + set.toFloat() / sets) / total },
-                        color = color,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    Spacer(Modifier.height(24.dp))
+        Column(
+            Modifier.widthIn(max = 560.dp).fillMaxSize().padding(horizontal = 20.dp, vertical = 12.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    if (step == Step.END) session.title() else "Exercice ${pos + 1} sur ${queue.size}",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                IconButton(onClick = ::close) { Icon(Icons.Default.Close, "Quitter le mode séance") }
+            }
+            val total = queue.size.coerceAtLeast(1)
+            val sets = guided?.sets ?: 1
+            LinearProgressIndicator(
+                progress = { if (step == Step.END) 1f else (pos + set.toFloat() / sets) / total },
+                color = color,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(24.dp))
 
-                    if (step == Step.END || guided == null || prescription == null) {
-                        EndContent(schedule, session, onClose)
-                    } else if (step == Step.REST) {
-                        val r = run
-                        val left = r?.leftSeconds(now) ?: 0
-                        Column(Modifier.weight(1f).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                            Text("Repos", style = MaterialTheme.typography.titleLarge, color = DeloadColor, fontWeight = FontWeight.Bold)
-                            Text(clock(left), style = MaterialTheme.typography.displayLarge, fontWeight = FontWeight.ExtraBold)
-                            LinearProgressIndicator(progress = { r?.progress(now) ?: 1f }, color = DeloadColor, modifier = Modifier.fillMaxWidth(0.6f).padding(vertical = 12.dp))
-                            Text(
-                                "Ensuite : " + if (set == 0) prescription.exercise.name else "série ${set + 1} sur $sets",
-                                style = MaterialTheme.typography.bodyLarge,
-                                textAlign = TextAlign.Center,
-                            )
-                            Spacer(Modifier.height(20.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                FilledTonalButton(onClick = { run = run?.addSeconds(15) }) { Text("+15 s") }
-                                Button(onClick = { run = null; step = Step.SET }) { Text("Passer le repos") }
-                            }
-                        }
-                    } else {
-                        SetContent(
-                            guided = guided,
-                            set = set,
-                            value = value,
-                            onValue = { value = it },
-                            running = if (step == Step.RUN) run else null,
-                            now = now,
-                            color = color,
-                            onStart = { seconds ->
-                                run = TimerRun(prescription.exercise.name, listOf(TimerPhase("Série", seconds)), phaseStart = SystemClock.elapsedRealtime())
-                                step = Step.RUN
-                            },
-                            onStop = {
-                                val r = run
-                                finishSet(if (r == null) 0 else (r.elapsedMs(SystemClock.elapsedRealtime()) / 1000).toInt())
-                            },
-                            onSetDone = { finishSet(if (guided.needsValue(set)) value else 0) },
-                            onWeights = { on -> exerciseIndex?.let { onWeights(it, on) } },
-                            modifier = Modifier.weight(1f),
-                        )
-                        TextButton(
-                            onClick = {
-                                savePartial()
-                                nextExercise(rest = null)
-                            },
-                            modifier = Modifier.align(Alignment.CenterHorizontally),
-                        ) { Text(if (prescription.exercise.optional) "Passer (facultatif)" else "Passer l'exercice") }
+            if (step == Step.END || guided == null || prescription == null) {
+                EndContent(schedule, session, onClose) {
+                    feelingFor?.let { i -> ExerciseFeeling(session, schedule, i, onFeeling) }
+                }
+            } else if (step == Step.REST) {
+                val r = run
+                val left = r?.leftSeconds(now) ?: 0
+                Column(Modifier.weight(1f).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                    Text("Repos", style = MaterialTheme.typography.titleLarge, color = DeloadColor, fontWeight = FontWeight.Bold)
+                    Text(clock(left), style = MaterialTheme.typography.displayLarge, fontWeight = FontWeight.ExtraBold)
+                    LinearProgressIndicator(progress = { r?.progress(now) ?: 1f }, color = DeloadColor, modifier = Modifier.fillMaxWidth(0.6f).padding(vertical = 12.dp))
+                    Text(
+                        "Ensuite : " + if (set == 0) prescription.exercise.name else "série ${set + 1} sur $sets",
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                    )
+                    feelingFor?.takeIf { set == 0 && it == queue.getOrNull(pos - 1) }?.let { i ->
+                        Spacer(Modifier.height(20.dp))
+                        ExerciseFeeling(session, schedule, i, onFeeling)
+                    }
+                    Spacer(Modifier.height(20.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        FilledTonalButton(onClick = { run = run?.addSeconds(15) }) { Text("+15 s") }
+                        Button(onClick = { run = null; step = Step.SET }) { Text("Passer le repos") }
                     }
                 }
+            } else {
+                SetContent(
+                    guided = guided,
+                    set = set,
+                    value = value,
+                    onValue = { value = it },
+                    running = if (step == Step.RUN) run else null,
+                    now = now,
+                    color = color,
+                    onStart = { seconds ->
+                        val phases = listOfNotNull(
+                            TimerPhase("Série", seconds),
+                            TimerPhase(OVERTIME_LABEL, null).takeIf { guided.overtime(set) },
+                        )
+                        run = TimerRun(prescription.exercise.name, phases, phaseStart = SystemClock.elapsedRealtime())
+                        step = Step.RUN
+                    },
+                    onStop = ::stopSet,
+                    onSetDone = { finishSet(if (guided.needsValue(set)) value else 0) },
+                    onWeights = { on -> exerciseIndex?.let { onWeights(it, on) } },
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(
+                    onClick = {
+                        savePartial()
+                        nextExercise(rest = null)
+                    },
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                ) { Text(if (prescription.exercise.optional) "Passer (facultatif)" else "Passer l'exercice") }
             }
         }
     }
+    confirmExtra?.let { extra ->
+        val g = guided
+        OvertimeDialog(g?.countdown(set) ?: 0, extra) { chosen ->
+            confirmExtra = null
+            awayDuringOvertime = false
+            finishSet(g?.withOvertime(set, chosen) ?: 0)
+        }
+    }
+}
+
+@Composable
+private fun OvertimeDialog(planned: Int, extra: Int, onDone: (Int) -> Unit) {
+    var value by remember { mutableIntStateOf(extra) }
+    AlertDialog(
+        onDismissRequest = {},
+        title = { Text("Temps en plus") },
+        text = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                Text("L'appli était fermée pendant ce temps-là : tu as continué combien après les ${Measures.formatSeconds(planned)} ?")
+                Spacer(Modifier.height(12.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    FilledTonalIconButton(onClick = { value = (value - 5).coerceAtLeast(0) }) { Text("−") }
+                    Text("+ ${clock(value)}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp))
+                    FilledTonalIconButton(onClick = { value = (value + 5).coerceAtMost(planned) }) { Text("+") }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = { onDone(value) }) { Text("OK") } },
+        dismissButton = { TextButton(onClick = { onDone(0) }) { Text("Rien en plus") } },
+    )
 }
 
 @Composable
@@ -333,11 +391,18 @@ private fun SetContent(
         when {
             running != null -> {
                 val left = running.leftSeconds(now)
-                Text(clock(left ?: (running.elapsedMs(now) / 1000).toInt()), style = MaterialTheme.typography.displayLarge, fontWeight = FontWeight.ExtraBold)
-                if (left != null) {
-                    LinearProgressIndicator(progress = { running.progress(now) }, color = color, modifier = Modifier.fillMaxWidth(0.6f).padding(vertical = 12.dp))
-                } else {
-                    Text("Tiens le plus longtemps possible", style = MaterialTheme.typography.bodyLarge)
+                val elapsed = (running.elapsedMs(now) / 1000).toInt()
+                val overtime = running.index > 0
+                Text(
+                    if (overtime) "+ ${clock(elapsed)}" else clock(left ?: elapsed),
+                    style = MaterialTheme.typography.displayLarge,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = if (overtime) color else Color.Unspecified,
+                )
+                when {
+                    overtime -> Text("Temps en plus : Stop quand tu t'arrêtes", style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
+                    left != null -> LinearProgressIndicator(progress = { running.progress(now) }, color = color, modifier = Modifier.fillMaxWidth(0.6f).padding(vertical = 12.dp))
+                    else -> Text("Tiens le plus longtemps possible", style = MaterialTheme.typography.bodyLarge)
                 }
                 Spacer(Modifier.height(20.dp))
                 Button(onClick = onStop, colors = ButtonDefaults.buttonColors(containerColor = if (left == null) BossColor else MaterialTheme.colorScheme.primary)) {
@@ -386,8 +451,32 @@ private fun SetContent(
     }
 }
 
+/** Ressenti d'un exercice fini, à donner si on veut : il règle cet exercice-là, pas les autres. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EndContent(schedule: ProgramSchedule, session: Session, onClose: () -> Unit) {
+private fun ExerciseFeeling(session: Session, schedule: ProgramSchedule, exerciseIndex: Int, onFeeling: (Int, Int?) -> Unit) {
+    val name = session.prescriptions.getOrNull(exerciseIndex)?.exercise?.name ?: return
+    val current = schedule.program.exerciseFeelingOf(session.index, exerciseIndex)
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text("$name, c'était comment ?", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            EXERCISE_FEELINGS.forEachIndexed { i, label ->
+                FilterChip(selected = current == i, onClick = { onFeeling(exerciseIndex, if (current == i) null else i) }, label = { Text(label) })
+            }
+        }
+    }
+}
+
+/** Dans l'ordre de [com.spacelenin.flemmefit.model.Adaptation.FEELING_HARD] et suivants. */
+private val EXERCISE_FEELINGS = listOf("😮‍💨 Dur", "👌 OK", "💪 Facile")
+
+private const val OVERTIME_LABEL = "Temps en plus"
+
+/** Temps en plus au-delà duquel, l'appli ayant été quittée, on demande ce qui a vraiment été tenu. */
+private const val AWAY_CHECK_SECONDS = 60
+
+@Composable
+private fun EndContent(schedule: ProgramSchedule, session: Session, onClose: () -> Unit, feeling: @Composable () -> Unit) {
     val done = schedule.requiredDone(session)
     val all = schedule.isComplete(session)
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -404,6 +493,8 @@ private fun EndContent(schedule: ProgramSchedule, session: Session, onClose: () 
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(28.dp))
+        feeling()
+        Spacer(Modifier.height(20.dp))
         Button(onClick = onClose) { Text("Fermer") }
     }
 }

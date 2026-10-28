@@ -1,5 +1,24 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -75,4 +94,39 @@ fun DateSelectDialog(initial: LocalDate, onSelect: (LocalDate) -> Unit, onDismis
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Annuler") } },
     ) { DatePicker(state = state) }
+}
+
+/**
+ * Plein écran par-dessus l'appli, hors des barres système. Les marges sont lues à la fois sur l'écran principal et
+ * dans la fenêtre du Dialog, la plus grande l'emporte : certains téléphones (barre à 3 boutons) n'en donnent
+ * aucune au Dialog, et le bas de l'écran passait sous les boutons.
+ */
+@Composable
+fun FullScreenDialog(
+    onDismissRequest: () -> Unit,
+    dismissOnClickOutside: Boolean = true,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    val outer = WindowInsets.safeDrawing.asPaddingValues()
+    val root = LocalView.current.let { view ->
+        ViewCompat.getRootWindowInsets(view)?.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+    }
+    val density = LocalDensity.current
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = dismissOnClickOutside, decorFitsSystemWindows = false),
+    ) {
+        val inner = WindowInsets.safeDrawing.asPaddingValues()
+        val dir = LocalLayoutDirection.current
+        fun px(v: Int?) = with(density) { (v ?: 0).toDp() }
+        val padding = PaddingValues(
+            start = maxOf(outer.calculateStartPadding(dir), inner.calculateStartPadding(dir), px(root?.left)),
+            top = maxOf(outer.calculateTopPadding(), inner.calculateTopPadding(), px(root?.top)),
+            end = maxOf(outer.calculateEndPadding(dir), inner.calculateEndPadding(dir), px(root?.right)),
+            bottom = maxOf(outer.calculateBottomPadding(), inner.calculateBottomPadding(), px(root?.bottom)),
+        )
+        Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) {
+            Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.padding(padding), content = content)
+        }
+    }
 }

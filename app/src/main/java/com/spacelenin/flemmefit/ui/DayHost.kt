@@ -181,6 +181,7 @@ fun rememberDayActions(
             color = if (session.isBoss) BossColor else color,
             onSave = { i, log, complete -> repository.saveLog(program.id, dayIndex, i, log, complete) },
             onWeights = { i, on -> repository.setWeights(program.id, dayIndex, i, on) },
+            onFeeling = { i, f -> repository.setExerciseFeeling(program.id, dayIndex, i, f) },
             onClose = { guidedDay = null },
         )
     }
