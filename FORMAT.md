@@ -96,6 +96,7 @@ Ce sont des **textes libres** (tu peux écrire `"12"`, `"8-10"`, `"max"`, `"10 p
 | `counter`     | texte  | non         | `"Pompes"` | Compteur caché où s'additionne ce qui est fait (reps ou temps). Les exercices qui portent le même nom sont regroupés. Les compteurs se dévoilent dans les Réglages quand l'un d'eux passe 1 000 reps ou 10 h. |
 | `optional`    | booléen | non (défaut `false`) | `true` | **Facultatif** (échauffement, étirements) : le passer ne compte pas contre la séance. Elle est finie quand tout le reste est fait. |
 | `sides`       | texte  | non         | `"Bras droit, puis bras gauche."` | Exercice d'**un côté à la fois** : quels membres travaillent. Affiché en évidence en séance et dans le détail. |
+| `perSide`     | texte  | non         | `"jambe"` | **Une série par côté**, en alternance 🔴 gauche / 🔵 droite : ce qui travaille (`"bras"`, `"jambe"`, `"côté"`). `sets` compte alors les séries **de chaque côté**. Repos court (20 s) entre les deux côtés d'une paire. Chaque côté se règle sur ses propres séries ; si l'écart dépasse 10 % sur 3 séances, le côté faible commence chaque paire, fait une série de plus et rattrape en environ 6 semaines ; au-delà de 20 %, le côté fort ne monte plus. |
 
 Affichage dans l'app : `sets × reps · load · repos rest`, par ex. **4 × 8-10 · 60 kg · repos 90s**.
 
@@ -236,6 +237,8 @@ Une famille regroupe des exercices de base et le test qui leur sert d'étalon :
 | `unit`           | `"reps"` (défaut) ou `"seconds"`. |
 | `from`           | Vraie version à partir de ce résultat au test ; en dessous, version facile (`easy`), comptée deux fois plus facile. |
 | `sides`          | Variante d'un côté à la fois : quels membres travaillent (« Les deux bras : bras droit, puis bras gauche »). |
+| `perSide`        | Une série par côté, en alternance (`"bras"`, `"jambe"`, `"côté"`) : voir `perSide` des exercices. Côté en retard de plus de 10 % : il commence et fait une série de plus. |
+| `requires`       | Proposée seulement si chaque test atteint son minimum : `{ "tractions": 10, "gainage": 60, "pompes": 20 }`. |
 
 - **Jours variante** : tirés au sort séance par séance, seulement les jours où un exercice de base est prévu, au plus
   un par séance, jamais en semaine de décharge, et dévoilés le jour même. Sur un cycle (`deloadEvery` semaines, 4 sinon),

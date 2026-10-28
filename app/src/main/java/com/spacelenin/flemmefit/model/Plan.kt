@@ -139,6 +139,10 @@ data class Variant(
     val easy: String? = null,
     /** Exercice d'un côté à la fois : quels membres travaillent. */
     val sides: String? = null,
+    /** Une série par côté, en alternance : « bras », « jambe » ou « côté » (voir [Exercise.perSide]). */
+    val perSide: String? = null,
+    /** Proposée seulement si chacun de ces tests (id → minimum) est atteint. */
+    val requires: Map<String, Int> = emptyMap(),
 ) {
     val isSeconds get() = unit == PlanTest.UNIT_SECONDS
 }
@@ -210,6 +214,11 @@ data class Exercise(
     val optional: Boolean = false,
     /** Exercice d'un côté à la fois : quels membres travaillent (« Bras droit, puis bras gauche »). */
     val sides: String? = null,
+    /**
+     * Une série par côté, en alternance gauche / droite : ce qui travaille, « bras », « jambe » ou « côté ».
+     * [sets] compte alors les séries de chaque côté, et chaque côté est suivi à part (voir [Balance]).
+     */
+    val perSide: String? = null,
 ) {
     /** Clé de regroupement : stable entre jours et entre programmes. */
     val key: String get() = (id ?: name).trim().lowercase()

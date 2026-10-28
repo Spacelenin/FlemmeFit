@@ -22,7 +22,7 @@ class VariantsTest {
 
     @Test
     fun `the routine describes its families and variants`() {
-        assertEquals(8, routine.variants.size)
+        assertEquals(9, routine.variants.size)
         val keys = routine.weeks.flatMap { w -> w.days.flatMap { d -> d.exercises.map { it.key } } }.toSet()
         routine.families.forEach { f -> f.exercises.forEach { assertTrue("${f.id} : $it", it in keys) } }
     }

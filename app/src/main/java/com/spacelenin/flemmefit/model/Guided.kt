@@ -12,16 +12,29 @@ class GuidedExercise(val prescription: Prescription, restBonus: Int = 0) {
 
     val restSeconds: Int? = TimerPlans.rest(prescription, restBonus)?.seconds
 
-    fun isAllOut(set: Int) = prescription.allOut && set == sets - 1
+    /** Une série par côté : le côté de chaque série. */
+    val sided: SidedPlan? = prescription.sided.takeIf { !prescription.isTest }
+
+    /** Côté de la série [set], null si l'exercice se fait des deux côtés à la fois. */
+    fun sideOf(set: Int): Side? = sided?.sideAt(set)
+
+    /** Ce qui est prévu pour la série [set] : chaque côté a le sien. */
+    fun plannedAt(set: Int): Int? = if (sided != null && planned != null) sided.plannedAt(set) else planned
+
+    /** À fond : la dernière série, ou la dernière de chaque côté. */
+    fun isAllOut(set: Int) = prescription.allOut && if (sided != null) sided.isLastOf(set) else set == sets - 1
+
+    /** Repos après la série [set] : court entre les deux côtés d'une paire, normal sinon. */
+    fun restAfter(set: Int): Int? = if (sided?.switchesAfter(set) == true) minOf(Sides.SWITCH_REST, restSeconds ?: Sides.SWITCH_REST) else restSeconds
 
     /** La série demande un chiffre (reps faites, temps tenu, max). Sinon un simple « Série faite ». */
     fun needsValue(set: Int) = planned != null || isAllOut(set)
 
     /** Valeur proposée pour une série : le prévu, ou l'objectif pour une série à fond. */
-    fun suggested(set: Int): Int = (if (isAllOut(set)) prescription.target ?: planned else planned) ?: 0
+    fun suggested(set: Int): Int = (if (isAllOut(set)) prescription.target ?: plannedAt(set) else plannedAt(set)) ?: 0
 
     /** Série au temps à rebours (la série à fond, elle, est chronométrée jusqu'à « Stop »). */
-    fun countdown(set: Int): Int? = if (inSeconds && !isAllOut(set)) planned else null
+    fun countdown(set: Int): Int? = if (inSeconds && !isAllOut(set)) plannedAt(set) else null
 
     /**
      * Série à rebours qui continue après 0 (« + 0:12 ») jusqu'à « Stop » : le temps en plus compte pour le réglage
@@ -51,7 +64,7 @@ class GuidedExercise(val prescription: Prescription, restBonus: Int = 0) {
                 ExerciseLog(max = v.takeIf { it > 0 }) to (v > 0)
             }
             planned == null -> ExerciseLog(max = padded.last().takeIf { prescription.allOut && it > 0 }) to true
-            else -> ExerciseLog.ofSets(padded, prescription.allOut).let { it to prescription.isMetBy(it) }
+            else -> ExerciseLog.ofSets(padded, prescription.allOut, sided?.order).let { it to prescription.isMetBy(it) }
         }
     }
 }

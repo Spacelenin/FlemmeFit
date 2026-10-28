@@ -23,15 +23,31 @@ data class ExerciseLog(
     val max: Int? = null,
     /** Détail série par série (répétitions, ou secondes pour un exercice en durée) ; 0 = série pas faite. */
     val perSet: List<Int>? = null,
+    /** Exercice fait une série par côté : le côté de chaque série de [perSet] (« LRLR »). */
+    val sides: String? = null,
 ) {
     val isEmpty get() = sets == null && reps == null && seconds == null && max == null && perSet == null
 
+    /** Séries d'un côté, dans l'ordre ; toutes si la saisie ne dit pas les côtés (ancienne saisie). */
+    fun valuesOf(side: Side): List<Int>? {
+        val values = perSet ?: return null
+        val order = sides ?: return values
+        return values.filterIndexed { i, _ -> order.getOrNull(i)?.let(Side::of) == side }
+    }
+
     companion object {
-        /** Saisie série par série : les séries faites, et la dernière comme max si elle était à fond. */
-        fun ofSets(values: List<Int>, allOut: Boolean) = ExerciseLog(
+        /**
+         * Saisie série par série : les séries faites, et la dernière comme max si elle était à fond.
+         * Une série par côté ([order]) : le max est la moyenne des dernières séries de chaque côté.
+         */
+        fun ofSets(values: List<Int>, allOut: Boolean, order: List<Side>? = null) = ExerciseLog(
             sets = values.count { it > 0 },
-            max = values.lastOrNull()?.takeIf { allOut && it > 0 },
+            max = if (!allOut) null else if (order == null) values.lastOrNull()?.takeIf { it > 0 } else {
+                Side.entries.mapNotNull { s -> order.lastIndexOf(s).takeIf { it >= 0 }?.let(values::getOrNull)?.takeIf { it > 0 } }
+                    .takeIf { it.isNotEmpty() }?.let { Math.round(it.average()).toInt() }
+            },
             perSet = values,
+            sides = order?.take(values.size)?.joinToString("") { it.code.toString() },
         )
     }
 }

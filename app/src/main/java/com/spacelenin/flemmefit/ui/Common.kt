@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.spacelenin.flemmefit.model.SideBalance
 import com.spacelenin.flemmefit.model.Stats
 import com.spacelenin.flemmefit.model.TestProgress
 import com.spacelenin.flemmefit.model.VariantProgress
@@ -53,6 +54,7 @@ fun StatsPanes(
     modifier: Modifier = Modifier,
     tests: List<TestProgress> = emptyList(),
     variants: List<VariantProgress> = emptyList(),
+    balances: List<SideBalance> = emptyList(),
     /** Éléments en tête de la vue d'ensemble. */
     header: LazyListScope.() -> Unit = {},
 ) {
@@ -63,6 +65,7 @@ fun StatsPanes(
                     header()
                     statsTestItems(tests, color)
                     statsVariantItems(variants, color)
+                    statsBalanceItems(balances, color)
                     statsOverviewItems(stats, color, showProgram)
                 }
                 VerticalDivider()
@@ -73,6 +76,7 @@ fun StatsPanes(
                 header()
                 statsTestItems(tests, color)
                 statsVariantItems(variants, color)
+                statsBalanceItems(balances, color)
                 statsOverviewItems(stats, color, showProgram)
                 statsExerciseItems(stats, color)
             }
