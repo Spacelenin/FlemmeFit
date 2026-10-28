@@ -50,6 +50,7 @@ import com.spacelenin.flemmefit.model.ExerciseLog
 import com.spacelenin.flemmefit.model.Measures
 import com.spacelenin.flemmefit.model.Plan
 import com.spacelenin.flemmefit.model.Prescription
+import com.spacelenin.flemmefit.model.Side
 import com.spacelenin.flemmefit.model.TimerPlans
 
 /** Valeur d'une série, en reps ou en durée. */
@@ -138,6 +139,15 @@ fun ExerciseDetailSheet(
             }
             exercise.sides?.let {
                 Text("↔ $it", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+            }
+            prescription.sided?.let { s ->
+                Text(
+                    "↔ Une série par côté, en alternance : ${sideMark(s.order.first())} ${s.label(s.order.first()).lowercase()} " +
+                        "puis ${sideMark(s.order.first().other)} ${s.label(s.order.first().other).lowercase()}." +
+                        (s.weak?.let { " ${s.label(it)} en rattrapage : il commence et fait une série de plus." } ?: ""),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
             }
             if (exercise.optional) {
                 Text("Facultatif : le passer ne compte pas contre la séance.", style = MaterialTheme.typography.bodyMedium)
@@ -228,12 +238,15 @@ fun SetsLogSheet(
 ) {
     val planned = prescription.perSetPlanned ?: 0
     val count = prescription.sets ?: 1
+    val sided = prescription.sided
+    // Une série par côté : chaque côté a son prévu.
+    fun plannedAt(i: Int) = sided?.plannedAt(i) ?: planned
     val step = if (prescription.maxIsSeconds) 5 else 1
     var values by rememberSaveable {
         mutableStateOf(
             existing?.perSet?.takeIf { it.size == count }
                 ?: List(count) { i ->
-                    val per = (if (prescription.maxIsSeconds) existing?.seconds else existing?.reps) ?: planned
+                    val per = (if (prescription.maxIsSeconds) existing?.seconds else existing?.reps) ?: plannedAt(i)
                     val doneSets = existing?.sets ?: count
                     when {
                         i >= doneSets -> 0
@@ -243,8 +256,8 @@ fun SetsLogSheet(
                 },
         )
     }
-    var selected by rememberSaveable { mutableStateOf(values.indexOfFirst { it < planned }.takeIf { it >= 0 } ?: (count - 1)) }
-    val log = ExerciseLog.ofSets(values, prescription.allOut)
+    var selected by rememberSaveable { mutableStateOf(values.indices.firstOrNull { values[it] < plannedAt(it) } ?: (count - 1)) }
+    val log = ExerciseLog.ofSets(values, prescription.allOut, sided?.order)
     val complete = prescription.isMetBy(log)
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
@@ -264,7 +277,8 @@ fun SetsLogSheet(
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 values.forEachIndexed { i, v ->
                     val isSel = i == selected
-                    val short = v in 1 until planned
+                    val short = v in 1 until plannedAt(i)
+                    val side = sided?.sideAt(i)
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
@@ -282,7 +296,12 @@ fun SetsLogSheet(
                             fontWeight = FontWeight.ExtraBold,
                             color = if (short) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                         )
-                        Text("S${i + 1}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            side?.let { (if (it == Side.LEFT) "G" else "D") + "${sided!!.order.take(i + 1).count { s -> s == it }}" } ?: "S${i + 1}",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = if (side != null) FontWeight.Bold else FontWeight.Normal,
+                            color = side?.let(::sideColor) ?: MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }
@@ -297,7 +316,8 @@ fun SetsLogSheet(
                     val v = values[selected]
                     Text(if (v == 0) "–" else prescription.setLabel(v), style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.ExtraBold)
                     Text(
-                        "série ${selected + 1}" + if (prescription.allOut && selected == count - 1) " · à fond" else "",
+                        (sided?.sideAt(selected)?.let { sided!!.label(it).lowercase() + " · " } ?: "") + "série ${selected + 1}" +
+                            if (prescription.allOut && (sided?.isLastOf(selected) ?: (selected == count - 1))) " · à fond" else "",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -308,7 +328,7 @@ fun SetsLogSheet(
             }
             val total = values.sum()
             val totalLabel = if (prescription.maxIsSeconds) Measures.formatSeconds(total) else "$total reps"
-            val plannedTotal = planned * count
+            val plannedTotal = (0 until count).sumOf { plannedAt(it) }
             val plannedLabel = if (prescription.maxIsSeconds) Measures.formatSeconds(plannedTotal) else "$plannedTotal"
             Box(
                 Modifier

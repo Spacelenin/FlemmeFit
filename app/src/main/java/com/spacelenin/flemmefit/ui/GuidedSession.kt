@@ -151,8 +151,9 @@ fun GuidedSession(
         if (set < g.sets - 1) {
             // Série enregistrée tout de suite (l'exercice reste incomplet tant que tout n'est pas fait).
             savePartial()
+            val rest = g.restAfter(set)
             set++
-            startRest(g.restSeconds)
+            startRest(rest)
         } else {
             val (log, complete) = g.result(values)
             exerciseIndex?.let { onSave(it, log, complete) }
@@ -255,6 +256,15 @@ fun GuidedSession(
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
                     )
+                    // Une série par côté : le côté qui vient, en couleur.
+                    guided.sideOf(set)?.let { side ->
+                        Text(
+                            "${sideMark(side)} ${guided.sided!!.label(side)}",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = sideColor(side),
+                        )
+                    }
                     feelingFor?.takeIf { set == 0 && it == queue.getOrNull(pos - 1) }?.let { i ->
                         Spacer(Modifier.height(20.dp))
                         ExerciseFeeling(session, schedule, i, onFeeling)
@@ -358,6 +368,16 @@ private fun SetContent(
             style = MaterialTheme.typography.titleMedium,
             color = color,
         )
+        // Une série par côté : le côté de cette série, en gros et en couleur.
+        guided.sideOf(set)?.let { side ->
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "${sideMark(side)} ${guided.sided!!.label(side)}",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.ExtraBold,
+                color = sideColor(side),
+            )
+        }
         // Un côté à la fois : quels membres travaillent, à ne pas rater.
         p.exercise.sides?.let {
             Spacer(Modifier.height(8.dp))

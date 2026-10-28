@@ -50,8 +50,10 @@ import com.spacelenin.flemmefit.model.CustomExercise
 import com.spacelenin.flemmefit.model.ExerciseAdaptation
 import com.spacelenin.flemmefit.model.Plan
 import com.spacelenin.flemmefit.model.ProgramSchedule
+import com.spacelenin.flemmefit.model.SideBalance
 import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.model.VariantProgress
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 /**
@@ -67,6 +69,7 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
     val schedule = remember(program, today) { program?.let { ProgramSchedule(it, today) } }
     val progress = remember(schedule) { schedule?.variantProgress().orEmpty() }
     val adapted = remember(schedule) { schedule?.adaptations().orEmpty().filter { it.samples > 0 } }
+    val balances = remember(schedule) { schedule?.balances().orEmpty() }
     var adding by rememberSaveable { mutableStateOf(false) }
     var deleting by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -113,7 +116,7 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
                             modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     }
-                    items(adapted, key = { "adapt-${it.name}" }) { a -> AdaptationRow(a) }
+                    items(adapted, key = { "adapt-${it.name}" }) { a -> AdaptationRow(a, balances.firstOrNull { it.name == a.name }) }
                 }
                 item(key = "mine-title") { SectionTitle("Mes exos ⭐") }
                 if (mine.isEmpty()) {
@@ -190,7 +193,7 @@ private fun VariantProgress.status(): String = listOfNotNull(
 ).joinToString(" · ")
 
 @Composable
-private fun AdaptationRow(a: ExerciseAdaptation) {
+private fun AdaptationRow(a: ExerciseAdaptation, balance: SideBalance?) {
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(a.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
@@ -202,6 +205,15 @@ private fun AdaptationRow(a: ExerciseAdaptation) {
             )
         }
         Text(a.detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        // Une série par côté : l'écart gauche / droite et le rattrapage en cours.
+        balance?.let { b ->
+            Text(
+                "↔ " + b.status { it.format(DateTimeFormatter.ofPattern("d/MM")) },
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.SemiBold,
+                color = b.weak?.let(::sideColor) ?: MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 

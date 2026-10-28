@@ -1,7 +1,7 @@
 {
   "format": "flemmefit",
   "version": 1,
-  "revision": 12,
+  "revision": 13,
   "name": "Routine maison",
   "description": "5 séances par semaine (jours 4 et 7 : repos, ou rien selon la fatigue). Paliers inspirés de 100pompes, 50tractions, musclesabdominaux et musclesdesjambes : un test de départ choisit ton palier, la dernière série va souvent au max, et la 4e semaine allège tout de moitié et refait les tests pour passer au palier suivant. Échauffement et étirements d'après echauffez-vous et etirez-vous.",
   "repeat": "forever",
@@ -127,9 +127,9 @@
       "family": "pompes",
       "ratio": 5,
       "from": 40,
-      "description": "Pieds bien écartés, main sous l'épaule, l'autre dans le dos. Le buste reste face au sol sans tourner. Les reps sont par bras.",
+      "description": "Pieds bien écartés, main sous l'épaule, l'autre dans le dos. Le buste reste face au sol sans tourner.",
       "easy": "en inclinaison, la main qui travaille posée sur une table, puis une chaise, puis une marche à mesure que ça devient facile ; l'autre main dans le dos.",
-      "sides": "Les deux bras : toutes les reps bras droit, puis toutes bras gauche. Le nombre est par bras."
+      "perSide": "bras"
     },
     {
       "id": "squat-une-jambe",
@@ -137,9 +137,9 @@
       "family": "jambes",
       "ratio": 4,
       "from": 30,
-      "description": "Sur une jambe, l'autre tendue devant toi, descends le bassin dans l'axe le plus bas possible en contrôlant, genou dans l'axe du pied (il ne rentre pas vers l'intérieur), talon au sol, puis remonte. Les reps sont par jambe.",
+      "description": "Sur une jambe, l'autre tendue devant toi, descends le bassin dans l'axe le plus bas possible en contrôlant, genou dans l'axe du pied (il ne rentre pas vers l'intérieur), talon au sol, puis remonte.",
       "easy": "tiens-toi à une porte ou une table, et descends jusqu'à t'asseoir sur une chaise.",
-      "sides": "Les deux jambes : toutes les reps jambe droite, puis toutes jambe gauche. Le nombre est par jambe."
+      "perSide": "jambe"
     },
     {
       "id": "cossack-squat",
@@ -177,6 +177,19 @@
       "unit": "seconds",
       "description": "En position de pompe, descends à mi-chemin et tiens là, coudes le long du corps, corps droit.",
       "easy": "sur les genoux."
+    },
+    {
+      "id": "perche",
+      "name": "Perche (équilibre sur les mains)",
+      "family": "tractions",
+      "unit": "seconds",
+      "ratio": 0.2,
+      "requires": {
+        "tractions": 10,
+        "gainage": 60,
+        "pompes": 20
+      },
+      "description": "Équilibre sur les mains, contre un mur au début. Mains au sol à une main du mur, écartées largeur d'épaules, monte les jambes contre le mur : bras tendus, corps gainé, regard entre les mains. Pour commencer : dos au mur, marche avec les pieds sur le mur, ventre face à lui, et deviens de plus en plus vertical au fil des séances. Redescends doucement, une jambe après l'autre."
     }
   ],
   "weeks": [
@@ -393,7 +406,7 @@
             {
               "name": "Obliques en planche latérale (hip dips)",
               "id": "obliques",
-              "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : fais tout un côté, puis l'autre.",
+              "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : une série à gauche, une à droite, en alternance.",
               "rest": "45s",
               "test": "abdos",
               "levels": [
@@ -434,7 +447,7 @@
                 "reps": 1
               },
               "counter": "Abdos",
-              "sides": "Un côté puis l'autre : toutes les reps côté droit, puis toutes côté gauche."
+              "perSide": "côté"
             },
             {
               "name": "Gainage (planche)",
@@ -850,6 +863,19 @@
                 "reps": 1
               },
               "counter": "Squats"
+            },
+            {
+              "name": "Battements latéraux à la table",
+              "id": "battements-lateraux",
+              "description": "Mains sur une table, dos légèrement cambré, buste et regard vers la table. Lève une jambe tendue sur le côté, comme pour un grand écart, le plus haut possible. Redescends-la à peine puis remonte au max (ou un peu au-dessus) : une rep = un rebond. Le bassin reste face à la table. Ça brûle vite, c'est normal. Trop dur ? Lève moins haut.",
+              "sets": 3,
+              "reps": "5",
+              "rest": "45s",
+              "perSide": "jambe",
+              "progression": {
+                "every": 1,
+                "reps": 1
+              }
             },
             {
               "name": "Étirements",
@@ -1075,7 +1101,7 @@
             {
               "name": "Obliques en planche latérale (hip dips)",
               "id": "obliques",
-              "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : fais tout un côté, puis l'autre.",
+              "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : une série à gauche, une à droite, en alternance.",
               "rest": "45s",
               "test": "abdos",
               "levels": [
@@ -1116,7 +1142,7 @@
                 "reps": 1
               },
               "counter": "Abdos",
-              "sides": "Un côté puis l'autre : toutes les reps côté droit, puis toutes côté gauche."
+              "perSide": "côté"
             },
             {
               "name": "Gainage (planche)",
@@ -1532,6 +1558,19 @@
                 "reps": 1
               },
               "counter": "Squats"
+            },
+            {
+              "name": "Coups de pied latéraux à la table",
+              "id": "coups-pied-lateraux",
+              "description": "Mains sur une table, dos légèrement cambré, buste et regard vers la table. Lève une jambe sur le côté et garde-la en l'air : plie le genou, puis déplie-le d'un coup, comme un coup de pied sur le côté. Une rep = un coup, la jambe ne redescend pas entre les coups. Trop dur ? Garde la jambe moins haut.",
+              "sets": 3,
+              "reps": "5",
+              "rest": "45s",
+              "perSide": "jambe",
+              "progression": {
+                "every": 1,
+                "reps": 1
+              }
             },
             {
               "name": "Étirements",
@@ -1757,7 +1796,7 @@
             {
               "name": "Obliques en planche latérale (hip dips)",
               "id": "obliques",
-              "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : fais tout un côté, puis l'autre.",
+              "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : une série à gauche, une à droite, en alternance.",
               "rest": "45s",
               "test": "abdos",
               "levels": [
@@ -1798,7 +1837,7 @@
                 "reps": 1
               },
               "counter": "Abdos",
-              "sides": "Un côté puis l'autre : toutes les reps côté droit, puis toutes côté gauche."
+              "perSide": "côté"
             },
             {
               "name": "Gainage (planche)",
@@ -2214,6 +2253,19 @@
                 "reps": 1
               },
               "counter": "Squats"
+            },
+            {
+              "name": "Battements latéraux à la table",
+              "id": "battements-lateraux",
+              "description": "Mains sur une table, dos légèrement cambré, buste et regard vers la table. Lève une jambe tendue sur le côté, comme pour un grand écart, le plus haut possible. Redescends-la à peine puis remonte au max (ou un peu au-dessus) : une rep = un rebond. Le bassin reste face à la table. Ça brûle vite, c'est normal. Trop dur ? Lève moins haut.",
+              "sets": 3,
+              "reps": "5",
+              "rest": "45s",
+              "perSide": "jambe",
+              "progression": {
+                "every": 1,
+                "reps": 1
+              }
             },
             {
               "name": "Étirements",
@@ -2463,7 +2515,7 @@
             {
               "name": "Obliques en planche latérale (hip dips)",
               "id": "obliques",
-              "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : fais tout un côté, puis l'autre.",
+              "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : une série à gauche, une à droite, en alternance.",
               "rest": "45s",
               "test": "abdos",
               "levels": [
@@ -2504,7 +2556,7 @@
                 "reps": 1
               },
               "counter": "Abdos",
-              "sides": "Un côté puis l'autre : toutes les reps côté droit, puis toutes côté gauche."
+              "perSide": "côté"
             },
             {
               "name": "Gainage (planche)",
@@ -2936,6 +2988,19 @@
                 "reps": 1
               },
               "counter": "Squats"
+            },
+            {
+              "name": "Coups de pied latéraux à la table",
+              "id": "coups-pied-lateraux",
+              "description": "Mains sur une table, dos légèrement cambré, buste et regard vers la table. Lève une jambe sur le côté et garde-la en l'air : plie le genou, puis déplie-le d'un coup, comme un coup de pied sur le côté. Une rep = un coup, la jambe ne redescend pas entre les coups. Trop dur ? Garde la jambe moins haut.",
+              "sets": 3,
+              "reps": "5",
+              "rest": "45s",
+              "perSide": "jambe",
+              "progression": {
+                "every": 1,
+                "reps": 1
+              }
             },
             {
               "name": "Étirements",

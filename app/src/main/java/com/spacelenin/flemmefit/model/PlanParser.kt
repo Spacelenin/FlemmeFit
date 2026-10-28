@@ -114,6 +114,8 @@ object PlanParser {
             if (variant.name.isBlank()) add("$at.name ne doit pas être vide.")
             if (variant.family !in familyIds) add("$at.family : aucune famille \"${variant.family}\" dans \"families\".")
             if (variant.ratio != null && variant.ratio <= 0.0) add("$at.ratio doit être positif (reçu ${variant.ratio}).")
+            variant.requires.keys.filter { id -> plan.tests.none { it.id == id } }.forEach { add("$at.requires : aucun test \"$it\" dans \"tests\".") }
+            if (variant.perSide != null && variant.perSide.isBlank()) add("$at.perSide ne doit pas être vide.")
             if (variant.unit != PlanTest.UNIT_REPS && variant.unit != PlanTest.UNIT_SECONDS) {
                 add("$at.unit doit valoir \"reps\" ou \"seconds\" (reçu \"${variant.unit}\").")
             }

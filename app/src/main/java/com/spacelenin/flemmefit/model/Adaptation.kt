@@ -69,8 +69,10 @@ object Adaptation {
         step: Double?,
         exerciseFeeling: Int?,
         sessionFeeling: Int?,
+        /** Exercice fait une série par côté : ce que la séance dit de ce côté-là. */
+        side: Side? = null,
     ): Double? {
-        val numeric = numeric(prescription, log, done, final, step)
+        val numeric = numeric(prescription, log, done, final, step, side)
         val touched = done || numeric != null || exerciseFeeling != null
         if (!touched) return null
         val feeling = when (exerciseFeeling) {
@@ -86,17 +88,18 @@ object Adaptation {
         return ((numeric ?: 0.0) + feeling).coerceIn(-MAX_SIGNAL, MAX_SIGNAL)
     }
 
-    private fun numeric(p: Prescription, log: ExerciseLog?, done: Boolean, final: Boolean, step: Double?): Double? {
-        val planned = p.perSetPlanned
+    private fun numeric(p: Prescription, log: ExerciseLog?, done: Boolean, final: Boolean, step: Double?, side: Side?): Double? {
+        val sided = p.sided.takeIf { side != null }
+        val planned = if (sided != null) sided.valueOf(side!!) else p.perSetPlanned
         if (planned == null || step == null || step <= 0 || log == null || log.isEmpty) return if (done) 0.0 else null
-        val sets = (p.sets ?: 1).coerceAtLeast(1)
-        val values = log.perSet?.takeIf { it.isNotEmpty() } ?: run {
+        val sets = (if (sided != null) sided.setsOf(side!!) else p.sets ?: 1).coerceAtLeast(1)
+        val values = (if (side != null) log.valuesOf(side) else log.perSet)?.takeIf { it.isNotEmpty() } ?: run {
             val per = if (p.maxIsSeconds) log.seconds else log.reps
             if (per != null) List(log.sets ?: sets) { per } else emptyList()
         }
         val allOut = p.allOut && values.size == sets
         val normal = if (allOut) values.dropLast(1) else values
-        val max = (if (allOut) values.last().takeIf { it > 0 } else null) ?: log.max
+        val max = (if (allOut) values.last().takeIf { it > 0 } else null) ?: log.max.takeIf { side == null || log.sides == null }
         val normalCount = if (p.allOut) sets - 1 else sets
         val doneNormal = normal.filter { it > 0 }
         // Séries manquantes d'une séance finie : comptées à 0 (c'était trop).

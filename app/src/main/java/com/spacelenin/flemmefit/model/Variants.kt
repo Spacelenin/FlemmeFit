@@ -192,8 +192,15 @@ object Variants {
         return previous?.let { (it + measured) / 2 } ?: measured
     }
 
-    /** Le bloc variante : 3 séries à [VARIANT_SHARE] du max estimé, la dernière au max ; une seule série au max sans repère. */
-    fun block(v: Variant, family: PlanFamily, base: Exercise, test: Int?, ratio: Double?, startRatio: Double?, custom: Boolean, testSeconds: Boolean): Prescription {
+    /**
+     * Le bloc variante : 3 séries à [VARIANT_SHARE] du max estimé, la dernière au max ; une seule série au max sans repère.
+     * Variante d'un côté à la fois ([Variant.perSide]) : autant de chaque côté, en alternance ; le côté [weak] (en retard)
+     * commence et a une série de plus.
+     */
+    fun block(
+        v: Variant, family: PlanFamily, base: Exercise, test: Int?, ratio: Double?, startRatio: Double?, custom: Boolean, testSeconds: Boolean,
+        weak: Side? = null,
+    ): Prescription {
         val full = v.from == null || (test ?: 0) >= v.from
         val r = ratio?.let { if (full) it else it * VARIANT_EASY_FACTOR }
         val estimate = if (r != null && r > 0 && test != null && test > 0) test / r else null
@@ -214,11 +221,20 @@ object Variants {
             duration = per?.takeIf { v.isSeconds }?.let(Measures::formatSeconds),
             rest = base.rest,
             amrap = true,
-            sides = v.sides,
+            sides = v.sides.takeIf { v.perSide == null },
+            perSide = v.perSide,
         )
+        val sided = v.perSide?.let { limb ->
+            val n = exercise.sets ?: 1
+            val extra = if (per != null) weak else null
+            SidedPlan(
+                limb, Sides.order(n + if (extra == Side.LEFT) 1 else 0, n + if (extra == Side.RIGHT) 1 else 0, extra ?: Side.LEFT),
+                per, per, if (extra != null) BalanceMode.CATCH_UP else BalanceMode.EVEN, extra,
+            )
+        }
         return Prescription(
             exercise,
-            sets = exercise.sets,
+            sets = sided?.order?.size ?: exercise.sets,
             reps = per?.takeIf { !v.isSeconds },
             seconds = per?.takeIf { v.isSeconds },
             load = null,
@@ -230,6 +246,7 @@ object Variants {
                 full = full, isSeconds = v.isSeconds, testSeconds = testSeconds, counter = family.counter, custom = custom,
                 whole = family.replace,
             ),
+            sided = sided,
         )
     }
 }

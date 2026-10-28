@@ -27,6 +27,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.spacelenin.flemmefit.model.Side
+import com.spacelenin.flemmefit.model.SideBalance
+import com.spacelenin.flemmefit.model.Sides
 import com.spacelenin.flemmefit.model.TestPoint
 import com.spacelenin.flemmefit.model.TestProgress
 import com.spacelenin.flemmefit.model.VariantProgress
@@ -152,6 +155,50 @@ private fun VariantCard(v: VariantProgress, color: Color) {
                     fontWeight = FontWeight.SemiBold,
                 )
             }
+        }
+    }
+}
+
+/** Exercices faits une série par côté : l'écart entre gauche et droite, séance après séance. */
+fun LazyListScope.statsBalanceItems(balances: List<SideBalance>, color: Color) {
+    if (balances.isEmpty()) return
+    item(key = "balance-title") {
+        Text(
+            "Gauche / droite ↔",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.ExtraBold,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 6.dp),
+        )
+    }
+    itemsIndexed(balances, key = { i, b -> "balance-$i-${b.name}" }) { _, b -> BalanceCard(b, color) }
+}
+
+@Composable
+private fun BalanceCard(b: SideBalance, color: Color) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row {
+                Column(Modifier.weight(1f)) {
+                    Text(b.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(b.status { it.format(TestDay) }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Text("${b.gapPercent} %", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold, color = color)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Side.entries.forEach { side ->
+                    Text(
+                        "${sideMark(side)} ${Sides.label(b.limb, side)} : ${b.format(if (side == Side.LEFT) b.left else b.right)}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = sideColor(side),
+                    )
+                }
+            }
+            if (b.points.size > 1) TestCurve(b.points, { "$it %" }, color)
         }
     }
 }

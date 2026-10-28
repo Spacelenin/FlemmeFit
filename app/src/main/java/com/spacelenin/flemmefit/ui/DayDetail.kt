@@ -60,6 +60,7 @@ import com.spacelenin.flemmefit.model.Measures
 import com.spacelenin.flemmefit.model.Prescription
 import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.Session
+import com.spacelenin.flemmefit.model.Side
 import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.model.TimerPlans
 import java.time.LocalDate
@@ -68,6 +69,13 @@ import java.time.LocalDate
 val BossColor = Color(0xFFE05252)
 val DeloadColor = Color(0xFF8FE0A5)
 val BurstColor = Color(0xFFFFC94D)
+/** Côtés du corps, comme les sabres de Beat Saber : gauche rouge, droite bleue. */
+val LeftColor = Color(0xFFE53935)
+val RightColor = Color(0xFF2F80FF)
+
+fun sideColor(side: Side): Color = if (side == Side.LEFT) LeftColor else RightColor
+
+fun sideMark(side: Side): String = if (side == Side.LEFT) "🔴" else "🔵"
 
 class DayActions(
     val onToggle: (session: Session, exerciseIndex: Int) -> Unit,
@@ -330,7 +338,10 @@ private fun Banner(title: String, text: String, color: Color) {
 }
 
 private fun ExerciseLog.doneLabel(p: Prescription): String {
-    perSet?.let { values -> return values.joinToString(" · ") { if (it == 0) "–" else if (p.maxIsSeconds) Measures.formatSeconds(it) else "$it" } }
+    fun format(values: List<Int>) = values.joinToString(" · ") { if (it == 0) "–" else if (p.maxIsSeconds) Measures.formatSeconds(it) else "$it" }
+    // Une série par côté : chaque côté à part.
+    if (sides != null) return Side.entries.mapNotNull { s -> valuesOf(s)?.takeIf { it.isNotEmpty() }?.let { "${sideMark(s)} ${format(it)}" } }.joinToString("   ")
+    perSet?.let { values -> return format(values) }
     val sets = sets ?: p.sets
     val per = reps?.toString() ?: seconds?.let(Measures::formatSeconds)
     return when {

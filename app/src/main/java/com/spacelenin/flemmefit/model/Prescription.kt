@@ -33,6 +33,8 @@ data class Prescription(
     val variant: VariantInfo? = null,
     /** Exercice de base un jour variante : la variante qui prend la place de sa série max. */
     val replacedBy: String? = null,
+    /** Une série par côté, en alternance : ce qui est demandé de chaque côté ([sets] compte toutes les séries). */
+    val sided: SidedPlan? = null,
 ) {
     val key get() = exercise.key
     val repsLabel: String? get() = reps?.toString() ?: exercise.reps
@@ -55,9 +57,10 @@ data class Prescription(
     fun restLabel(bonusPercent: Int = 0): String? =
         if (bonusPercent <= 0) exercise.rest else restSeconds(bonusPercent)?.let(Measures::formatSeconds) ?: exercise.rest
 
-    /** « 3 × 12 · 8 kg · repos 60s » */
+    /** « 3 × 12 · 8 kg · repos 60s » ; une série par côté : « 3 × 8 par bras », ou chaque côté s'ils diffèrent. */
     fun summary(restBonus: Int = 0): String = listOfNotNull(
         when {
+            sided != null -> sidedLabel(sided)
             sets != null && repsLabel != null -> "$sets × $repsLabel"
             sets != null && durationLabel != null -> "$sets × $durationLabel"
             sets != null -> "$sets séries"
@@ -70,9 +73,17 @@ data class Prescription(
         if (weighted == true) "avec poids" else null,
     ).joinToString(" · ")
 
+    private fun sidedLabel(s: SidedPlan): String {
+        fun value(v: Int?) = v?.let { if (maxIsSeconds) Measures.formatSeconds(it) else "$it" } ?: "?"
+        val l = "${s.setsOf(Side.LEFT)} × ${value(s.left)}"
+        val r = "${s.setsOf(Side.RIGHT)} × ${value(s.right)}"
+        return if (l == r) "$l ${Sides.per(s.limb)}" else "${s.label(Side.LEFT)} $l · ${s.label(Side.RIGHT)} $r"
+    }
+
     /** Une saisie atteint-elle le prévu ? Ce qui n'est pas chiffré ne bloque pas. */
     fun isMetBy(log: ExerciseLog): Boolean {
         val perSet = log.perSet
+        if (sided != null && perSet != null) return sided.order.indices.all { i -> (perSet.getOrNull(i) ?: 0) >= (sided.plannedAt(i) ?: 0) && (perSet.getOrNull(i) ?: 0) > 0 }
         val planned = if (maxIsSeconds) seconds else reps
         if (perSet != null && planned != null) return perSet.count { it >= planned } >= (sets ?: 1)
         return (sets == null || (log.sets ?: sets) >= sets) &&

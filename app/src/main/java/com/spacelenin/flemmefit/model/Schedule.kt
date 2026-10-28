@@ -162,6 +162,15 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     // Dernière prescription de chaque exercice hors semaine allégée : de quoi montrer l'écart avec la courbe de base.
     private val adaptViews = LinkedHashMap<String, AdaptBase>()
     private val ceilings = HashMap<Pair<Exercise, Boolean>, Int?>()
+    // Exercices faits une série par côté : le réglage de chaque côté, ce que chaque côté fait vraiment (lissé),
+    // le suivi de l'équilibre, et son historique.
+    private val sideAdapt = HashMap<Pair<String, Side>, AdaptState>()
+    private val sideCapacity = HashMap<Pair<String, Side>, Double>()
+    private val balance = HashMap<String, BalanceState>()
+    private val balanceViews = LinkedHashMap<String, SideBalance>()
+    private val balancePoints = HashMap<String, MutableList<TestPoint>>()
+    // Variantes faites une série par côté : la dernière série de chaque côté.
+    private val variantSides = HashMap<String, Pair<Int, Int>>()
     private val lastMax = HashMap<String, Int>()
     private val testResults = HashMap(program.tests)
     // Max refaits en changeant d'exercice de test : appliqués à la première séance qui suit.
@@ -236,6 +245,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             val (v, custom) = pick
             if (custom != null && !custom.activeOn(date)) return@mapNotNull null
             if (baseIndex(day, v) == null) return@mapNotNull null
+            if (v.requires.any { (test, min) -> (testResults[test] ?: 0) < min }) return@mapNotNull null
             val family = plan.family(v.family)!!
             if (family.replace) {
                 val slots = slotsLeft(i, end) { baseIndex(it, v) != null }
@@ -349,6 +359,11 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 }
                 val applied = Adaptation.guard(target, total, test) - baseLevel
                 if (applied != state.applied) adapt[ex.key] = state.copy(value = applied.toDouble(), applied = applied)
+                // Une série par côté : chaque côté bouge d'autant.
+                val delta = applied - state.applied
+                Side.entries.forEach { side ->
+                    sideAdapt[ex.key to side]?.let { sideAdapt[ex.key to side] = it.copy(value = it.value + delta, applied = it.applied + delta) }
+                }
             }
             ex.test?.let { testSeen[ex.key] = testCount[it] ?: 0 }
             val steps = steps()
@@ -362,10 +377,33 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             val base = palier?.let { named(ex.atLevel(it), date) } ?: ex
             if (!deload && !chill && p != null) adaptViews[ex.key] = AdaptBase(base, steps, applied, weighted)
             val level = (steps + applied).coerceAtLeast(0) + extra
-            return Prescription.of(
-                base, level, deload || chill, boss = boss, lastMax = lastMax[ex.key], palier = palier, burst = burst,
+            fun at(l: Int) = Prescription.of(
+                base, l, deload || chill, boss = boss, lastMax = lastMax[ex.key], palier = palier, burst = burst,
                 weighted = weighted,
             )
+            val limb = ex.perSide ?: return at(level)
+            // Une série par côté : chaque côté à son niveau, le faible en premier avec une série de plus s'il rattrape.
+            val state = balance[ex.key]?.takeIf { !deload && !chill } ?: BalanceState()
+            val weak = state.weak.takeIf { state.mode != BalanceMode.EVEN }
+            fun own(side: Side) = (steps + (sideAdapt[ex.key to side]?.applied ?: applied)).coerceAtLeast(0)
+            fun sideLevel(side: Side): Int {
+                // Équilibré : les deux côtés font pareil, au niveau moyen.
+                if (weak == null) return Math.round((own(Side.LEFT) + own(Side.RIGHT)) / 2.0).toInt() + extra
+                return when (side) {
+                    weak -> own(side) + state.boostLevels
+                    else -> state.frozen?.let { minOf(own(side), it) } ?: own(side)
+                } + extra
+            }
+            val left = at(sideLevel(Side.LEFT))
+            val right = at(sideLevel(Side.RIGHT))
+            val main = if (weak == Side.RIGHT) right else left
+            val n = main.sets ?: 1
+            val sided = SidedPlan(
+                limb,
+                Sides.order(n + if (weak == Side.LEFT) 1 else 0, n + if (weak == Side.RIGHT) 1 else 0, weak ?: Side.LEFT),
+                left.perSetPlanned, right.perSetPlanned, if (weak == null) BalanceMode.EVEN else state.mode, weak,
+            )
+            return main.copy(sets = sided.order.size, sided = sided)
         }
         val prescriptions = day.exercises.mapIndexed(::prescribe).toMutableList()
         val n = prescriptions.size
@@ -385,6 +423,9 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             val block = Variants.block(
                 v, family, base.exercise, family.test?.let(testResults::get), ratios[v.id] ?: v.ratio, v.ratio,
                 custom = custom != null, testSeconds = plan.test(family.test)?.isSeconds == true,
+                weak = variantSides[v.id]?.let { (l, r) ->
+                    Sides.gap(l, r)?.takeIf { it >= Sides.EVEN_BELOW }?.let { if (l < r) Side.LEFT else Side.RIGHT }
+                },
             )
             variantBase = b
             if (family.replace) {
@@ -421,6 +462,21 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             if (e == variantIndex) {
                 val v = variantPick!!.first
                 val test = plan.family(v.family)?.test?.let(testResults::get)
+                val log = program.logOf(i, e)
+                if (pr.sided != null && log?.sides != null) {
+                    val l = log.valuesOf(Side.LEFT)?.lastOrNull { it > 0 }
+                    val r = log.valuesOf(Side.RIGHT)?.lastOrNull { it > 0 }
+                    if (l != null && r != null) {
+                        variantSides[v.id] = l to r
+                        val gap = Sides.gap(l, r) ?: 0.0
+                        val behind = gap >= Sides.EVEN_BELOW
+                        recordBalance(
+                            v.id, v.name, pr.sided.limb, date, l, r,
+                            if (behind) BalanceMode.CATCH_UP else BalanceMode.EVEN, if (behind) (if (l < r) Side.LEFT else Side.RIGHT) else null, null,
+                            seconds = pr.maxIsSeconds,
+                        )
+                    }
+                }
                 if (max != null && max > 0) {
                     variantPoints.getOrPut(v.id) { ArrayList() } += TestPoint(date, max)
                     if (pr.variant?.full == true && test != null && test > 0) ratios[v.id] = Variants.learn(ratios[v.id] ?: v.ratio, test, max)
@@ -482,10 +538,10 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         val p = pr.exercise.progression ?: return
         val factor = if (pr.weighted == true) pr.exercise.weights?.factor ?: WeightsOption.DEFAULT_FACTOR else 1.0
         val step = (if (pr.maxIsSeconds) Measures.seconds(p.duration)?.toDouble() else p.reps?.toDouble())?.times(factor)
-        val signal = Adaptation.signal(
+        fun signalOf(side: Side?) = Adaptation.signal(
             pr, program.logOf(i, e), done, final, step,
-            exerciseFeeling = program.exerciseFeelingOf(i, e), sessionFeeling = program.feelingOf(i),
-        ) ?: return
+            exerciseFeeling = program.exerciseFeelingOf(i, e), sessionFeeling = program.feelingOf(i), side = side,
+        )
         val view = adaptViews[pr.key]
         // Jamais sous le départ du palier, ni au-delà du plafond de l'exercice (le réglage n'y servirait à rien).
         val minimum = -(view?.steps ?: 0)
@@ -494,7 +550,94 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             if (key !in ceilings) ceilings[key] = Adaptation.ceiling(v.exercise, v.weighted)
             ceilings[key]?.let { it - v.steps }
         } ?: Int.MAX_VALUE
-        adapt[pr.key] = Adaptation.update(adapt[pr.key] ?: AdaptState(), signal, minimum, maximum)
+        val sided = pr.sided
+        if (sided == null) {
+            adapt[pr.key] = Adaptation.update(adapt[pr.key] ?: AdaptState(), signalOf(null) ?: return, minimum, maximum)
+            return
+        }
+        // Une série par côté : chaque côté se règle sur ses propres séries ; le niveau commun est leur moyenne.
+        val common = adapt[pr.key] ?: AdaptState()
+        var learned = false
+        Side.entries.forEach { side ->
+            val signal = signalOf(side) ?: return@forEach
+            val k = pr.key to side
+            sideAdapt[k] = Adaptation.update(sideAdapt[k] ?: common, signal, minimum, maximum)
+            learned = true
+        }
+        if (!learned) return
+        val l = sideAdapt.getValue(pr.key to Side.LEFT)
+        val r = sideAdapt.getValue(pr.key to Side.RIGHT)
+        adapt[pr.key] = AdaptState((l.value + r.value) / 2, Math.round((l.applied + r.applied) / 2.0).toInt(), maxOf(l.samples, r.samples))
+        updateBalance(pr, i, e)
+    }
+
+    /** L'équilibre après la séance : ce que chaque côté fait vraiment (lissé), l'écart, et le cas qui en sort. */
+    private fun updateBalance(pr: Prescription, i: Int, e: Int) {
+        val view = adaptViews[pr.key] ?: return
+        val sided = pr.sided ?: return
+        val log = program.logOf(i, e)
+        val done = program.isDone(i, e)
+        // Fait de chaque côté : la moyenne de ses séries notées, ou le prévu si c'est simplement coché.
+        Side.entries.forEach { side ->
+            val values = log?.valuesOf(side)?.filter { it > 0 }.orEmpty()
+            val did = if (values.isNotEmpty()) values.average() else if (done) sided.valueOf(side)?.toDouble() else null
+            if (did != null) {
+                val k = pr.key to side
+                sideCapacity[k] = sideCapacity[k]?.let { it * 0.5 + did * 0.5 } ?: did
+            }
+        }
+        val capL = sideCapacity[pr.key to Side.LEFT] ?: return
+        val capR = sideCapacity[pr.key to Side.RIGHT] ?: return
+        val gap = Sides.gap(Math.round(capL * 10).toInt(), Math.round(capR * 10).toInt()) ?: return
+        val weakNow = if (capL <= capR) Side.LEFT else Side.RIGHT
+        val before = balance[pr.key] ?: BalanceState()
+        fun own(side: Side) = (view.steps + (sideAdapt[pr.key to side]?.applied ?: 0)).coerceAtLeast(0)
+        val strongLevel = maxOf(own(Side.LEFT), own(Side.RIGHT))
+        val gapLevels = maxOf(1, kotlin.math.abs(own(Side.LEFT) - own(Side.RIGHT)) - before.boostLevels)
+        // Le côté faible n'avance son rattrapage que s'il a tenu ce qui lui était demandé.
+        val weakMet = before.weak?.let { w ->
+            val planned = sided.valueOf(w) ?: return@let false
+            val values = log?.valuesOf(w)
+            if (values.isNullOrEmpty()) done else values.size >= sided.setsOf(w) && values.all { it >= planned }
+        } ?: false
+        val perWeek = sessionsPerWeek(pr.key)
+        val after = Sides.next(before, gap, weakNow, gapLevels, perWeek, strongLevel, weakMet)
+        // Écart rattrapé : ce que le côté faible a gagné reste à lui.
+        if (before.mode != BalanceMode.EVEN && after.mode == BalanceMode.EVEN && before.weak != null && before.boostLevels > 0) {
+            val k = pr.key to before.weak
+            val st = sideAdapt[k] ?: AdaptState()
+            sideAdapt[k] = st.copy(value = st.value + before.boostLevels, applied = st.applied + before.boostLevels)
+        }
+        balance[pr.key] = after
+        // Fin du rattrapage estimée : ce qui reste d'écart, au rythme prévu.
+        val eta = after.takeIf { it.mode != BalanceMode.EVEN && it.rate > 0 && perWeek > 0 }?.let {
+            dateOf(i).plusDays(Math.round(gapLevels / it.rate / perWeek * 7))
+        }
+        recordBalance(
+            pr.key, view.exercise.name, sided.limb, dateOf(i), Math.round(capL).toInt(), Math.round(capR).toInt(),
+            after.mode, after.weak, eta, gap, pr.maxIsSeconds,
+        )
+    }
+
+    private fun recordBalance(
+        key: String, name: String, limb: String, date: LocalDate, left: Int?, right: Int?,
+        mode: BalanceMode, weak: Side?, eta: LocalDate?, measured: Double? = null, seconds: Boolean = false,
+    ) {
+        val gap = measured ?: Sides.gap(left, right) ?: return
+        val points = balancePoints.getOrPut(key) { ArrayList() }
+        if (points.lastOrNull()?.date == date) points.removeAt(points.lastIndex)
+        points += TestPoint(date, Math.round(gap * 100).toInt())
+        balanceViews[key] = SideBalance(name, limb, left, right, gap, mode, weak, points.toList(), eta, seconds)
+    }
+
+    /** Séances par semaine où revient l'exercice [key], en moyenne sur les semaines de la routine. */
+    private fun sessionsPerWeek(key: String): Double =
+        plan.weeks.sumOf { w -> w.days.count { d -> d.exercises.any { it.key == key } } }.toDouble() / plan.weeks.size.coerceAtLeast(1)
+
+    /** L'équilibre gauche / droite des exercices faits une série par côté, à ce jour. */
+    fun balances(): List<SideBalance> {
+        ensure(lastIndexOnOrBefore(today))
+        return balanceViews.values.toList()
     }
 
     /** Le réglage de chaque exercice à ce jour, comparé à sa courbe de base. */
