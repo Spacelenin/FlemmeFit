@@ -155,4 +155,14 @@ class AdaptationTest {
         val down = ProgramSchedule.adaptationChanges(p2.sets(4, 0, 6, 6, 6), day(4), start.plusDays(30))
         assertEquals(AdaptChange.Kind.DOWN, down.single().kind)
     }
+
+    @Test
+    fun `warm-up and stretching are flagged optional in exercise stats`() {
+        val warm = Exercise("Échauffement", id = "echauffement", duration = "5min", optional = true)
+        val pl = plan.copy(weeks = listOf(PlanWeek(days = listOf(PlanDay(1, exercises = listOf(warm, pushups))))))
+        val p = StoredProgram("p", pl, start.toString()).toggle(0, 0).toggle(0, 1)
+        val stats = Stats.of(ProgramSchedule(p, start.plusDays(1)))
+        assertTrue(stats.exercises.first { it.key == "echauffement" }.optional)
+        assertFalse(stats.exercises.first { it.key == "pompes" }.optional)
+    }
 }

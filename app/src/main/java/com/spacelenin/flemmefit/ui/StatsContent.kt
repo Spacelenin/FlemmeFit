@@ -79,9 +79,11 @@ fun LazyListScope.statsOverviewItems(stats: Stats, color: Color, showProgram: Bo
 }
 
 fun LazyListScope.statsExerciseItems(stats: Stats, color: Color) {
-    if (stats.exercises.isEmpty()) return
+    // Échauffement et étirements : comptés dans les totaux, pas détaillés.
+    val shown = stats.exercises.filter { !it.optional }
+    if (shown.isEmpty()) return
     item(key = "stats-ex-title") { SectionTitle("Par exercice") }
-    items(stats.exercises, key = { "e-${it.key}" }) { ExerciseStatsCard(it, color) }
+    items(shown, key = { "e-${it.key}" }) { ExerciseStatsCard(it, color) }
 }
 
 @Composable
