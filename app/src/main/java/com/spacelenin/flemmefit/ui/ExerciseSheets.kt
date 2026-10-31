@@ -47,10 +47,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.spacelenin.flemmefit.model.BURST_STEPS
 import com.spacelenin.flemmefit.model.ExerciseLog
+import com.spacelenin.flemmefit.model.GuidedExercise
 import com.spacelenin.flemmefit.model.Measures
 import com.spacelenin.flemmefit.model.Plan
 import com.spacelenin.flemmefit.model.Prescription
 import com.spacelenin.flemmefit.model.Side
+import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.model.TimerPlans
 
 /** Valeur d'une série, en reps ou en durée. */
@@ -72,6 +74,9 @@ fun ExerciseDetailSheet(
     onDismiss: () -> Unit,
     /** Choix du jour avec / sans poids, si l'exercice le propose. */
     onWeights: (Boolean) -> Unit = {},
+    /** Ressenti de l'exo ce jour-là (null : rien dit), et de quoi le changer. */
+    feeling: Int? = null,
+    onFeeling: ((Int?) -> Unit)? = null,
 ) {
     val exercise = prescription.exercise
     val restBonus = LocalRestBonus.current
@@ -185,6 +190,7 @@ fun ExerciseDetailSheet(
                     }
                 }
             }
+            if (!locked) FeelingSection(prescription, feeling, onFeeling)
             Spacer(Modifier.height(4.dp))
             if (locked) {
                 Text("Séance à venir : elle se fera le jour même.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -235,12 +241,15 @@ fun SetsLogSheet(
     onSave: (ExerciseLog, complete: Boolean) -> Unit,
     onClear: () -> Unit,
     onDismiss: () -> Unit,
+    feeling: Int? = null,
+    onFeeling: ((Int?) -> Unit)? = null,
 ) {
     val planned = prescription.perSetPlanned ?: 0
     val count = prescription.sets ?: 1
     val sided = prescription.sided
-    // Une série par côté : chaque côté a son prévu.
-    fun plannedAt(i: Int) = sided?.plannedAt(i) ?: planned
+    // Une série par côté : chaque côté a son prévu (le même calcul qu'en séance guidée).
+    val guided = remember(prescription) { GuidedExercise(prescription) }
+    fun plannedAt(i: Int) = guided.plannedAt(i) ?: planned
     val step = if (prescription.maxIsSeconds) 5 else 1
     var values by rememberSaveable {
         mutableStateOf(
@@ -344,17 +353,44 @@ fun SetsLogSheet(
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        if (complete) "Chaque série atteint le prévu." else "L'exercice reste incomplet, la progression attend.",
+                        when {
+                            !complete && values.any { it == 0 } -> "Une série n'est pas faite (–) : l'exercice reste incomplet."
+                            !complete -> "Boss : chaque série doit atteindre le prévu."
+                            total < plannedTotal -> "Sous le prévu sur certaines séries : la suite s'adapte."
+                            else -> "Chaque série atteint le prévu."
+                        },
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
             }
+            FeelingSection(prescription, feeling, onFeeling)
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (existing != null) TextButton(onClick = onClear) { Text("Effacer") }
                 Spacer(Modifier.weight(1f))
                 Button(onClick = { onSave(log, complete) }) { Text("Enregistrer") }
             }
         }
+    }
+}
+
+/** Ressenti d'un exo, à donner si on veut : il règle cet exo-là. Retoucher le choix l'enlève. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ExerciseFeelingChips(current: Int?, onPick: (Int?) -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        StoredProgram.FEELINGS.forEachIndexed { i, emoji ->
+            FilterChip(selected = current == i, onClick = { onPick(if (current == i) null else i) }, label = { Text("$emoji ${StoredProgram.FEELING_LABELS[i]}") })
+        }
+    }
+}
+
+/** « Ton ressenti » sous un exo, quand il se règle sur toi. */
+@Composable
+private fun FeelingSection(prescription: Prescription, feeling: Int?, onFeeling: ((Int?) -> Unit)?) {
+    if (onFeeling == null || prescription.exercise.progression == null || prescription.exercise.optional || prescription.isTest) return
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text("Ton ressenti", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        ExerciseFeelingChips(feeling, onFeeling)
     }
 }
 

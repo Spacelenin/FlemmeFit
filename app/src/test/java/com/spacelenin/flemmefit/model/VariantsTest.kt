@@ -92,7 +92,7 @@ class VariantsTest {
         assertEquals(listOf(20), progress.points.map { it.value })
         val next = (first.index + 1 until first.index + 84).mapNotNull(s::sessionAt)
             .first { it.variantIndex?.let { i -> it.prescriptions[i].variant!!.id } == "pompes-diamant" }
-        // 40 / 2,65 = 15 au max, 60 % = 9.
+        // 40 / 2,65 = 15 au max, 60 % = 9 (le max recale le taux ; il ne compte pas une deuxième fois dans le réglage).
         assertEquals(9, next.prescriptions[next.variantIndex!!].reps)
     }
 

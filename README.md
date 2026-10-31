@@ -10,6 +10,15 @@ et une progression.
   exos faits, série en cours 🔥, séances manquées, prochaine séance.
 - **Programmes illimités** (`"repeat": "forever"`) : le calendrier se remplit sans fin.
 - **Progression automatique** des séries / reps / durées / charges, semaine de **décharge** à 50 %.
+- **Réglage sur mesure 🎯**, exo par exo (variantes comprises) : ce qui est noté (toutes les séries, le temps en plus
+  après 0, la série à fond) et le ressenti (dur / OK / facile, par exo ou pour la séance) règlent la suite. Rapide les
+  premières semaines, puis ça se cale ; les tests de niveau servent de garde-fou. Toutes les séries faites valident
+  l'exo, même en dessous du prévu (sauf jour Boss). En fin de séance, une fenêtre annonce ce qui change.
+- **Mode séance** guidé : série par série, repos décompté, chrono qui continue en temps en plus, ressenti par exo.
+- **Exos d'un côté à la fois** : une série par côté, 🔴 gauche / 🔵 droite. Chaque côté est suivi à part ; un côté en
+  retard commence, fait une série de plus et rattrape l'autre (écart dans les stats).
+- **Variantes 🎲** tirées certains jours (diamant, pike, une main, pistol, Perche…), dosées sur le test de leur famille.
+- **Burst 🚀 et Chill 🛋** : une fois par semaine, renforcer ou alléger la séance du jour.
 - **Jours Boss 💀** aléatoires toutes les 3 à 4 semaines : séance renforcée et série à fond, on note son max.
 - **Tests et paliers 📏** (démarrage objectif, façon 100 pompes) : un test à fond choisit le palier de départ, refait en
   cours de route pour passer au palier suivant. Exemple : `examples/routine-maison.json`.
@@ -27,6 +36,8 @@ et une progression.
 - **Pliables** (Galaxy Z Fold 5 et suivants) : écran extérieur = une colonne ; écran intérieur déplié =
   calendrier à gauche, détail du jour à droite, et accueil en grille. Le pliage/dépliage garde l'état.
 - Données stockées **localement** sur le téléphone (inclus dans la sauvegarde Android).
+- **Jamais bloqué** : un calcul de réglage qui échoue est ignoré ; après un plantage, l'appli s'ouvre sur un écran qui
+  propose d'envoyer le rapport et d'installer la mise à jour, sans toucher aux séances.
 
 ## Installer l'APK
 

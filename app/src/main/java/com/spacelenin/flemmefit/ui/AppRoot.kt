@@ -160,6 +160,13 @@ fun AppRoot(
             .forEach { repository.replacePlan(it.id, latest) }
     }
 
+    // Séries toutes faites mais sous le prévu : validées depuis que l'adaptation règle la suite (avant, incomplètes).
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.Default) {
+            repository.state.value.programs.forEach { p -> runCatching { repository.revalidate(p.id, LocalDate.now()) } }
+        }
+    }
+
     LaunchedEffect(incoming) {
         incoming?.let {
             load(it)

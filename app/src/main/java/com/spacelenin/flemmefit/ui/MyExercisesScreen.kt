@@ -53,7 +53,6 @@ import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.SideBalance
 import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.model.VariantProgress
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 /**
@@ -64,12 +63,18 @@ import java.util.UUID
 @Composable
 fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramRepository) {
     val today = rememberToday()
-    // Les exos perso vivent dans le programme qui a des familles (la routine).
+    // Les exos perso vivent dans le programme qui a des familles (la routine) ; le réglage, lui, vaut pour tous.
     val program = programs.firstOrNull { it.plan.families.isNotEmpty() }
-    val schedule = remember(program, today) { program?.let { ProgramSchedule(it, today) } }
+    val schedules = remember(programs, today) { programs.associate { it.id to ProgramSchedule(it, today) } }
+    val schedule = program?.let { schedules[it.id] }
     val progress = remember(schedule) { schedule?.variantProgress().orEmpty() }
-    val adapted = remember(schedule) { schedule?.adaptations().orEmpty().filter { it.samples > 0 } }
-    val balances = remember(schedule) { schedule?.balances().orEmpty() }
+    // Par programme : son nom, ses exos réglés et leur équilibre gauche / droite.
+    val adapted = remember(schedules) {
+        programs.mapNotNull { p ->
+            val s = schedules.getValue(p.id)
+            s.adaptations().filter { it.samples > 0 }.takeIf { it.isNotEmpty() }?.let { Triple(p.plan.name, it, s.balances()) }
+        }
+    }
     var adding by rememberSaveable { mutableStateOf(false) }
     var deleting by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -86,17 +91,18 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
         },
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
-            if (program == null) {
-                Text(
-                    "Ta routine ne définit pas de familles d'exercices : impossible d'y glisser des variantes.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(24.dp),
-                )
-                return@Box
-            }
-            val mine = program.custom.filter { !it.deleted }
+            val mine = program?.custom?.filter { !it.deleted }.orEmpty()
             LazyColumn(Modifier.widthIn(max = 640.dp).fillMaxSize()) {
-                item(key = "intro") {
+                if (program == null) {
+                    item(key = "no-families") {
+                        Text(
+                            "Ta routine ne définit pas de familles d'exercices : impossible d'y glisser des variantes.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(24.dp),
+                        )
+                    }
+                }
+                if (program != null) item(key = "intro") {
                     Text(
                         "Certains jours tirés au sort, une variante remplace une partie des séries de son exo de base, " +
                             "dernière série au max. Ce max recale ton taux, et donc la dose des fois suivantes.",
@@ -116,8 +122,16 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
                             modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     }
-                    items(adapted, key = { "adapt-${it.name}" }) { a -> AdaptationRow(a, balances.firstOrNull { it.name == a.name }) }
+                    adapted.forEachIndexed { k, (name, list, balances) ->
+                        if (adapted.size > 1) {
+                            item(key = "adapt-program-$k") {
+                                Text(name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp, top = 12.dp))
+                            }
+                        }
+                        items(list, key = { "adapt-$k-${it.name}" }) { a -> AdaptationRow(a, balances.firstOrNull { it.name == a.name }) }
+                    }
                 }
+                if (program == null) return@LazyColumn
                 item(key = "mine-title") { SectionTitle("Mes exos ⭐") }
                 if (mine.isEmpty()) {
                     item(key = "mine-empty") {
@@ -177,16 +191,6 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
     }
 }
 
-@Composable
-private fun SectionTitle(text: String) {
-    Text(
-        text,
-        style = MaterialTheme.typography.titleLarge,
-        fontWeight = FontWeight.ExtraBold,
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 6.dp),
-    )
-}
-
 private fun VariantProgress.status(): String = listOfNotNull(
     if (points.isEmpty()) "pas encore fait" else "max ${format(points.last().value)}",
     ratio?.let { "taux : ${ratioLabel(it)}" } ?: "taux mesuré au premier passage",
@@ -208,7 +212,7 @@ private fun AdaptationRow(a: ExerciseAdaptation, balance: SideBalance?) {
         // Une série par côté : l'écart gauche / droite et le rattrapage en cours.
         balance?.let { b ->
             Text(
-                "↔ " + b.status { it.format(DateTimeFormatter.ofPattern("d/MM")) },
+                "↔ " + b.status { it.format(DayMonth) },
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.SemiBold,
                 color = b.weak?.let(::sideColor) ?: MaterialTheme.colorScheme.onSurfaceVariant,

@@ -288,7 +288,8 @@ data class StoredProgram(
     companion object {
         fun doneKey(dayIndex: Int, exerciseIndex: Int) = "$dayIndex:$exerciseIndex"
         const val MAX_EXTRA_LENGTH = 80
-        /** Ressentis, du plus dur au plus facile. */
-        val FEELINGS = listOf("😫", "🙂", "💪")
+        /** Ressentis (séance ou exo), du plus dur au plus facile : voir [Adaptation.FEELING_HARD] et suivants. */
+        val FEELINGS = listOf("😮‍💨", "👌", "💪")
+        val FEELING_LABELS = listOf("Dur", "OK", "Facile")
     }
 }

@@ -135,6 +135,8 @@ fun rememberDayActions(
                 },
                 onClear = clear,
                 onDismiss = close,
+                feeling = program.exerciseFeelingOf(dayIndex, logExercise),
+                onFeeling = { repository.setExerciseFeeling(program.id, dayIndex, logExercise, it) },
             )
         } else {
             LogDialog(
@@ -172,6 +174,8 @@ fun rememberDayActions(
             },
             onDismiss = { detailDay = null },
             onWeights = { repository.setWeights(program.id, dayIndex, detailExercise, it) },
+            feeling = program.exerciseFeelingOf(dayIndex, detailExercise),
+            onFeeling = { repository.setExerciseFeeling(program.id, dayIndex, detailExercise, it) },
         )
     }
 
@@ -334,7 +338,6 @@ private fun AdaptChangesDialog(changes: List<AdaptChange>, onDetail: (() -> Unit
 /** Ressenti juste après la séance, à passer si on veut. */
 @Composable
 private fun FeelingDialog(onPick: (Int) -> Unit, onSkip: () -> Unit) {
-    val labels = listOf("Dur", "Bien", "En forme")
     AlertDialog(
         onDismissRequest = onSkip,
         title = { Text("Séance finie ! Comment c'était ?") },
@@ -346,7 +349,7 @@ private fun FeelingDialog(onPick: (Int) -> Unit, onSkip: () -> Unit) {
                         modifier = Modifier.clip(RoundedCornerShape(16.dp)).clickable { onPick(i) }.padding(12.dp),
                     ) {
                         Text(emoji, style = MaterialTheme.typography.displaySmall)
-                        Text(labels[i], style = MaterialTheme.typography.labelLarge)
+                        Text(StoredProgram.FEELING_LABELS[i], style = MaterialTheme.typography.labelLarge)
                     }
                 }
             }

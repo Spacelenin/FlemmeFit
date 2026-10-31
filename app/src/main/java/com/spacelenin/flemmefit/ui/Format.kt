@@ -19,6 +19,9 @@ private val LongDate = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", French)
 private val ShortDate = DateTimeFormatter.ofPattern("EEE d MMM", French)
 private val MonthTitle = DateTimeFormatter.ofPattern("MMMM yyyy", French)
 
+/** « 31/10 » : dates courtes des courbes et des stats. */
+val DayMonth: DateTimeFormatter = DateTimeFormatter.ofPattern("d/MM")
+
 fun LocalDate.longLabel(): String = format(LongDate).replaceFirstChar { it.titlecase(French) }
 fun LocalDate.shortLabel(): String = format(ShortDate)
 fun LocalDate.monthLabel(): String = format(MonthTitle).replaceFirstChar { it.titlecase(French) }

@@ -42,7 +42,6 @@ class FlemmeFitApp : Application() {
         backup.start()
         updater = AppUpdater(this)
         reminders = ReminderScheduler(this)
-        reminders.reschedule()
         social = SocialSync(this, repository)
         social.onBossNews = { names -> reminders.announceBosses(names) }
         // Défis surprise : le jour et l'heure dépendent de cette installation.
@@ -52,13 +51,18 @@ class FlemmeFitApp : Application() {
             social.publishIfNeeded()
             backup.saveSoon()
         }
-        challenges.reschedule()
         social.publishIfNeeded()
+        // Rappels et défis recalculent les séances : en arrière-plan, pour ne pas freiner l'ouverture, et sans
+        // jamais faire planter l'appli au démarrage.
+        backgroundScope.launch {
+            runCatching { reminders.reschedule() }.onFailure { Log.e("FlemmeFit", "Rappels", it) }
+            runCatching { challenges.reschedule() }.onFailure { Log.e("FlemmeFit", "Défis", it) }
+        }
         // Le widget suit le suivi : chaque exercice coché le met à jour.
-        widgetScope.launch {
+        backgroundScope.launch {
             repository.state.collect { TodayWidget.refresh(this@FlemmeFitApp) }
         }
     }
 
-    private val widgetScope = CoroutineScope(SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, e -> Log.e("FlemmeFit", "Widget", e) })
+    private val backgroundScope = CoroutineScope(SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, e -> Log.e("FlemmeFit", "Arrière-plan", e) })
 }

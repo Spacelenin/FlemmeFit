@@ -35,6 +35,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.spacelenin.flemmefit.model.SideBalance
 import com.spacelenin.flemmefit.model.Stats
@@ -133,4 +134,15 @@ fun FullScreenDialog(
             Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.padding(padding), content = content)
         }
     }
+}
+
+/** Titre de section des listes (stats, exos). */
+@Composable
+fun SectionTitle(text: String) {
+    Text(
+        text,
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.ExtraBold,
+        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 6.dp),
+    )
 }

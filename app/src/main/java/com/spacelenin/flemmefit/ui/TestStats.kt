@@ -34,21 +34,14 @@ import com.spacelenin.flemmefit.model.TestPoint
 import com.spacelenin.flemmefit.model.TestProgress
 import com.spacelenin.flemmefit.model.VariantProgress
 import com.spacelenin.flemmefit.model.Variants
-import java.time.format.DateTimeFormatter
 
-private val TestDay = DateTimeFormatter.ofPattern("d/MM")
 
 /** Les tests du programme : courbe des résultats et prochain niveau. */
 fun LazyListScope.statsTestItems(tests: List<TestProgress>, color: Color) {
     val shown = tests.filter { it.points.isNotEmpty() || it.goals.isNotEmpty() }
     if (shown.isEmpty()) return
     item(key = "tests-title") {
-        Text(
-            "Tests 📏",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.ExtraBold,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 6.dp),
-        )
+        SectionTitle("Tests 📏")
     }
     // Deux programmes peuvent avoir un test du même nom : la position rend la clé unique.
     itemsIndexed(shown, key = { i, t -> "test-$i-${t.test.id}" }) { _, t -> TestCard(t, color) }
@@ -85,7 +78,7 @@ private fun TestCard(t: TestProgress, color: Color) {
             if (t.points.size > 1) TestCurve(t.points, t::format, color, switches = t.switches)
             t.switchedAt?.let {
                 Text(
-                    "↔ ${t.name} depuis le ${it.date.format(TestDay)} : départ et record repartent de là.",
+                    "↔ ${t.name} depuis le ${it.date.format(DayMonth)} : départ et record repartent de là.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -122,12 +115,7 @@ fun LazyListScope.statsVariantItems(variants: List<VariantProgress>, color: Colo
     val shown = variants.filter { it.points.isNotEmpty() }
     if (shown.isEmpty()) return
     item(key = "variants-title") {
-        Text(
-            "Variantes 🎲",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.ExtraBold,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 6.dp),
-        )
+        SectionTitle("Variantes 🎲")
     }
     itemsIndexed(shown, key = { i, v -> "variant-$i-${v.variant.id}" }) { _, v -> VariantCard(v, color) }
 }
@@ -163,12 +151,7 @@ private fun VariantCard(v: VariantProgress, color: Color) {
 fun LazyListScope.statsBalanceItems(balances: List<SideBalance>, color: Color) {
     if (balances.isEmpty()) return
     item(key = "balance-title") {
-        Text(
-            "Gauche / droite ↔",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.ExtraBold,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 6.dp),
-        )
+        SectionTitle("Gauche / droite ↔")
     }
     itemsIndexed(balances, key = { i, b -> "balance-$i-${b.name}" }) { _, b -> BalanceCard(b, color) }
 }
@@ -184,7 +167,7 @@ private fun BalanceCard(b: SideBalance, color: Color) {
             Row {
                 Column(Modifier.weight(1f)) {
                     Text(b.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Text(b.status { it.format(TestDay) }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(b.status { it.format(DayMonth) }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Text("${b.gapPercent} %", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold, color = color)
             }
@@ -215,7 +198,7 @@ private fun TestCurve(all: List<TestPoint>, format: (Int) -> String, color: Colo
     val bottom = values.min()
     val span = (top - bottom).coerceAtLeast(1)
     val track = MaterialTheme.colorScheme.outlineVariant
-    val description = points.joinToString { "${it.date.format(TestDay)} : ${format(it.value)}" }
+    val description = points.joinToString { "${it.date.format(DayMonth)} : ${format(it.value)}" }
 
     Column {
         Row(Modifier.fillMaxWidth()) {
@@ -250,7 +233,7 @@ private fun TestCurve(all: List<TestPoint>, format: (Int) -> String, color: Colo
         Row(Modifier.fillMaxWidth()) {
             points.forEach { p ->
                 Text(
-                    p.date.format(TestDay),
+                    p.date.format(DayMonth),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,

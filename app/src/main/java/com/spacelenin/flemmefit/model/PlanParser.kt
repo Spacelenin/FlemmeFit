@@ -26,6 +26,7 @@ object PlanParser {
         explicitNulls = false
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     fun parse(text: String): ParseResult {
         val trimmed = text.trim().removePrefix("﻿")
         if (trimmed.isEmpty()) return ParseResult.Failure(listOf("Le fichier est vide."))

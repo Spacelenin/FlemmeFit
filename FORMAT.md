@@ -151,9 +151,12 @@ Exemple : 3 × 8 pompes, +1 rep par séance validée jusqu'à 12, puis une séri
 }
 ```
 
-**Ajustement par le max.** Le max noté sur une série à fond ajuste la progression de l'exercice, prudemment :
-nettement au-dessus du prévu (≥ 3 pas) = +1 cran, très au-dessus (≥ 6 pas) = +2 crans, en dessous = −1 cran
-(au total entre −2 et +4 crans).
+**Réglage sur mesure.** Chaque exercice (variantes comprises) se règle sur ce qui est noté et ressenti, en crans
+par-dessus sa courbe : la plus faible des séries normales comparée au prévu, l'excès de la série à fond pour un quart,
+le ressenti de l'exercice (« dur » / « facile »), sinon celui de la séance, plus faible. Les premières séances corrigent
+vite (environ 75 % de l'écart), puis ça se lisse (environ 30 %), sans plafond ; à la baisse, toujours franchement.
+Toutes les séries faites valident l'exercice, même en dessous du prévu (sauf jour Boss) : c'est le réglage qui baisse
+la suite.
 
 ## Tests et paliers 📏
 
@@ -194,7 +197,9 @@ et le test refait plus tard fait passer au palier suivant.
   Ses champs `sets`, `reps`, `duration`, `load`, `rest` remplacent ceux de l'exercice ; `note` s'ajoute à la description.
   `name` et `description` remplacent le nom et la consigne : un autre exercice à ce palier (par exemple des crunchs
   tant que le test est trop bas pour le V-up). `name` accepte les `{id du test}`.
-- La `progression` s'applique **depuis le départ du palier**, et repart de zéro quand le palier change.
+- La `progression` s'applique **depuis le départ du palier**. Quand le test refait change de palier, le volume atteint
+  est gardé (recalé sur le nouveau palier) ; le test sert de garde-fou : au-delà de 80 % du max testé par série, le
+  réglage redescend vers 65 %.
 - Un exercice `retest` met à jour le résultat du test avec le max noté : les séances suivantes changent de palier
   si besoin. Il n'est jamais allégé par la décharge, ce qui permet de placer les tests en semaine de décharge.
 

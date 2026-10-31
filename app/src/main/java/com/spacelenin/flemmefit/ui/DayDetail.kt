@@ -268,7 +268,7 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
     )
     Text(session.title(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
     schedule.program.feelingOf(session.index)?.let { f ->
-        Text("Ressenti : ${StoredProgram.FEELINGS[f]}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Ressenti : ${StoredProgram.FEELINGS[f]} ${StoredProgram.FEELING_LABELS[f]}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
     session.day.notes?.let {
         Spacer(Modifier.height(4.dp))

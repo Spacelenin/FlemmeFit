@@ -133,4 +133,35 @@ class SidesTest {
         assertEquals("↔ Hip dips : côté droit en retard. Il commence et fait une série de plus", behind.message)
         assertEquals(3, n) // dès que l'écart a tenu 3 séances
     }
+
+    @Test
+    fun `a one-side variant catches up at the pace of its own passages`() {
+        val routine = (PlanParser.parse(File("../examples/routine-maison.json").readText()) as ParseResult.Success).plan
+        val tests = mapOf("pompes" to 60, "abdos" to 60, "gainage" to 180, "tractions" to 12, "squats" to 40)
+        var p = StoredProgram("p", routine, start.toString(), tests = tests)
+        val today = start.plusDays(7L * 60)
+        val log = StringBuilder()
+        var worst = 0
+        var pass = 0
+        repeat(14) {
+            val s = ProgramSchedule(p, today)
+            val day = (0 until 7 * 60).mapNotNull(s::sessionAt).firstOrNull { d ->
+                d.variantIndex != null && d.prescriptions[d.variantIndex!!].variant!!.id == "pompes-une-main" && p.logOf(d.index, d.variantIndex!!) == null
+            } ?: return@repeat
+            val pr = day.prescriptions[day.variantIndex!!]
+            val sided = pr.sided!!
+            log.append("${sided.left}/${sided.right} ${sided.mode} ; ")
+            worst = maxOf(worst, (sided.right ?: 0) - (sided.left ?: 0))
+            // Trois passages où le bras droit ne fait que 60 %, puis chaque bras tient ce qui lui est demandé.
+            val values = sided.order.mapIndexed { i, side ->
+                val planned = sided.plannedAt(i)!!
+                if (pass < 3 && side == Side.RIGHT) (planned * 0.6).toInt().coerceAtLeast(1) else planned
+            }
+            p = p.saveLog(day.index, day.variantIndex!!, ExerciseLog.ofSets(values, false, sided.order), complete = true)
+            pass++
+        }
+        assertTrue(log.toString(), pass >= 8)
+        // Le rattrapage se fait par petits crans : le bras faible ne passe jamais nettement devant l'autre.
+        assertTrue(log.toString(), worst <= 1)
+    }
 }
