@@ -506,12 +506,14 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         val state = balance[ex.key]?.takeIf { !light } ?: BalanceState()
         val weak = state.weak.takeIf { state.mode != BalanceMode.EVEN }
         fun own(side: Side) = (steps + (sideAdapt[ex.key to side]?.applied ?: applied)).coerceAtLeast(0)
+        fun strong(side: Side) = state.frozen?.let { minOf(own(side), it) } ?: own(side)
         fun sideLevel(side: Side): Int {
             // Équilibré : les deux côtés font pareil, au niveau moyen.
             if (weak == null) return Math.round((own(Side.LEFT) + own(Side.RIGHT)) / 2.0).toInt() + extra
             return when (side) {
-                weak -> own(side) + state.boostLevels
-                else -> state.frozen?.let { minOf(own(side), it) } ?: own(side)
+                // Le rattrapage rejoint l'autre côté, il ne le dépasse pas.
+                weak -> minOf(own(side) + state.boostLevels, maxOf(own(side), strong(side.other)))
+                else -> strong(side)
             } + extra
         }
         val left = at(sideLevel(Side.LEFT))
@@ -612,8 +614,10 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         fun own(side: Side) = (view.steps + (sideAdapt[pr.key to side]?.applied ?: 0)).coerceAtLeast(0)
         val strongLevel = maxOf(own(Side.LEFT), own(Side.RIGHT))
         val gapLevels = maxOf(1, kotlin.math.abs(own(Side.LEFT) - own(Side.RIGHT)) - before.boostLevels)
-        // Le côté faible n'avance son rattrapage que s'il a tenu ce qui lui était demandé.
-        val weakMet = before.weak?.let { w ->
+        // Le côté faible n'avance son rattrapage que s'il a tenu ce qui lui était demandé, et tant qu'il n'a pas rejoint
+        // l'autre côté.
+        val caughtUp = before.weak?.let { w -> own(w) + before.boostLevels >= own(w.other) } ?: false
+        val weakMet = !caughtUp && before.weak?.let { w ->
             val planned = sided.valueOf(w) ?: return@let false
             val values = log?.valuesOf(w)
             if (values.isNullOrEmpty()) done else values.size >= sided.setsOf(w) && values.all { it >= planned }
@@ -648,9 +652,18 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         balanceViews[key] = SideBalance(name, limb, left, right, gap, mode, weak, points.toList(), eta, seconds)
     }
 
-    /** Séances par semaine où revient l'exercice [key], en moyenne sur les semaines de la routine. */
-    private fun sessionsPerWeek(key: String): Double =
-        plan.weeks.sumOf { w -> w.days.count { d -> d.exercises.any { it.key == key } } }.toDouble() / plan.weeks.size.coerceAtLeast(1)
+    /**
+     * Séances par semaine où revient l'exercice [key], en moyenne sur les semaines de la routine. Une variante n'est
+     * pas dans la routine : ses passages par cycle (voir [Variants.quota]).
+     */
+    private fun sessionsPerWeek(key: String): Double {
+        val variant = variants.firstOrNull { it.first.id.trim().lowercase() == key }?.first
+        if (variant != null) {
+            val test = plan.family(variant.family)?.test?.let(testResults::get)
+            return Variants.quota(variant, test).toDouble() / variantCycleWeeks
+        }
+        return plan.weeks.sumOf { w -> w.days.count { d -> d.exercises.any { it.key == key } } }.toDouble() / plan.weeks.size.coerceAtLeast(1)
+    }
 
     /** L'équilibre gauche / droite des exercices faits une série par côté, à ce jour. */
     fun balances(): List<SideBalance> {
