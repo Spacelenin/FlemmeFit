@@ -19,10 +19,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -76,7 +74,7 @@ fun GuidedSession(
     HoldSession()
     // Les exercices à faire, figés à l'ouverture : en valider un ne décale pas la suite.
     val queue = remember(session.index) {
-        session.order.filter { !schedule.program.isDone(session.index, it) }
+        session.order.filter { !schedule.program.isDone(session.index, it) && !finishedAttempt(schedule, session, it) }
     }
     /** Séries déjà faites d'un exercice commencé (mode séance quitté ou appli fermée en route). */
     fun doneSets(exerciseIndex: Int?): List<Int> {
@@ -472,23 +470,15 @@ private fun SetContent(
 }
 
 /** Ressenti d'un exercice fini, à donner si on veut : il règle cet exercice-là, pas les autres. */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ExerciseFeeling(session: Session, schedule: ProgramSchedule, exerciseIndex: Int, onFeeling: (Int, Int?) -> Unit) {
     val name = session.prescriptions.getOrNull(exerciseIndex)?.exercise?.name ?: return
     val current = schedule.program.exerciseFeelingOf(session.index, exerciseIndex)
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text("$name, c'était comment ?", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            EXERCISE_FEELINGS.forEachIndexed { i, label ->
-                FilterChip(selected = current == i, onClick = { onFeeling(exerciseIndex, if (current == i) null else i) }, label = { Text(label) })
-            }
-        }
+        ExerciseFeelingChips(current) { onFeeling(exerciseIndex, it) }
     }
 }
-
-/** Dans l'ordre de [com.spacelenin.flemmefit.model.Adaptation.FEELING_HARD] et suivants. */
-private val EXERCISE_FEELINGS = listOf("😮‍💨 Dur", "👌 OK", "💪 Facile")
 
 private const val OVERTIME_LABEL = "Temps en plus"
 
@@ -517,4 +507,11 @@ private fun EndContent(schedule: ProgramSchedule, session: Session, onClose: () 
         Spacer(Modifier.height(20.dp))
         Button(onClick = onClose) { Text("Fermer") }
     }
+}
+
+/** Toutes les séries déjà notées sans que l'exo soit validé (Boss sous le prévu) : pas la peine de le refaire. */
+private fun finishedAttempt(schedule: ProgramSchedule, session: Session, exerciseIndex: Int): Boolean {
+    val sets = session.prescriptions.getOrNull(exerciseIndex)?.let(::GuidedExercise)?.sets ?: return false
+    val values = schedule.program.logOf(session.index, exerciseIndex)?.perSet ?: return false
+    return values.size == sets && values.all { it > 0 }
 }

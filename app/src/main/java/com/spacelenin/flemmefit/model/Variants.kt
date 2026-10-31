@@ -194,12 +194,11 @@ object Variants {
 
     /**
      * Le bloc variante : 3 séries à [VARIANT_SHARE] du max estimé, la dernière au max ; une seule série au max sans repère.
-     * Variante d'un côté à la fois ([Variant.perSide]) : autant de chaque côté, en alternance ; le côté [weak] (en retard)
-     * commence et a une série de plus.
+     * Variante d'un côté à la fois ([Variant.perSide]) : autant de chaque côté, en alternance (l'équilibre se règle
+     * ensuite comme pour les autres exercices).
      */
     fun block(
         v: Variant, family: PlanFamily, base: Exercise, test: Int?, ratio: Double?, startRatio: Double?, custom: Boolean, testSeconds: Boolean,
-        weak: Side? = null,
     ): Prescription {
         val full = v.from == null || (test ?: 0) >= v.from
         val r = ratio?.let { if (full) it else it * VARIANT_EASY_FACTOR }
@@ -226,11 +225,7 @@ object Variants {
         )
         val sided = v.perSide?.let { limb ->
             val n = exercise.sets ?: 1
-            val extra = if (per != null) weak else null
-            SidedPlan(
-                limb, Sides.order(n + if (extra == Side.LEFT) 1 else 0, n + if (extra == Side.RIGHT) 1 else 0, extra ?: Side.LEFT),
-                per, per, if (extra != null) BalanceMode.CATCH_UP else BalanceMode.EVEN, extra,
-            )
+            SidedPlan(limb, Sides.order(n, n), per, per)
         }
         return Prescription(
             exercise,

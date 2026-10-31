@@ -135,6 +135,8 @@ fun rememberDayActions(
                 },
                 onClear = clear,
                 onDismiss = close,
+                feeling = program.exerciseFeelingOf(dayIndex, logExercise),
+                onFeeling = { repository.setExerciseFeeling(program.id, dayIndex, logExercise, it) },
             )
         } else {
             LogDialog(
@@ -172,6 +174,8 @@ fun rememberDayActions(
             },
             onDismiss = { detailDay = null },
             onWeights = { repository.setWeights(program.id, dayIndex, detailExercise, it) },
+            feeling = program.exerciseFeelingOf(dayIndex, detailExercise),
+            onFeeling = { repository.setExerciseFeeling(program.id, dayIndex, detailExercise, it) },
         )
     }
 

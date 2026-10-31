@@ -60,8 +60,9 @@ class ProgressionTest {
     fun `met by log`() {
         val p = at(0)
         assertTrue(p.isMetBy(ExerciseLog(max = 12)))
-        assertFalse(p.isMetBy(ExerciseLog(reps = 7)))
+        assertTrue(p.isMetBy(ExerciseLog(reps = 7))) // toutes les séries, sous le prévu : fait
         assertFalse(p.isMetBy(ExerciseLog(sets = 2)))
+        assertFalse(p.copy(isBoss = true).isMetBy(ExerciseLog(reps = 7)))
     }
 
     private fun plan(boss: Boolean = false, deloadEvery: Int? = null, basis: String = Progression.BASIS_DONE) = Plan(

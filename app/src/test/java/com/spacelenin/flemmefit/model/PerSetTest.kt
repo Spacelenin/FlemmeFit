@@ -2,6 +2,7 @@ package com.spacelenin.flemmefit.model
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
@@ -23,14 +24,17 @@ class PerSetTest {
     private fun prescriptions() = ProgramSchedule(StoredProgram("p", plan, start.toString()), start).sessionAt(0)!!.prescriptions
 
     @Test
-    fun `a per-set log is complete only when every planned set reaches the target`() {
+    fun `a per-set log is complete when every set is done, and at the plan on a Boss`() {
         val pushups = prescriptions()[0]
         assertTrue(pushups.isMetBy(ExerciseLog.ofSets(listOf(10, 10, 14), allOut = true)))
-        assertFalse(pushups.isMetBy(ExerciseLog.ofSets(listOf(10, 9, 14), allOut = true)))
+        assertTrue(pushups.isMetBy(ExerciseLog.ofSets(listOf(10, 9, 14), allOut = true)))
         assertFalse(pushups.isMetBy(ExerciseLog.ofSets(listOf(10, 10, 0), allOut = true)))
         val plank = prescriptions()[1]
         assertTrue(plank.isMetBy(ExerciseLog.ofSets(listOf(30, 35), allOut = false)))
-        assertFalse(plank.isMetBy(ExerciseLog.ofSets(listOf(30, 20), allOut = false)))
+        assertTrue(plank.isMetBy(ExerciseLog.ofSets(listOf(30, 20), allOut = false)))
+        val boss = pushups.copy(isBoss = true)
+        assertTrue(boss.isMetBy(ExerciseLog.ofSets(listOf(10, 10, 14), allOut = true)))
+        assertFalse(boss.isMetBy(ExerciseLog.ofSets(listOf(10, 9, 14), allOut = true)))
     }
 
     @Test
@@ -51,5 +55,16 @@ class PerSetTest {
         assertEquals(18, pushups.totalReps)
         assertEquals(10, pushups.bestReps)
         assertEquals(55, stats.exercises.first { it.key == "gainage" }.totalSeconds)
+    }
+
+    @Test
+    fun `old incomplete logs with every set done are validated`() {
+        val p = StoredProgram("p", plan, start.toString())
+            .saveLog(0, 0, ExerciseLog.ofSets(listOf(10, 9, 14), allOut = true), complete = false) // ancienne règle
+            .saveLog(0, 1, ExerciseLog.ofSets(listOf(30, 0), allOut = false), complete = false) // vraiment pas fini
+        val fixed = ProgramSchedule.revalidated(p, start.plusDays(1))
+        assertTrue(fixed.isDone(0, 0))
+        assertFalse(fixed.isDone(0, 1))
+        assertSame(fixed, ProgramSchedule.revalidated(fixed, start.plusDays(1)))
     }
 }

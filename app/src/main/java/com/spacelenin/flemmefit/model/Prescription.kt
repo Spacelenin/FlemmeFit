@@ -80,15 +80,21 @@ data class Prescription(
         return if (l == r) "$l ${Sides.per(s.limb)}" else "${s.label(Side.LEFT)} $l · ${s.label(Side.RIGHT)} $r"
     }
 
-    /** Une saisie atteint-elle le prévu ? Ce qui n'est pas chiffré ne bloque pas. */
+    /**
+     * L'exercice est-il fait ? Toutes les séries faites suffisent, même en dessous du prévu : l'adaptation règle la
+     * suite d'après les vrais chiffres. Seul le Boss demande aussi d'atteindre le prévu à chaque série.
+     */
     fun isMetBy(log: ExerciseLog): Boolean {
         val perSet = log.perSet
-        if (sided != null && perSet != null) return sided.order.indices.all { i -> (perSet.getOrNull(i) ?: 0) >= (sided.plannedAt(i) ?: 0) && (perSet.getOrNull(i) ?: 0) > 0 }
-        val planned = if (maxIsSeconds) seconds else reps
-        if (perSet != null && planned != null) return perSet.count { it >= planned } >= (sets ?: 1)
+        val count = sided?.order?.size ?: sets ?: 1
+        if (perSet != null) {
+            if (perSet.take(count).count { it > 0 } < count) return false
+            if (!isBoss) return true
+            return (0 until count).all { i -> perSet[i] >= ((sided?.plannedAt(i) ?: perSetPlanned) ?: 0) }
+        }
         return (sets == null || (log.sets ?: sets) >= sets) &&
-            (reps == null || (log.reps ?: reps) >= reps) &&
-            (seconds == null || (log.seconds ?: seconds) >= seconds)
+            (!isBoss || reps == null || (log.reps ?: reps) >= reps) &&
+            (!isBoss || seconds == null || (log.seconds ?: seconds) >= seconds)
     }
 
     /** Ce qui est prévu pour une série : répétitions, ou secondes pour un exercice en durée. */

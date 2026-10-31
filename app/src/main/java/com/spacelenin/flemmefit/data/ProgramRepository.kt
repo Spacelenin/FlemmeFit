@@ -7,6 +7,7 @@ import com.spacelenin.flemmefit.model.CustomExercise
 import com.spacelenin.flemmefit.model.ExerciseLog
 import com.spacelenin.flemmefit.model.Plan
 import com.spacelenin.flemmefit.model.PlanParser
+import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.StoredProgram
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -142,6 +143,13 @@ class ProgramRepository(dir: File) {
 
     /** Nouvelle version de la routine, suivi conservé. */
     fun replacePlan(id: String, plan: Plan) = updateProgram(id) { it.withPlan(plan) }
+
+    /** Valide les exos notés en entier que l'ancienne règle laissait incomplets (voir [ProgramSchedule.revalidated]). */
+    fun revalidate(id: String, today: LocalDate) {
+        val program = state.value.programs.find { it.id == id } ?: return
+        val added = ProgramSchedule.revalidated(program, today).done - program.done
+        if (added.isNotEmpty()) updateProgram(id) { it.copy(done = it.done + added) }
+    }
 
     fun setColor(id: String, colorIndex: Int) = updateProgram(id) { it.copy(colorIndex = colorIndex) }
 

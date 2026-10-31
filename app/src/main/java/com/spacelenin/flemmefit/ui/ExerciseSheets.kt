@@ -72,6 +72,9 @@ fun ExerciseDetailSheet(
     onDismiss: () -> Unit,
     /** Choix du jour avec / sans poids, si l'exercice le propose. */
     onWeights: (Boolean) -> Unit = {},
+    /** Ressenti de l'exo ce jour-là (null : rien dit), et de quoi le changer. */
+    feeling: Int? = null,
+    onFeeling: ((Int?) -> Unit)? = null,
 ) {
     val exercise = prescription.exercise
     val restBonus = LocalRestBonus.current
@@ -185,6 +188,7 @@ fun ExerciseDetailSheet(
                     }
                 }
             }
+            if (!locked) FeelingSection(prescription, feeling, onFeeling)
             Spacer(Modifier.height(4.dp))
             if (locked) {
                 Text("Séance à venir : elle se fera le jour même.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -235,6 +239,8 @@ fun SetsLogSheet(
     onSave: (ExerciseLog, complete: Boolean) -> Unit,
     onClear: () -> Unit,
     onDismiss: () -> Unit,
+    feeling: Int? = null,
+    onFeeling: ((Int?) -> Unit)? = null,
 ) {
     val planned = prescription.perSetPlanned ?: 0
     val count = prescription.sets ?: 1
@@ -344,17 +350,47 @@ fun SetsLogSheet(
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        if (complete) "Chaque série atteint le prévu." else "L'exercice reste incomplet, la progression attend.",
+                        when {
+                            !complete && values.any { it == 0 } -> "Une série n'est pas faite (–) : l'exercice reste incomplet."
+                            !complete -> "Boss : chaque série doit atteindre le prévu."
+                            total < plannedTotal -> "Sous le prévu sur certaines séries : la suite s'adapte."
+                            else -> "Chaque série atteint le prévu."
+                        },
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
             }
+            FeelingSection(prescription, feeling, onFeeling)
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (existing != null) TextButton(onClick = onClear) { Text("Effacer") }
                 Spacer(Modifier.weight(1f))
                 Button(onClick = { onSave(log, complete) }) { Text("Enregistrer") }
             }
         }
+    }
+}
+
+/** Ressenti d'un exo, à donner si on veut : il règle cet exo-là. Retoucher le choix l'enlève. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ExerciseFeelingChips(current: Int?, onPick: (Int?) -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        EXERCISE_FEELINGS.forEachIndexed { i, label ->
+            FilterChip(selected = current == i, onClick = { onPick(if (current == i) null else i) }, label = { Text(label) })
+        }
+    }
+}
+
+/** Dans l'ordre de [com.spacelenin.flemmefit.model.Adaptation.FEELING_HARD] et suivants. */
+private val EXERCISE_FEELINGS = listOf("😮‍💨 Dur", "👌 OK", "💪 Facile")
+
+/** « Ton ressenti » sous un exo, quand il se règle sur toi. */
+@Composable
+private fun FeelingSection(prescription: Prescription, feeling: Int?, onFeeling: ((Int?) -> Unit)?) {
+    if (onFeeling == null || prescription.exercise.progression == null || prescription.exercise.optional || prescription.isTest) return
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text("Ton ressenti", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        ExerciseFeelingChips(feeling, onFeeling)
     }
 }
 

@@ -169,8 +169,6 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     private val balance = HashMap<String, BalanceState>()
     private val balanceViews = LinkedHashMap<String, SideBalance>()
     private val balancePoints = HashMap<String, MutableList<TestPoint>>()
-    // Variantes faites une série par côté : la dernière série de chaque côté.
-    private val variantSides = HashMap<String, Pair<Int, Int>>()
     private val lastMax = HashMap<String, Int>()
     private val testResults = HashMap(program.tests)
     // Max refaits en changeant d'exercice de test : appliqués à la première séance qui suit.
@@ -400,12 +398,11 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             val b = baseIndex(day, v)!!
             val family = plan.family(v.family)!!
             val base = prescriptions[b]
-            val block = Variants.block(
-                v, family, base.exercise, family.test?.let(testResults::get), ratios[v.id] ?: v.ratio, v.ratio,
-                custom = custom != null, testSeconds = plan.test(family.test)?.isSeconds == true,
-                weak = variantSides[v.id]?.let { (l, r) ->
-                    Sides.gap(l, r)?.takeIf { it >= Sides.EVEN_BELOW }?.let { if (l < r) Side.LEFT else Side.RIGHT }
-                },
+            val block = adaptVariant(
+                Variants.block(
+                    v, family, base.exercise, family.test?.let(testResults::get), ratios[v.id] ?: v.ratio, v.ratio,
+                    custom = custom != null, testSeconds = plan.test(family.test)?.isSeconds == true,
+                ),
             )
             variantBase = b
             if (family.replace) {
@@ -442,25 +439,13 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             if (e == variantIndex) {
                 val v = variantPick!!.first
                 val test = plan.family(v.family)?.test?.let(testResults::get)
-                val log = program.logOf(i, e)
-                if (pr.sided != null && log?.sides != null) {
-                    val l = log.valuesOf(Side.LEFT)?.lastOrNull { it > 0 }
-                    val r = log.valuesOf(Side.RIGHT)?.lastOrNull { it > 0 }
-                    if (l != null && r != null) {
-                        variantSides[v.id] = l to r
-                        val gap = Sides.gap(l, r) ?: 0.0
-                        val behind = gap >= Sides.EVEN_BELOW
-                        recordBalance(
-                            v.id, v.name, pr.sided.limb, date, l, r,
-                            if (behind) BalanceMode.CATCH_UP else BalanceMode.EVEN, if (behind) (if (l < r) Side.LEFT else Side.RIGHT) else null, null,
-                            seconds = pr.maxIsSeconds,
-                        )
-                    }
-                }
                 if (max != null && max > 0) {
                     variantPoints.getOrPut(v.id) { ArrayList() } += TestPoint(date, max)
                     if (pr.variant?.full == true && test != null && test > 0) ratios[v.id] = Variants.learn(ratios[v.id] ?: v.ratio, test, max)
                 }
+                // Le dosage suit le taux ; ce qui est noté et ressenti règle la variante par-dessus, comme les autres exos.
+                val done = program.isDone(i, e)
+                runCatching { learn(pr, i, e, done, final = done || date.isBefore(today)) }.onFailure(Safety::report)
                 return@forEachIndexed
             }
             if (pr.isTest) {
@@ -539,6 +524,30 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             left.perSetPlanned, right.perSetPlanned, if (weak == null) BalanceMode.EVEN else state.mode, weak,
         )
         return main.copy(sets = sided.order.size, sided = sided)
+    }
+
+    /**
+     * Bloc variante dosé : son réglage sur mesure par-dessus le dosage du taux, en crans d'une rep (ou de 5 s).
+     * Le dosage devient la « courbe de base » de la variante, le réglage et les côtés marchent comme pour les autres.
+     */
+    private fun adaptVariant(block: Prescription): Prescription {
+        val per = block.perSetPlanned ?: return block
+        val seconds = block.maxIsSeconds
+        val progression = if (seconds) Progression(duration = "5s") else Progression(reps = 1)
+        val unit = block.exercise.copy(reps = if (seconds) null else "1", duration = if (seconds) "5s" else null, progression = progression)
+        val steps = if (seconds) (per - 5) / 5 else per - 1
+        val applied = adapt[block.key]?.applied ?: 0
+        adaptViews[block.key] = AdaptBase(unit, steps, applied, false)
+        val exercise = block.exercise.copy(progression = progression)
+        fun at(level: Int): Prescription {
+            val value = Prescription.of(unit, level, false, false, null).perSetPlanned ?: per
+            return block.copy(
+                exercise = exercise, sets = block.exercise.sets,
+                reps = value.takeIf { !seconds }, seconds = value.takeIf { seconds }, target = value,
+            )
+        }
+        val limb = block.sided?.limb ?: return at(steps + applied)
+        return runCatching { sidedPrescription(limb, unit, steps, applied, 0, false, ::at) }.onFailure(Safety::report).getOrElse { block }
     }
 
     /** Ce que la séance dit de l'exercice part dans son réglage. */
@@ -672,6 +681,21 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
 
     companion object {
         /**
+         * Exos notés en entier mais laissés incomplets par l'ancienne règle (une série sous le prévu) : validés, sauf
+         * jour Boss. Le même programme s'il n'y a rien à changer.
+         */
+        fun revalidated(program: StoredProgram, today: LocalDate): StoredProgram {
+            val schedule = ProgramSchedule(program, today)
+            val add = program.logs.filter { (key, log) -> key !in program.done && log.perSet?.let { v -> v.isNotEmpty() && v.all { it > 0 } } == true }
+                .keys.filter { key ->
+                    val day = key.substringBefore(':').toIntOrNull() ?: return@filter false
+                    val e = key.substringAfter(':').toIntOrNull() ?: return@filter false
+                    schedule.sessionAt(day)?.prescriptions?.getOrNull(e)?.isMetBy(program.logs.getValue(key)) == true
+                }
+            return if (add.isEmpty()) program else program.copy(done = program.done + add)
+        }
+
+        /**
          * Ce que la séance [index] a changé au réglage de ses exercices : le même programme sans rien de noté ce
          * jour-là, puis avec. La progression normale n'y est pas : seulement ce qui vient de l'adaptation.
          */
@@ -681,7 +705,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             val before = beforeSchedule.snapshotAfter(index)
             val after = afterSchedule.snapshotAfter(index)
             val session = afterSchedule.resolved[index] ?: return emptyList()
-            val keys = session.prescriptions.filter { it.variant == null && !it.isTest && !it.exercise.optional && it.exercise.progression != null }
+            val keys = session.prescriptions.filter { !it.isTest && !it.exercise.optional && it.exercise.progression != null }
                 .map { it.key }.distinct()
             return keys.flatMap { key ->
                 val (view, now) = after[key] ?: return@flatMap emptyList()

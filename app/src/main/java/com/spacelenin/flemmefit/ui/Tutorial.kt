@@ -56,7 +56,7 @@ private val Pages = listOf(
         listOf(
             "« C'est parti » ou « Démarrer la séance » : le mode séance te guide exercice par exercice, série par série, avec le repos décompté. Tout s'enregistre tout seul.",
             "Touche la vignette d'un exercice pour le marquer comme fait, touche son nom pour le détail (chiffres, consigne, niveaux).",
-            "Appui long ou ⋮ › « Saisir mes séries » : tu règles chaque série. En dessous du prévu, l'exercice est incomplet et la progression attend.",
+            "Appui long ou ⋮ › « Saisir mes séries » : tu règles chaque série. Toutes faites = exo validé, même en dessous du prévu : la suite s'adapte à tes vrais chiffres.",
             "Dans le détail ou le ⋮ : ⏱ chrono (séries et repos enchaînés) et minuteur de repos. Écran verrouillé ? Une notification décompte et sonne à la fin.",
             "Échauffement et étirements sont facultatifs : les passer ne compte pas contre toi.",
             "Séance finie : dis comment c'était (😫 🙂 💪), ou passe.",

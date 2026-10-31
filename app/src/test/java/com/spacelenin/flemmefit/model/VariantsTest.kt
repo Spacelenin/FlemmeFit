@@ -92,8 +92,9 @@ class VariantsTest {
         assertEquals(listOf(20), progress.points.map { it.value })
         val next = (first.index + 1 until first.index + 84).mapNotNull(s::sessionAt)
             .first { it.variantIndex?.let { i -> it.prescriptions[i].variant!!.id } == "pompes-diamant" }
-        // 40 / 2,65 = 15 au max, 60 % = 9.
-        assertEquals(9, next.prescriptions[next.variantIndex!!].reps)
+        // 40 / 2,65 = 15 au max, 60 % = 9 ; et 20 au max pour 7 prévus règle la variante 2 crans plus haut.
+        assertEquals(11, next.prescriptions[next.variantIndex!!].reps)
+        assertTrue(s.adaptations().any { it.name == "Pompes diamant" && it.crans == 2 })
     }
 
     @Test

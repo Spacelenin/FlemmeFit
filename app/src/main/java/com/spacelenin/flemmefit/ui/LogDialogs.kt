@@ -75,8 +75,9 @@ fun LogDialog(
                     max,
                 ) { max = it }
                 Text(
-                    if (complete) "✅ Le prévu est atteint : l'exercice sera marqué comme fait."
-                    else "◐ En dessous du prévu : l'exercice sera incomplet.",
+                    if (complete) "✅ Toutes les séries sont faites : l'exercice sera marqué comme fait."
+                    else if (prescription.isBoss) "◐ Boss : il faut atteindre le prévu."
+                    else "◐ Toutes les séries ne sont pas faites : l'exercice sera incomplet.",
                     style = MaterialTheme.typography.bodySmall,
                     color = if (complete) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                 )

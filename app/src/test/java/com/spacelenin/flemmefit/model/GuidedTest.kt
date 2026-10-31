@@ -12,7 +12,7 @@ class GuidedTest {
         GuidedExercise(Prescription.of(exercise, level = 0, deload = false, boss = boss, lastMax = lastMax))
 
     @Test
-    fun `rep sets are logged one by one and validated when all reach the plan`() {
+    fun `rep sets are logged one by one and validated when all are done`() {
         val g = guided(Exercise("Pompes", sets = 3, reps = "10", rest = "90s"))
         assertEquals(3, g.sets)
         assertEquals(10, g.suggested(0))
@@ -22,7 +22,8 @@ class GuidedTest {
         val (log, complete) = g.result(listOf(10, 10, 10))
         assertTrue(complete)
         assertEquals(listOf(10, 10, 10), log.perSet)
-        assertFalse(g.result(listOf(10, 8, 10)).second)
+        // Sous le prévu, mais toutes faites : validé, l'adaptation baisse la suite.
+        assertTrue(g.result(listOf(10, 8, 10)).second)
     }
 
     @Test

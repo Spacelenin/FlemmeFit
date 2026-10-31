@@ -165,4 +165,19 @@ class AdaptationTest {
         assertTrue(stats.exercises.first { it.key == "echauffement" }.optional)
         assertFalse(stats.exercises.first { it.key == "pompes" }.optional)
     }
+
+    @Test
+    fun `feelings and sets tune a variant too`() {
+        val plan = (PlanParser.parse(java.io.File("../examples/routine-maison.json").readText()) as ParseResult.Success).plan
+        val start = LocalDate.of(2026, 10, 19)
+        val tests = mapOf("pompes" to 40, "abdos" to 60, "gainage" to 180, "tractions" to 12, "squats" to 40)
+        val p0 = StoredProgram("p", plan, start.toString(), tests = tests)
+        val day = ProgramSchedule(p0, start.plusYears(1)).let { s -> (0 until 84).mapNotNull(s::sessionAt).first { it.variantIndex != null && it.prescriptions[it.variantIndex!!].variant!!.id == "pompes-diamant" } }
+        val e = day.variantIndex!!
+        val planned = day.prescriptions[e].reps!!
+        // Fait pile, mais « dur » : la variante baisse un peu, comme un exo normal.
+        val hard = p0.saveLog(day.index, e, ExerciseLog.ofSets(List(3) { planned }, allOut = true), complete = true).withExerciseFeeling(day.index, e, Adaptation.FEELING_HARD)
+        val changes = ProgramSchedule.adaptationChanges(hard, day.index, start.plusYears(1))
+        assertEquals(AdaptChange.Kind.DOWN, changes.single { it.name == "Pompes diamant" }.kind)
+    }
 }
