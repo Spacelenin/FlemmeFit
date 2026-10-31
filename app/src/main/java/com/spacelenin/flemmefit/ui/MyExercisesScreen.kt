@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -128,7 +129,7 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
                                 Text(name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp, top = 12.dp))
                             }
                         }
-                        items(list, key = { "adapt-$k-${it.name}" }) { a -> AdaptationRow(a, balances.firstOrNull { it.name == a.name }) }
+                        itemsIndexed(list, key = { i, a -> "adapt-$k-$i-${a.name}" }) { _, a -> AdaptationRow(a, balances.firstOrNull { it.name == a.name }) }
                     }
                 }
                 if (program == null) return@LazyColumn
