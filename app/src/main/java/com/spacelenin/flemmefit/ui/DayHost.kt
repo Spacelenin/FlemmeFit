@@ -216,7 +216,7 @@ fun rememberDayActions(
 
     changesFor?.takeIf { guidedDay == null && feelingFor == null }?.let { index ->
         // Recalculé quand le ressenti tout juste donné arrive dans le programme : il compte aussi.
-        val changes = remember(program, index) { ProgramSchedule.adaptationChanges(program, index, today) }
+        val changes = remember(program, index) { runCatching { ProgramSchedule.adaptationChanges(program, index, today) }.getOrDefault(emptyList()) }
         if (changes.isEmpty()) {
             LaunchedEffect(index) { changesFor = null }
         } else {

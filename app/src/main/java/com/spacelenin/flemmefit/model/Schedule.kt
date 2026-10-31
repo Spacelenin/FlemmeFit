@@ -382,28 +382,8 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 weighted = weighted,
             )
             val limb = ex.perSide ?: return at(level)
-            // Une série par côté : chaque côté à son niveau, le faible en premier avec une série de plus s'il rattrape.
-            val state = balance[ex.key]?.takeIf { !deload && !chill } ?: BalanceState()
-            val weak = state.weak.takeIf { state.mode != BalanceMode.EVEN }
-            fun own(side: Side) = (steps + (sideAdapt[ex.key to side]?.applied ?: applied)).coerceAtLeast(0)
-            fun sideLevel(side: Side): Int {
-                // Équilibré : les deux côtés font pareil, au niveau moyen.
-                if (weak == null) return Math.round((own(Side.LEFT) + own(Side.RIGHT)) / 2.0).toInt() + extra
-                return when (side) {
-                    weak -> own(side) + state.boostLevels
-                    else -> state.frozen?.let { minOf(own(side), it) } ?: own(side)
-                } + extra
-            }
-            val left = at(sideLevel(Side.LEFT))
-            val right = at(sideLevel(Side.RIGHT))
-            val main = if (weak == Side.RIGHT) right else left
-            val n = main.sets ?: 1
-            val sided = SidedPlan(
-                limb,
-                Sides.order(n + if (weak == Side.LEFT) 1 else 0, n + if (weak == Side.RIGHT) 1 else 0, weak ?: Side.LEFT),
-                left.perSetPlanned, right.perSetPlanned, if (weak == null) BalanceMode.EVEN else state.mode, weak,
-            )
-            return main.copy(sets = sided.order.size, sided = sided)
+            return runCatching { sidedPrescription(limb, ex, steps, applied, extra, deload || chill, ::at) }
+                .onFailure(Safety::report).getOrElse { at(level) }
         }
         val prescriptions = day.exercises.mapIndexed(::prescribe).toMutableList()
         val n = prescriptions.size
@@ -493,7 +473,8 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             }
             val done = program.isDone(i, e)
             if (done && !deload && !chill) validated[key] = (validated[key] ?: 0) + 1
-            if (!deload && !chill) learn(pr, i, e, done, final = done || date.isBefore(today))
+            // Le réglage n'est qu'un plus : s'il échoue, la séance reste calculée sans lui (jamais de plantage).
+            if (!deload && !chill) runCatching { learn(pr, i, e, done, final = done || date.isBefore(today)) }.onFailure(Safety::report)
             if (max == null) return@forEachIndexed
             lastMax[key] = max
         }
@@ -531,6 +512,33 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     fun currentTestResults(): Map<String, Int> {
         ensure(lastIndexOnOrBefore(today))
         return testResults.toMap()
+    }
+
+    /** Une série par côté : chaque côté à son niveau, le faible en premier avec une série de plus s'il rattrape. */
+    private fun sidedPrescription(
+        limb: String, ex: Exercise, steps: Int, applied: Int, extra: Int, light: Boolean, at: (Int) -> Prescription,
+    ): Prescription {
+        val state = balance[ex.key]?.takeIf { !light } ?: BalanceState()
+        val weak = state.weak.takeIf { state.mode != BalanceMode.EVEN }
+        fun own(side: Side) = (steps + (sideAdapt[ex.key to side]?.applied ?: applied)).coerceAtLeast(0)
+        fun sideLevel(side: Side): Int {
+            // Équilibré : les deux côtés font pareil, au niveau moyen.
+            if (weak == null) return Math.round((own(Side.LEFT) + own(Side.RIGHT)) / 2.0).toInt() + extra
+            return when (side) {
+                weak -> own(side) + state.boostLevels
+                else -> state.frozen?.let { minOf(own(side), it) } ?: own(side)
+            } + extra
+        }
+        val left = at(sideLevel(Side.LEFT))
+        val right = at(sideLevel(Side.RIGHT))
+        val main = if (weak == Side.RIGHT) right else left
+        val n = main.sets ?: 1
+        val sided = SidedPlan(
+            limb,
+            Sides.order(n + if (weak == Side.LEFT) 1 else 0, n + if (weak == Side.RIGHT) 1 else 0, weak ?: Side.LEFT),
+            left.perSetPlanned, right.perSetPlanned, if (weak == null) BalanceMode.EVEN else state.mode, weak,
+        )
+        return main.copy(sets = sided.order.size, sided = sided)
     }
 
     /** Ce que la séance dit de l'exercice part dans son réglage. */

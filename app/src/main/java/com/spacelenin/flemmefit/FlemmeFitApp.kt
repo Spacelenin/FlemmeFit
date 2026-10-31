@@ -34,6 +34,8 @@ class FlemmeFitApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // En premier : un plantage, même au démarrage, laisse un rapport proposé au lancement suivant.
+        CrashReport.install(this)
         repository = ProgramRepository(filesDir)
         settings = AppSettings(this)
         backup = BackupManager(this, repository, settings)
