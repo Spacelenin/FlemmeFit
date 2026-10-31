@@ -40,6 +40,9 @@ class CrashTest {
         for (tests in listOf(strong, mapOf("pompes" to 3))) {
             var p = StoredProgram("p", plan, start.toString(), tests = tests)
             for (i in 0 until 7 * 10) {
+                // Un jour sur sept en Chill, un autre en Burst : variantes et côtés compris.
+                if (i % 7 == 2) p = p.chill(i)
+                if (i % 7 == 4) p = p.burst(i)
                 val today = start.plusDays(i.toLong())
                 val session = ProgramSchedule(p, today).sessionAt(i) ?: continue
                 session.prescriptions.forEachIndexed { e, pr ->
