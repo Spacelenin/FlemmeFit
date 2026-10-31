@@ -565,8 +565,9 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             learned = true
         }
         if (!learned) return
-        val l = sideAdapt.getValue(pr.key to Side.LEFT)
-        val r = sideAdapt.getValue(pr.key to Side.RIGHT)
+        // Un seul côté noté (séance en cours) : l'autre garde le niveau commun.
+        val l = sideAdapt[pr.key to Side.LEFT] ?: common
+        val r = sideAdapt[pr.key to Side.RIGHT] ?: common
         adapt[pr.key] = AdaptState((l.value + r.value) / 2, Math.round((l.applied + r.applied) / 2.0).toInt(), maxOf(l.samples, r.samples))
         updateBalance(pr, i, e)
     }
