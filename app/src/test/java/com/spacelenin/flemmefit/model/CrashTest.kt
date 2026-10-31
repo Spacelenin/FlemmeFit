@@ -61,4 +61,25 @@ class CrashTest {
             }
         }
     }
+
+    @Test
+    fun `more than planned on one side mid-session`() {
+        val plan = (PlanParser.parse(File("../examples/routine-maison.json").readText()) as ParseResult.Success).plan
+        for (startOffset in 0L..6L) for (stop in 1..6) for (v in listOf(8, 1, 20)) {
+            val start = LocalDate.of(2026, 10, 26).minusDays(startOffset * 7)
+            val saturday = (startOffset * 7 + 5).toInt()
+            var p = StoredProgram("p", plan, start.toString(), tests = mapOf("pompes" to 12, "abdos" to 15, "gainage" to 40, "tractions" to 5, "squats" to 20))
+            val today = start.plusDays(saturday.toLong())
+            val session = ProgramSchedule(p, today).sessionAt(saturday) ?: continue
+            val e = session.prescriptions.indexOfFirst { it.exercise.perSide != null }
+            if (e < 0) continue
+            val g = GuidedExercise(session.prescriptions[e])
+            val (log, complete) = g.result(List(stop) { if (it == 0) v else g.suggested(it) })
+            p = p.saveLog(saturday, e, log, complete)
+            val s = ProgramSchedule(p, today)
+            s.allSessionsOrUpTo(today.plusDays(30)); Stats.of(s); s.adaptations(); s.balances()
+            ProgramSchedule.adaptationChanges(p, saturday, today)
+            GuidedExercise(ProgramSchedule(p, today).sessionAt(saturday)!!.prescriptions[e]).let { gg -> (0 until gg.sets).forEach { gg.suggested(it); gg.restAfter(it); gg.countdown(it) } }
+        }
+    }
 }
