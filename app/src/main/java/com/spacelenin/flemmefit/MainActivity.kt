@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spacelenin.flemmefit.timer.AppVisibility
 import com.spacelenin.flemmefit.ui.AppRoot
+import com.spacelenin.flemmefit.ui.CrashScreen
 import com.spacelenin.flemmefit.ui.ImportSource
 import com.spacelenin.flemmefit.ui.theme.FlemmeFitTheme
 
@@ -24,6 +25,9 @@ class MainActivity : ComponentActivity() {
 
     /** Programme à ouvrir, demandé par une notification. */
     private var openRequest by mutableStateOf<String?>(null)
+
+    /** L'appli a planté la dernière fois : son rapport, montré avant tout le reste. */
+    private var crash by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // L'appli est toujours en sombre : icônes claires dans les barres système.
@@ -38,9 +42,19 @@ class MainActivity : ComponentActivity() {
         }
 
         val app = application as FlemmeFitApp
+        crash = CrashReport.pending(this)
         setContent {
             val theme by app.settings.theme.collectAsStateWithLifecycle()
             FlemmeFitTheme(theme) {
+                // Après un plantage : l'écran du rapport seul (et la mise à jour si elle existe), pas l'appli qui
+                // pourrait replanter au même endroit.
+                crash?.let { report ->
+                    CrashScreen(report, app.updater) {
+                        CrashReport.clear(this@MainActivity)
+                        crash = null
+                    }
+                    return@FlemmeFitTheme
+                }
                 AppRoot(
                     repository = app.repository,
                     updater = app.updater,
