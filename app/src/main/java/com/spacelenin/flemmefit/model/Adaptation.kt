@@ -71,8 +71,10 @@ object Adaptation {
         sessionFeeling: Int?,
         /** Exercice fait une série par côté : ce que la séance dit de ce côté-là. */
         side: Side? = null,
+        /** Crans ajoutés ce jour-là (Boss, Burst) : ce qui est fait se compare au prévu sans eux. */
+        extra: Int = 0,
     ): Double? {
-        val numeric = numeric(prescription, log, done, final, step, side)
+        val numeric = numeric(prescription, log, done, final, step, side)?.plus(extra)
         val touched = done || numeric != null || exerciseFeeling != null
         if (!touched) return null
         val feeling = when (exerciseFeeling) {
@@ -99,7 +101,9 @@ object Adaptation {
         }
         val allOut = p.allOut && values.size == sets
         val normal = if (allOut) values.dropLast(1) else values
-        val max = (if (allOut) values.last().takeIf { it > 0 } else null) ?: log.max.takeIf { side == null || log.sides == null }
+        // Variante : son max recale déjà le dosage (le taux), il ne compte pas une deuxième fois ici.
+        val max = if (p.variant != null) null
+        else (if (allOut) values.last().takeIf { it > 0 } else null) ?: log.max.takeIf { side == null || log.sides == null }
         val normalCount = if (p.allOut) sets - 1 else sets
         val doneNormal = normal.filter { it > 0 }
         // Séries manquantes d'une séance finie : comptées à 0 (c'était trop).

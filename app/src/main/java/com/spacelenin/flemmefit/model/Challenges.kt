@@ -21,6 +21,8 @@ data class Challenge(
     val refused: Boolean = false,
     /** Réponse donnée : réussi ou raté. */
     val won: Boolean? = null,
+    /** Exercice d'un côté à la fois : la quantité est par côté (« bras », « jambe », « côté »). */
+    val perSide: String? = null,
 ) {
     enum class Status { OFFERED, RUNNING, ASK_RESULT, WON, LOST, REFUSED, EXPIRED }
 
@@ -36,7 +38,8 @@ data class Challenge(
 
     /** « 39 pompes classiques », « 2 min 30 de gainage (planche) ». */
     val label: String
-        get() = if (seconds) "${Measures.formatSeconds(amount)} de ${exercise.lowercase()}" else "$amount ${exercise.lowercase()}"
+        get() = (if (seconds) "${Measures.formatSeconds(amount)} de ${exercise.lowercase()}" else "$amount ${exercise.lowercase()}") +
+            (perSide?.let { " ${Sides.per(it)}" } ?: "")
 
     /** Encore en jeu : à proposer, en cours, ou en attente de la réponse. */
     fun open(now: Long) = status(now) in setOf(Status.OFFERED, Status.RUNNING, Status.ASK_RESULT)
@@ -49,6 +52,9 @@ data class Challenge(
     fun finish(won: Boolean, now: Long) =
         if (status(now) == Status.RUNNING || status(now) == Status.ASK_RESULT) copy(won = won) else this
 }
+
+/** Ce que demande un défi : [amount] reps (ou secondes) de [exercise], par côté si [perSide]. */
+data class ChallengeDose(val exercise: String, val amount: Int, val seconds: Boolean, val perSide: String? = null)
 
 /** Créneau d'un défi : un jour de séance, une heure. */
 data class ChallengeSlot(val id: String, val date: LocalDate, val minuteOfDay: Int)
@@ -87,7 +93,7 @@ object Challenges {
      * Le défi : un exercice de la séance du jour rattaché à un test (pompes, abdos, gainage…), à faire à
      * [SHARE] de son volume en séance, en autant de fois qu'on veut. Null si rien ne s'y prête.
      */
-    fun pick(prescriptions: List<Prescription>, seed: Long): Pair<String, Pair<Int, Boolean>>? {
+    fun pick(prescriptions: List<Prescription>, seed: Long): ChallengeDose? {
         val candidates = prescriptions.filter {
             !it.exercise.optional && !it.isTest && it.variant == null && it.exercise.test != null &&
                 it.sets != null && (it.reps != null || it.seconds != null)
@@ -96,9 +102,11 @@ object Challenges {
         val p = candidates[Random(seed).nextInt(candidates.size)]
         val seconds = p.reps == null
         val per = p.reps ?: p.seconds!!
-        val total = p.sets!! * per * SHARE
+        // Un côté à la fois : la dose de chaque côté (ses séries à lui).
+        val sets = p.sided?.let { s -> minOf(s.setsOf(Side.LEFT), s.setsOf(Side.RIGHT)) } ?: p.sets!!
+        val total = sets * per * SHARE
         val amount = if (seconds) ((total / 5).roundToInt() * 5).coerceAtLeast(20) else total.roundToInt().coerceAtLeast(5)
-        return p.exercise.name to (amount to seconds)
+        return ChallengeDose(p.exercise.name, amount, seconds, p.sided?.limb)
     }
 
     fun wonCount(challenges: List<Challenge>) = challenges.count { it.won == true }

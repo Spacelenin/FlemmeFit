@@ -180,4 +180,18 @@ class AdaptationTest {
         val changes = ProgramSchedule.adaptationChanges(hard, day.index, start.plusYears(1))
         assertEquals(AdaptChange.Kind.DOWN, changes.single { it.name == "Pompes diamant" }.kind)
     }
+
+    @Test
+    fun `a Burst done at your usual level does not lower the next session`() {
+        var p = StoredProgram("p", plan, start.toString())
+        // Séances 0 à 2 pile au prévu (8, 8, 9) ; séance 3 en Burst (prévu 11) faite à 9, son niveau habituel.
+        for (n in 0 until 4) {
+            if (n == 3) p = p.burst(day(n))
+            val pr = ProgramSchedule(p, start.plusDays(day(n).toLong())).sessionAt(day(n))!!.prescriptions[0]
+            p = p.sets(n, 0, *IntArray(pr.sets!!) { minOf(pr.reps!!, 9) })
+        }
+        assertEquals(11, ProgramSchedule(p, start.plusDays(day(3).toLong())).sessionAt(day(3))!!.prescriptions[0].reps)
+        // Séance 4 : la courbe de base (10), pas moins.
+        assertEquals(10, reps(p, 4))
+    }
 }

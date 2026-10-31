@@ -70,7 +70,9 @@ class ChallengeManager(private val context: Context, private val repository: Pro
 
     private fun sessionDays(monday: LocalDate): List<LocalDate> {
         val programs = repository.state.value.programs
-        return (0L..6L).map(monday::plusDays).filter { d -> programs.any { ProgramSchedule(it, d).sessionOn(d) != null } }
+        // Un calcul par programme pour toute la semaine (avant : un par jour et par programme).
+        val schedules = programs.map { ProgramSchedule(it, monday.plusDays(6)) }
+        return (0L..6L).map(monday::plusDays).filter { d -> schedules.any { it.sessionOn(d) != null } }
     }
 
     private fun nextSlot(now: LocalDateTime): Pair<ChallengeSlot, LocalDateTime>? {
@@ -133,8 +135,8 @@ class ChallengeManager(private val context: Context, private val repository: Pro
             return
         }
         val session = programs.firstNotNullOfOrNull { ProgramSchedule(it, today).sessionOn(today) } ?: return
-        val (name, dose) = Challenges.pick(session.prescriptions, seed * 13 + slotId.hashCode()) ?: return
-        val challenge = Challenge(slotId, today.toString(), name, dose.first, dose.second, offeredAt = now)
+        val dose = Challenges.pick(session.prescriptions, seed * 13 + slotId.hashCode()) ?: return
+        val challenge = Challenge(slotId, today.toString(), dose.exercise, dose.amount, dose.seconds, offeredAt = now, perSide = dose.perSide)
         save(_all.value + challenge)
         notifyOffer(challenge)
     }

@@ -403,6 +403,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                     v, family, base.exercise, family.test?.let(testResults::get), ratios[v.id] ?: v.ratio, v.ratio,
                     custom = custom != null, testSeconds = plan.test(family.test)?.isSeconds == true,
                 ),
+                light = chill,
             )
             variantBase = b
             if (family.replace) {
@@ -445,7 +446,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 }
                 // Le dosage suit le taux ; ce qui est noté et ressenti règle la variante par-dessus, comme les autres exos.
                 val done = program.isDone(i, e)
-                runCatching { learn(pr, i, e, done, final = done || date.isBefore(today)) }.onFailure(Safety::report)
+                if (!chill) runCatching { learn(pr, i, e, done, final = done || date.isBefore(today), extra = 0) }.onFailure(Safety::report)
                 return@forEachIndexed
             }
             if (pr.isTest) {
@@ -459,7 +460,9 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             val done = program.isDone(i, e)
             if (done && !deload && !chill) validated[key] = (validated[key] ?: 0) + 1
             // Le réglage n'est qu'un plus : s'il échoue, la séance reste calculée sans lui (jamais de plantage).
-            if (!deload && !chill) runCatching { learn(pr, i, e, done, final = done || date.isBefore(today)) }.onFailure(Safety::report)
+            // Boss et Burst gonflent le prévu exprès : le réglage compare à ce qui aurait été prévu sans eux.
+            val extra = if (pr.exercise.progression == null) 0 else if (boss) BOSS_STEPS else if (burst) BURST_STEPS else 0
+            if (!deload && !chill) runCatching { learn(pr, i, e, done, final = done || date.isBefore(today), extra) }.onFailure(Safety::report)
             if (max == null) return@forEachIndexed
             lastMax[key] = max
         }
@@ -532,7 +535,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
      * Bloc variante dosé : son réglage sur mesure par-dessus le dosage du taux, en crans d'une rep (ou de 5 s).
      * Le dosage devient la « courbe de base » de la variante, le réglage et les côtés marchent comme pour les autres.
      */
-    private fun adaptVariant(block: Prescription): Prescription {
+    private fun adaptVariant(block: Prescription, light: Boolean): Prescription {
         val per = block.perSetPlanned ?: return block
         val seconds = block.maxIsSeconds
         val progression = if (seconds) Progression(duration = "5s") else Progression(reps = 1)
@@ -541,25 +544,27 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         val applied = adapt[block.key]?.applied ?: 0
         adaptViews[block.key] = AdaptBase(unit, steps, applied, false)
         val exercise = block.exercise.copy(progression = progression)
+        // Chill : séries divisées par deux, comme le reste de la séance.
         fun at(level: Int): Prescription {
-            val value = Prescription.of(unit, level, false, false, null).perSetPlanned ?: per
+            val p = Prescription.of(unit, level, light, false, null)
+            val value = p.perSetPlanned ?: per
             return block.copy(
-                exercise = exercise, sets = block.exercise.sets,
+                exercise = exercise, sets = p.sets ?: block.exercise.sets,
                 reps = value.takeIf { !seconds }, seconds = value.takeIf { seconds }, target = value,
             )
         }
         val limb = block.sided?.limb ?: return at(steps + applied)
-        return runCatching { sidedPrescription(limb, unit, steps, applied, 0, false, ::at) }.onFailure(Safety::report).getOrElse { block }
+        return runCatching { sidedPrescription(limb, unit, steps, applied, 0, light, ::at) }.onFailure(Safety::report).getOrElse { block }
     }
 
     /** Ce que la séance dit de l'exercice part dans son réglage. */
-    private fun learn(pr: Prescription, i: Int, e: Int, done: Boolean, final: Boolean) {
+    private fun learn(pr: Prescription, i: Int, e: Int, done: Boolean, final: Boolean, extra: Int) {
         val p = pr.exercise.progression ?: return
         val factor = if (pr.weighted == true) pr.exercise.weights?.factor ?: WeightsOption.DEFAULT_FACTOR else 1.0
         val step = (if (pr.maxIsSeconds) Measures.seconds(p.duration)?.toDouble() else p.reps?.toDouble())?.times(factor)
         fun signalOf(side: Side?) = Adaptation.signal(
             pr, program.logOf(i, e), done, final, step,
-            exerciseFeeling = program.exerciseFeelingOf(i, e), sessionFeeling = program.feelingOf(i), side = side,
+            exerciseFeeling = program.exerciseFeelingOf(i, e), sessionFeeling = program.feelingOf(i), side = side, extra = extra,
         )
         val view = adaptViews[pr.key]
         // Jamais sous le départ du palier, ni au-delà du plafond de l'exercice (le réglage n'y servirait à rien).

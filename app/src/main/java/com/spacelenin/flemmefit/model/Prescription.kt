@@ -210,7 +210,7 @@ data class Prescription(
                 }
             }
 
-            val planned = reps ?: seconds?.takeIf { reps == null && exercise.reps == null }
+            val planned = reps ?: seconds?.takeIf { exercise.reps == null }
             val target = when {
                 boss -> lastMax?.plus(1) ?: planned
                 exercise.amrap -> planned

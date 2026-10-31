@@ -47,10 +47,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.spacelenin.flemmefit.model.BURST_STEPS
 import com.spacelenin.flemmefit.model.ExerciseLog
+import com.spacelenin.flemmefit.model.GuidedExercise
 import com.spacelenin.flemmefit.model.Measures
 import com.spacelenin.flemmefit.model.Plan
 import com.spacelenin.flemmefit.model.Prescription
 import com.spacelenin.flemmefit.model.Side
+import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.model.TimerPlans
 
 /** Valeur d'une série, en reps ou en durée. */
@@ -245,8 +247,9 @@ fun SetsLogSheet(
     val planned = prescription.perSetPlanned ?: 0
     val count = prescription.sets ?: 1
     val sided = prescription.sided
-    // Une série par côté : chaque côté a son prévu.
-    fun plannedAt(i: Int) = sided?.plannedAt(i) ?: planned
+    // Une série par côté : chaque côté a son prévu (le même calcul qu'en séance guidée).
+    val guided = remember(prescription) { GuidedExercise(prescription) }
+    fun plannedAt(i: Int) = guided.plannedAt(i) ?: planned
     val step = if (prescription.maxIsSeconds) 5 else 1
     var values by rememberSaveable {
         mutableStateOf(
@@ -375,14 +378,11 @@ fun SetsLogSheet(
 @Composable
 fun ExerciseFeelingChips(current: Int?, onPick: (Int?) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        EXERCISE_FEELINGS.forEachIndexed { i, label ->
-            FilterChip(selected = current == i, onClick = { onPick(if (current == i) null else i) }, label = { Text(label) })
+        StoredProgram.FEELINGS.forEachIndexed { i, emoji ->
+            FilterChip(selected = current == i, onClick = { onPick(if (current == i) null else i) }, label = { Text("$emoji ${StoredProgram.FEELING_LABELS[i]}") })
         }
     }
 }
-
-/** Dans l'ordre de [com.spacelenin.flemmefit.model.Adaptation.FEELING_HARD] et suivants. */
-private val EXERCISE_FEELINGS = listOf("😮‍💨 Dur", "👌 OK", "💪 Facile")
 
 /** « Ton ressenti » sous un exo, quand il se règle sur toi. */
 @Composable

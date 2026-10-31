@@ -46,9 +46,7 @@ import com.spacelenin.flemmefit.model.Measures
 import com.spacelenin.flemmefit.model.Stats
 import com.spacelenin.flemmefit.model.WeekVolume
 import com.spacelenin.flemmefit.ui.theme.programColor
-import java.time.format.DateTimeFormatter
 
-private val DayMonth = DateTimeFormatter.ofPattern("d/MM")
 
 /** Totaux, graphique et historique. */
 fun LazyListScope.statsOverviewItems(stats: Stats, color: Color, showProgram: Boolean) {
@@ -84,11 +82,6 @@ fun LazyListScope.statsExerciseItems(stats: Stats, color: Color) {
     if (shown.isEmpty()) return
     item(key = "stats-ex-title") { SectionTitle("Par exercice") }
     items(shown, key = { "e-${it.key}" }) { ExerciseStatsCard(it, color) }
-}
-
-@Composable
-private fun SectionTitle(text: String) {
-    Text(text, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 6.dp))
 }
 
 /** Tuiles de chiffres, deux par ligne. */

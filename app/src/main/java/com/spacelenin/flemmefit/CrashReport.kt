@@ -6,6 +6,8 @@ import android.util.Log
 import com.spacelenin.flemmefit.model.Safety
 import java.io.File
 import java.time.LocalDateTime
+import java.util.Collections
+import java.util.concurrent.Executors
 
 /**
  * Rapport du dernier plantage : écrit au moment où l'appli plante, proposé au lancement suivant pour l'envoyer.
@@ -15,6 +17,8 @@ object CrashReport {
     private const val FILE = "dernier-plantage.txt"
     private const val ISSUES = "erreurs-rattrapees.txt"
     private const val MAX_ISSUES = 4000
+    private val seen: MutableSet<String> = Collections.synchronizedSet(HashSet())
+    private val writer = Executors.newSingleThreadExecutor()
 
     fun install(context: Context) {
         val dir = context.filesDir
@@ -23,12 +27,20 @@ object CrashReport {
             runCatching { File(dir, FILE).writeText(text(error) + issues(dir)) }
             previous?.uncaughtException(thread, error)
         }
-        // Erreurs rattrapées (l'appli a continué) : gardées pour un éventuel rapport, les plus récentes au bout.
+        // Erreurs rattrapées (l'appli a continué) : gardées pour un éventuel rapport, les plus récentes au bout. Une
+        // même erreur n'est notée qu'une fois par lancement, et jamais depuis l'écran (le calcul se refait souvent).
         Safety.onError = { error ->
-            Log.w("FlemmeFit", "Erreur rattrapée", error)
-            val file = File(dir, ISSUES)
-            val all = (if (file.exists()) file.readText() else "") + "\n" + text(error).take(1500)
-            file.writeText(all.takeLast(MAX_ISSUES))
+            val where = error.stackTrace.firstOrNull()?.toString()
+            if (seen.add("${error.javaClass.name}@$where")) {
+                Log.w("FlemmeFit", "Erreur rattrapée", error)
+                writer.execute {
+                    runCatching {
+                        val file = File(dir, ISSUES)
+                        val all = (if (file.exists()) file.readText() else "") + "\n" + text(error).take(1500)
+                        file.writeText(all.takeLast(MAX_ISSUES))
+                    }
+                }
+            }
         }
     }
 

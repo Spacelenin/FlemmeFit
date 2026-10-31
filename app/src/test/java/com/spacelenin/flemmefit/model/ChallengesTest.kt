@@ -35,11 +35,17 @@ class ChallengesTest {
         val pompes = Prescription(Exercise("Pompes classiques", test = "pompes"), sets = 5, reps = 13, seconds = null, load = null)
         val planche = Prescription(Exercise("Gainage (planche)", test = "gainage"), sets = 3, reps = null, seconds = 45, load = null)
         val warmup = Prescription(Exercise("Échauffement", optional = true), sets = 1, reps = null, seconds = 300, load = null)
-        val (name, dose) = Challenges.pick(listOf(warmup, pompes), seed = 3)!!
-        assertEquals("Pompes classiques", name)
-        assertEquals(39 to false, dose)
-        assertEquals(80 to true, Challenges.pick(listOf(planche), seed = 3)!!.second)
+        assertEquals(ChallengeDose("Pompes classiques", 39, false), Challenges.pick(listOf(warmup, pompes), seed = 3))
+        assertEquals(ChallengeDose("Gainage (planche)", 80, true), Challenges.pick(listOf(planche), seed = 3))
         assertNull(Challenges.pick(listOf(warmup), seed = 3))
+        // Un côté à la fois : la dose est par côté, et le dit.
+        val hipDips = pompes.copy(
+            exercise = Exercise("Hip dips", test = "abdos", perSide = "côté"), sets = 6, reps = 10,
+            sided = SidedPlan("côté", Sides.order(3, 3), 10, 10),
+        )
+        val dose = Challenges.pick(listOf(hipDips), seed = 3)!!
+        assertEquals(18, dose.amount)
+        assertEquals("18 hip dips par côté", Challenge("x", "2026-10-31", dose.exercise, dose.amount, dose.seconds, 0, perSide = dose.perSide).label)
     }
 
     @Test
