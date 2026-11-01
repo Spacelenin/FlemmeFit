@@ -2,7 +2,6 @@ package com.spacelenin.flemmefit
 
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -99,9 +98,7 @@ class MainActivity : ComponentActivity() {
         else -> null
     }
 
-    private fun Intent.streamUri(): Uri? =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
-        else @Suppress("DEPRECATION") getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+    private fun Intent.streamUri(): Uri? = getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
 
     companion object {
         const val EXTRA_PROGRAM_ID = "com.spacelenin.flemmefit.PROGRAM_ID"

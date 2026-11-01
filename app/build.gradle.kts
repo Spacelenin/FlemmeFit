@@ -9,12 +9,12 @@ plugins {
 
 android {
     namespace = "com.spacelenin.flemmefit"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.spacelenin.flemmefit"
-        minSdk = 26
-        targetSdk = 35
+        minSdk = 36
+        targetSdk = 36
         // En CI, chaque build a un numéro croissant : les APK s'installent par-dessus sans perdre les données.
         versionCode = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
         versionName = "1.0.${versionCode}"

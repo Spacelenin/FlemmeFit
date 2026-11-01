@@ -7,7 +7,6 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -73,7 +72,7 @@ object TimerAlarm {
             val pending = PendingIntent.getBroadcast(context, REQUEST_BASE + i, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             val at = wall + end.inMs
             try {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarms.canScheduleExactAlarms()) {
+                if (alarms.canScheduleExactAlarms()) {
                     alarms.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pending)
                 } else {
                     alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pending)
