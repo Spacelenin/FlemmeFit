@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.media.ToneGenerator
-import android.os.Build
 import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -143,7 +142,7 @@ fun AskNotifications(active: Boolean = true) {
     val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     LaunchedEffect(active) {
-        if (active && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+        if (active &&
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) {
             launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -272,12 +271,7 @@ internal fun clock(seconds: Int) = "%d:%02d".format(seconds / 60, seconds % 60)
 
 /** Vibrations et bips du minuteur. Le son suit le volume média, comme la musique. */
 internal class TimerFeedback(context: Context) {
-    private val vibrator: Vibrator? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        context.getSystemService(VibratorManager::class.java)?.defaultVibrator
-    } else {
-        @Suppress("DEPRECATION")
-        context.getSystemService(Vibrator::class.java)
-    }
+    private val vibrator: Vibrator? = context.getSystemService(VibratorManager::class.java)?.defaultVibrator
     private val tones: ToneGenerator? = try {
         ToneGenerator(AudioManager.STREAM_MUSIC, 90)
     } catch (_: RuntimeException) {

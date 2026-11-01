@@ -1,7 +1,6 @@
 package com.spacelenin.flemmefit.ui
 
 import android.Manifest
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -52,7 +51,7 @@ fun RemindersDialog(reminders: ReminderScheduler, programs: List<StoredProgram>,
     }
 
     fun setEnabled(on: Boolean) {
-        if (on && !reminders.canNotify() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (on && !reminders.canNotify()) {
             permission.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
             reminders.update(settings.copy(enabled = on))

@@ -9,7 +9,6 @@ import android.content.Context
 import android.util.Log
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -70,8 +69,7 @@ class ReminderScheduler(private val context: Context) {
     }
 
     fun canNotify(): Boolean =
-        Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
     fun reschedule() {
         val s = _settings.value
@@ -111,7 +109,7 @@ class ReminderScheduler(private val context: Context) {
     /** À l'heure pile : une alarme approximative peut être repoussée de plusieurs heures quand le téléphone dort. */
     private fun setExact(at: Long, pending: PendingIntent) {
         try {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarms.canScheduleExactAlarms()) {
+            if (alarms.canScheduleExactAlarms()) {
                 alarms.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pending)
                 return
             }
