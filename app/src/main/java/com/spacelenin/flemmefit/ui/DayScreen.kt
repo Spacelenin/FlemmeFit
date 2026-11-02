@@ -45,7 +45,7 @@ fun DayScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            TopAppBar(colors = fitBarColors(), 
                 title = { Text(program.plan.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour au calendrier") } },
                 actions = {

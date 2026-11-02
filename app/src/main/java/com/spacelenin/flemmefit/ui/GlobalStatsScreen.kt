@@ -43,7 +43,7 @@ fun GlobalStatsScreen(programs: List<StoredProgram>) {
     val color = MaterialTheme.colorScheme.primary
     val several = programs.size > 1
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Stats") }) }) { padding ->
+    Scaffold(topBar = { TopAppBar(colors = fitBarColors(), title = { Text("Stats") }) }) { padding ->
         StatsPanes(
             stats,
             color,

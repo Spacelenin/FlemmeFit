@@ -247,7 +247,7 @@ fun TestsDialog(
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(
+                TopAppBar(colors = fitBarColors(), 
                     title = { Text("Tests de niveau") },
                     navigationIcon = { IconButton(onClick = onDismiss) { Icon(Icons.Default.Close, "Fermer") } },
                     actions = { TextButton(onClick = { onSave(results.parsedResults()) }) { Text("Enregistrer") } },

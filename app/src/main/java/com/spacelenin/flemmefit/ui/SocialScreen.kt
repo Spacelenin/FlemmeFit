@@ -132,7 +132,7 @@ fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() 
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            TopAppBar(colors = fitBarColors(), 
                 title = { Text("Les potes") },
                 navigationIcon = { onBack?.let { IconButton(onClick = it) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") } } },
                 actions = {
@@ -212,10 +212,13 @@ fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() 
 private fun FriendRow(rank: Int, last: Boolean, card: FriendCard, isMe: Boolean, today: java.time.LocalDate, now: Long) {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = if (isMe) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
+            containerColor = fitCardColor(
+                if (isMe) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
+                highlight = isMe,
+            ),
         ),
         shape = RoundedCornerShape(20.dp),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().fitBorder(LocalFitRoom.current, if (isMe) 3.5.dp else 2.dp),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {

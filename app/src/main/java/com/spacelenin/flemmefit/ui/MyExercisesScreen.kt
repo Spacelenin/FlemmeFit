@@ -82,10 +82,13 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
     var deleting by rememberSaveable { mutableStateOf<String?>(null) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Mes exos") }) },
+        topBar = { TopAppBar(colors = fitBarColors(), title = { Text("Mes exos") }) },
         floatingActionButton = {
             if (program != null) {
+                val (fabBg, fabFg) = fabColors()
                 ExtendedFloatingActionButton(
+                    containerColor = fabBg,
+                    contentColor = fabFg,
                     onClick = { adding = true },
                     icon = { Icon(Icons.Default.Add, null) },
                     text = { Text("Ajouter un exo") },

@@ -1,5 +1,7 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -89,7 +91,7 @@ fun SettingsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            TopAppBar(colors = fitBarColors(), 
                 title = { Text("Réglages") },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") } },
             )
@@ -98,13 +100,22 @@ fun SettingsScreen(
         Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
             Column(Modifier.widthIn(max = 640.dp).fillMaxWidth().verticalScroll(rememberScrollState())) {
                 Section("APPARENCE")
-                Text(
-                    "Thème : ${theme.label}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
-                    AppTheme.entries.forEach { t -> ThemeSwatch(t, selected = t == theme, onClick = { settings.setTheme(t) }) }
+                if (fitTheme) {
+                    Text(
+                        "Couleurs : remplacées par le thème Wii Fit tant qu'il est actif.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
+                    )
+                } else {
+                    Text(
+                        "Thème : ${theme.label}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
+                        AppTheme.entries.forEach { t -> ThemeSwatch(t, selected = t == theme, onClick = { settings.setTheme(t) }) }
+                    }
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -205,6 +216,16 @@ fun SettingsScreen(
                         }
                     },
                     singleLine = true,
+                    // Thème clair : un contour à peine visible, comme sur fond sombre (le contour vert le trahirait).
+                    colors = if (fitTheme) {
+                        OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = Color(0x14000000),
+                            focusedBorderColor = Color(0x33000000),
+                            cursorColor = Color(0x66000000),
+                        )
+                    } else {
+                        OutlinedTextFieldDefaults.colors()
+                    },
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.None,
                         autoCorrectEnabled = false,
