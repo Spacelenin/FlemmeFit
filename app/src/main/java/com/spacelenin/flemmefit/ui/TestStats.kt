@@ -1,5 +1,8 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.ui.geometry.Size
+import com.spacelenin.flemmefit.ui.theme.LocalFitTheme
+import com.spacelenin.flemmefit.ui.theme.FitPalette
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -199,6 +202,7 @@ private fun TestCurve(all: List<TestPoint>, format: (Int) -> String, color: Colo
     val span = (top - bottom).coerceAtLeast(1)
     val track = MaterialTheme.colorScheme.outlineVariant
     val description = points.joinToString { "${it.date.format(DayMonth)} : ${format(it.value)}" }
+    val fit = LocalFitTheme.current
 
     Column {
         Row(Modifier.fillMaxWidth()) {
@@ -217,6 +221,8 @@ private fun TestCurve(all: List<TestPoint>, format: (Int) -> String, color: Colo
             val pts = points.mapIndexed { i, p ->
                 Offset(step * (i + 0.5f), size.height * (1f - (p.value - bottom).toFloat() / span))
             }
+            // Thème fit : le dernier point surligné, comme la semaine en cours.
+            if (fit) drawRect(FitPalette.Highlight, topLeft = Offset(step * (points.size - 1), -6.dp.toPx()), size = Size(step, size.height + 12.dp.toPx()))
             drawLine(track, Offset(0f, size.height), Offset(size.width, size.height), strokeWidth = 1.dp.toPx())
             // Changement d'exercice (crunch → sit-up) : un trait vertical entre les deux points.
             marks.forEach { m ->
@@ -228,7 +234,14 @@ private fun TestCurve(all: List<TestPoint>, format: (Int) -> String, color: Colo
                 pts.forEachIndexed { i, o -> if (i == 0 || i in marks) moveTo(o.x, o.y) else lineTo(o.x, o.y) }
             }
             drawPath(path, color, style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round))
-            pts.forEach { drawCircle(color, radius = 5.dp.toPx(), center = it) }
+            pts.forEach {
+                if (fit) {
+                    drawCircle(Color.White, radius = 6.dp.toPx(), center = it)
+                    drawCircle(color, radius = 6.dp.toPx(), center = it, style = Stroke(width = 3.dp.toPx()))
+                } else {
+                    drawCircle(color, radius = 5.dp.toPx(), center = it)
+                }
+            }
         }
         Row(Modifier.fillMaxWidth()) {
             points.forEach { p ->

@@ -222,7 +222,7 @@ fun ExerciseDetailSheet(
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedButton(onClick = onLog, modifier = Modifier.weight(1f)) { Text("Saisir mes séries") }
-                    Button(onClick = onDone, modifier = Modifier.weight(1f)) { Text(if (done) "Retirer" else "Marquer comme fait") }
+                    PillButton(onClick = onDone, modifier = Modifier.weight(1f)) { Text(if (done) "Retirer" else "Marquer comme fait") }
                 }
             }
         }
@@ -367,7 +367,7 @@ fun SetsLogSheet(
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (existing != null) TextButton(onClick = onClear) { Text("Effacer") }
                 Spacer(Modifier.weight(1f))
-                Button(onClick = { onSave(log, complete) }) { Text("Enregistrer") }
+                PillButton(onClick = { onSave(log, complete) }) { Text("Enregistrer") }
             }
         }
     }

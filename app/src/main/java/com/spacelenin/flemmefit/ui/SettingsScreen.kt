@@ -33,6 +33,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -78,6 +79,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
 ) {
     val theme by settings.theme.collectAsStateWithLifecycle()
+    val fitTheme by settings.fitTheme.collectAsStateWithLifecycle()
     val restBonus by settings.restBonus.collectAsStateWithLifecycle()
     val countersUnlocked by settings.countersUnlocked.collectAsStateWithLifecycle()
     val reminderSettings by reminders.settings.collectAsStateWithLifecycle()
@@ -103,6 +105,21 @@ fun SettingsScreen(
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
                     AppTheme.entries.forEach { t -> ThemeSwatch(t, selected = t == theme, onClick = { settings.setTheme(t) }) }
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().clickable { settings.setFitTheme(!fitTheme) }.padding(horizontal = 20.dp, vertical = 8.dp),
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Thème Wii Fit (bêta)", style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            "Salle claire, calendrier à tampons, police toute ronde. Remplace les couleurs ci-dessus tant qu'il est actif ; " +
+                                "le désactiver remet tout comme avant.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(checked = fitTheme, onCheckedChange = { settings.setFitTheme(it) })
                 }
 
                 Section("SÉANCE")

@@ -66,6 +66,8 @@ import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.Session
 import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.ui.theme.programColor
+import com.spacelenin.flemmefit.ui.theme.LocalFitTheme
+import com.spacelenin.flemmefit.ui.theme.FitPalette
 import com.spacelenin.flemmefit.update.AppUpdater
 import java.time.LocalDate
 import java.time.YearMonth
@@ -241,41 +243,58 @@ private fun HomeContent(
     val notices: @Composable () -> Unit = {
         if (suggestion != null) {
             val current = program.profileOn(today)
-            ProfileSuggestionCard(
-                current = current,
-                suggestion = suggestion,
-                color = color,
-                onAccept = { repository.setProfile(program.id, suggestion, today) },
-                onLater = { repository.dismissProfileHint(program.id, today) },
-                modifier = Modifier.padding(horizontal = 16.dp),
-            )
+            val accept = { repository.setProfile(program.id, suggestion, today) }
+            val later = { repository.dismissProfileHint(program.id, today) }
+            NoticeBubble(
+                FitPalette.Orange,
+                Modifier.padding(horizontal = 16.dp),
+                plain = { ProfileSuggestionCard(current, suggestion, color, accept, later, Modifier.padding(horizontal = 16.dp)) },
+            ) {
+                ProfileSuggestionContent(current, suggestion, accept, later)
+            }
         }
         if (program.missingTests.isNotEmpty()) {
-            Card(
-                onClick = { editTests = true },
-                colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.14f)),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            val text = program.missingTests.joinToString { program.testName(it, today) } +
+                " : en attendant, tu es au niveau le plus facile. Touche pour saisir tes résultats."
+            NoticeBubble(
+                color,
+                Modifier.padding(horizontal = 16.dp).clickable { editTests = true },
+                plain = {
+                    Card(
+                        onClick = { editTests = true },
+                        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.14f)),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    ) {
+                        Column(Modifier.padding(12.dp)) {
+                            Text("📏 Tests de niveau à faire", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text(text, style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                },
             ) {
-                Column(Modifier.padding(12.dp)) {
-                    Text("📏 Tests de niveau à faire", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Text(
-                        program.missingTests.joinToString { program.testName(it, today) } +
-                            " : en attendant, tu es au niveau le plus facile. Touche pour saisir tes résultats.",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
+                Text("📏 Tests de niveau à faire", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(text, style = MaterialTheme.typography.bodyMedium)
             }
         }
         val next = schedule.progress().nextSession
         if (next != null && next.isBoss && next.date == today.plusDays(1)) {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF2A1515)),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            NoticeBubble(
+                BossColor,
+                Modifier.padding(horizontal = 16.dp),
+                plain = {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF2A1515)),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    ) {
+                        Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+                            Text("💀 Boss demain", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                            Text("${program.plan.name} · ${next.title()}", style = MaterialTheme.typography.bodySmall, color = Color(0xFFE0BDBD))
+                        }
+                    }
+                },
             ) {
-                Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
-                    Text("💀 Boss demain", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                    Text("${program.plan.name} · ${next.title()}", style = MaterialTheme.typography.bodySmall, color = Color(0xFFE0BDBD))
-                }
+                Text("💀 Boss demain !", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Black, color = BossColor)
+                Text("${program.plan.name} · ${next.title()}", style = MaterialTheme.typography.bodySmall)
             }
         }
     }
@@ -292,7 +311,8 @@ private fun HomeContent(
                 others = others,
             )
             Text(
-                "● plein : faite · ○ cercle : prévue · rouge : manquée / Boss · vert : récup" +
+                (if (LocalFitTheme.current) "tampon : faite · rond orange : commencée · ✕ : manquée · point : prévue (rouge Boss, vert récup)"
+                else "● plein : faite · ○ cercle : prévue · rouge : manquée / Boss · vert : récup") +
                     if (others.isNotEmpty()) " · point : autre programme" else "",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -440,13 +460,13 @@ private fun TodayCard(
             FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 when {
                     finished -> {
-                        Button(onClick = { actions.open(program.id) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)) {
+                        PillButton(onClick = { actions.open(program.id) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)) {
                             Text("Voir le bilan")
                         }
                         OutlinedButton(onClick = { actions.restart(program) }) { Text("Recommencer") }
                     }
                     session != null -> {
-                        Button(onClick = { dayActions.onGuided(session) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)) {
+                        PillButton(onClick = { dayActions.onGuided(session) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)) {
                             Text(if (schedule.doneCount(session) == 0) "C'est parti" else "Continuer")
                         }
                         if (schedule.canBurst(session)) {
@@ -496,7 +516,7 @@ private fun EmptyHome(importActions: ImportActions, modifier: Modifier = Modifie
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(8.dp))
-            Button(onClick = importActions.fromFile, modifier = Modifier.fillMaxWidth()) { Text("Importer un fichier") }
+            PillButton(onClick = importActions.fromFile, modifier = Modifier.fillMaxWidth()) { Text("Importer un fichier") }
             OutlinedButton(onClick = importActions.fromPaste, modifier = Modifier.fillMaxWidth()) { Text("Coller du texte") }
             OutlinedButton(onClick = { importActions.example(ROUTINE_ASSET) }, modifier = Modifier.fillMaxWidth()) { Text("Routine maison (niveaux)") }
             OutlinedButton(onClick = { importActions.example(EXAMPLE_ASSET) }, modifier = Modifier.fillMaxWidth()) { Text("Programme d'exemple") }

@@ -1,5 +1,10 @@
 package com.spacelenin.flemmefit
 
+import com.spacelenin.flemmefit.ui.screenBackground
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.LaunchedEffect
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -44,7 +49,15 @@ class MainActivity : ComponentActivity() {
         crash = CrashReport.pending(this)
         setContent {
             val theme by app.settings.theme.collectAsStateWithLifecycle()
-            FlemmeFitTheme(theme) {
+            val fit by app.settings.fitTheme.collectAsStateWithLifecycle()
+            // Thème clair : icônes sombres dans les barres système.
+            LaunchedEffect(fit) {
+                val style = if (fit) SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
+                else SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+                enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
+            }
+            FlemmeFitTheme(theme, fit = fit) {
+              Box(Modifier.fillMaxSize().screenBackground()) {
                 // Après un plantage : l'écran du rapport seul (et la mise à jour si elle existe), pas l'appli qui
                 // pourrait replanter au même endroit.
                 crash?.let { report ->
@@ -52,7 +65,7 @@ class MainActivity : ComponentActivity() {
                         CrashReport.clear(this@MainActivity)
                         crash = null
                     }
-                    return@FlemmeFitTheme
+                    return@Box
                 }
                 AppRoot(
                     repository = app.repository,
@@ -67,6 +80,7 @@ class MainActivity : ComponentActivity() {
                     openRequest = openRequest,
                     onOpenRequestConsumed = { openRequest = null },
                 )
+              }
             }
         }
     }

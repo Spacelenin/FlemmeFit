@@ -46,6 +46,7 @@ import com.spacelenin.flemmefit.model.Measures
 import com.spacelenin.flemmefit.model.Stats
 import com.spacelenin.flemmefit.model.WeekVolume
 import com.spacelenin.flemmefit.ui.theme.programColor
+import com.spacelenin.flemmefit.ui.theme.LocalFitTheme
 
 
 /** Totaux, graphique et historique. */
@@ -118,6 +119,10 @@ private fun Totals(stats: Stats, color: Color) {
 /** Séries faites par semaine : une seule série de barres, touche une barre pour sa valeur. */
 @Composable
 private fun WeeklyChart(weeks: List<WeekVolume>, color: Color) {
+    if (LocalFitTheme.current) {
+        FitWeeklyChart(weeks, color)
+        return
+    }
     var selected by rememberSaveable { mutableIntStateOf(weeks.lastIndex) }
     val top = (weeks.maxOfOrNull { it.sets } ?: 0).coerceAtLeast(1)
     val description = weeks.joinToString { "semaine du ${it.monday.format(DayMonth)} : ${it.sets} séries" }

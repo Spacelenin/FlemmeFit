@@ -40,7 +40,7 @@ import com.spacelenin.flemmefit.update.AppUpdater
 fun CrashScreen(report: String, updater: AppUpdater, onContinue: () -> Unit) {
     val context = LocalContext.current
     var copied by remember { mutableStateOf(false) }
-    Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) {
+    Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize().screenBackground()) {
         Column(
             verticalArrangement = Arrangement.spacedBy(14.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -57,7 +57,7 @@ fun CrashScreen(report: String, updater: AppUpdater, onContinue: () -> Unit) {
                     "Envoie ce rapport au dév pour qu'il corrige. Il ne contient que l'erreur technique et le modèle du téléphone.",
                 style = MaterialTheme.typography.bodyLarge,
             )
-            Button(onClick = { share(context, report) }, modifier = Modifier.fillMaxWidth()) { Text("Envoyer le rapport") }
+            PillButton(onClick = { share(context, report) }, modifier = Modifier.fillMaxWidth()) { Text("Envoyer le rapport") }
             FilledTonalButton(
                 onClick = {
                     copy(context, report)

@@ -64,11 +64,15 @@ import com.spacelenin.flemmefit.model.Side
 import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.model.TimerPlans
 import java.time.LocalDate
+import androidx.compose.runtime.ReadOnlyComposable
+import com.spacelenin.flemmefit.ui.theme.LocalFitTheme
 
 /** Rouge « Boss », indépendant du thème pour rester reconnaissable. */
 val BossColor = Color(0xFFE05252)
-val DeloadColor = Color(0xFF8FE0A5)
-val BurstColor = Color(0xFFFFC94D)
+val DeloadColor: Color
+    @Composable @ReadOnlyComposable get() = if (LocalFitTheme.current) Color(0xFF2E9E57) else Color(0xFF8FE0A5)
+val BurstColor: Color
+    @Composable @ReadOnlyComposable get() = if (LocalFitTheme.current) Color(0xFFE08A00) else Color(0xFFFFC94D)
 /** Côtés du corps, comme les sabres de Beat Saber : gauche rouge, droite bleue. */
 val LeftColor = Color(0xFFE53935)
 val RightColor = Color(0xFF2F80FF)
@@ -284,7 +288,7 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
     val allDone = done == total
     val locked = schedule.isLocked(session)
     if (!locked && !allDone && session.date == schedule.today) {
-        Button(onClick = { actions.onGuided(session) }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+        PillButton(onClick = { actions.onGuided(session) }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
             Text(if (done == 0) "▶ Démarrer la séance" else "▶ Reprendre la séance", style = MaterialTheme.typography.titleMedium)
         }
         Spacer(Modifier.height(8.dp))
