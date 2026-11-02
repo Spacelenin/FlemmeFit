@@ -1,5 +1,11 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.material3.contentColorFor
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -59,7 +65,7 @@ object FitRooms {
     val Stats = FitPalette.Sky
     val Exos = Color(0xFF19B3A6)
     val Friends = FitPalette.Orange
-    val Settings = Color(0xFF8C99A6)
+    val Settings = Color(0xFF7C88D8)
 
     fun forTab(tab: Int) = when (tab) {
         1 -> Stats
@@ -308,3 +314,26 @@ fun InstructionBubble(text: String, title: String = "Comment faire") {
         Text(text, style = MaterialTheme.typography.bodyMedium, color = FitPalette.Text, textAlign = TextAlign.Start, modifier = Modifier.padding(14.dp))
     }
 }
+
+/** Barre du haut : transparente sur le thème fit, pour que la salle monte jusqu'en haut de l'écran. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun fitBarColors(): TopAppBarColors =
+    if (LocalFitTheme.current) TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent, scrolledContainerColor = White.copy(alpha = 0.92f))
+    else TopAppBarDefaults.topAppBarColors()
+
+/** Contour coloré d'une carte, seulement sur le thème fit. */
+@Composable
+fun Modifier.fitBorder(color: Color, width: Dp = 3.dp, shape: Shape = RoundedCornerShape(20.dp)): Modifier =
+    if (LocalFitTheme.current) border(width, color, shape) else this
+
+/** Fond d'une carte : blanc sur le thème fit (le contour porte la couleur), sinon [plain]. */
+@Composable
+fun fitCardColor(plain: Color, highlight: Boolean = false): Color =
+    if (!LocalFitTheme.current) plain else if (highlight) LocalFitRoom.current.pale(0.86f) else White
+
+/** Bouton flottant : couleur de la salle, texte blanc, sur le thème fit. */
+@Composable
+fun fabColors(): Pair<Color, Color> =
+    if (LocalFitTheme.current) LocalFitRoom.current to White
+    else FloatingActionButtonDefaults.containerColor to contentColorFor(FloatingActionButtonDefaults.containerColor)

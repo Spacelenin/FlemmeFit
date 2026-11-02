@@ -55,7 +55,8 @@ fun Modifier.screenBackground(): Modifier {
  * en perspective, teinté lui aussi, qui s'estompe vers l'horizon.
  */
 private fun DrawScope.drawFitRoom(tint: Color) {
-    val horizon = size.height * 0.58f
+    // Le sol n'occupe que le bas de l'écran : la plinthe ne passe pas au milieu du contenu.
+    val horizon = size.height * 0.8f
     val floor = size.height - horizon
     drawRect(
         Brush.verticalGradient(listOf(Color.White, lerp(Color.White, tint, 0.08f), lerp(Color.White, tint, 0.2f)), endY = horizon),
@@ -66,9 +67,9 @@ private fun DrawScope.drawFitRoom(tint: Color) {
         topLeft = Offset(0f, horizon),
     )
     // Plinthe : une bande de la couleur de la salle, avec un liseré clair.
-    val plinth = 10.dp.toPx()
-    drawRect(lerp(tint, Color.White, 0.25f), topLeft = Offset(0f, horizon - plinth), size = androidx.compose.ui.geometry.Size(size.width, plinth))
-    drawLine(lerp(tint, Color.White, 0.7f), Offset(0f, horizon - plinth), Offset(size.width, horizon - plinth), strokeWidth = 2.dp.toPx())
+    val plinth = 4.dp.toPx()
+    drawRect(lerp(tint, Color.White, 0.55f), topLeft = Offset(0f, horizon - plinth), size = androidx.compose.ui.geometry.Size(size.width, plinth))
+    drawLine(lerp(tint, Color.White, 0.8f), Offset(0f, horizon - plinth), Offset(size.width, horizon - plinth), strokeWidth = 2.dp.toPx())
     val line = lerp(Color(0xFFCBD3DA), tint, 0.25f)
     // Lignes horizontales : de plus en plus serrées vers l'horizon.
     var t = 1f

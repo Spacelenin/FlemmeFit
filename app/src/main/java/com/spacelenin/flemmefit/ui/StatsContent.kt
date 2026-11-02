@@ -83,7 +83,7 @@ fun LazyListScope.statsExerciseItems(stats: Stats, color: Color) {
     val shown = stats.exercises.filter { !it.optional }
     if (shown.isEmpty()) return
     item(key = "stats-ex-title") { SectionTitle("Par exercice") }
-    itemsIndexed(shown, key = { _, e -> "e-${e.key}" }) { i, e -> FitRowFrame(number = i + 1) { ExerciseStatsCard(e, color) } }
+    itemsIndexed(shown, key = { _, e -> "e-${e.key}" }) { i, e -> FitRowFrame { ExerciseStatsCard(e, color) } }
 }
 
 /** Tuiles de chiffres, deux par ligne. */

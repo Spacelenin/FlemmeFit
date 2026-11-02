@@ -112,7 +112,7 @@ fun HomeScreen(
     var menuOpen by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
-            TopAppBar(
+            TopAppBar(colors = fitBarColors(), 
                 title = { Text("FlemmeFit", fontWeight = FontWeight.ExtraBold) },
                 actions = {
                     IconButton(onClick = { menuOpen = true }) { Icon(Icons.Default.Add, "Ajouter un programme") }
@@ -396,9 +396,9 @@ private fun TodayCard(
     }
 
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        colors = CardDefaults.cardColors(containerColor = fitCardColor(MaterialTheme.colorScheme.secondaryContainer)),
         shape = RoundedCornerShape(24.dp),
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().fitBorder(accent, shape = RoundedCornerShape(24.dp)),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
