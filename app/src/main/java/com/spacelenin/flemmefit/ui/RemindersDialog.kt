@@ -58,7 +58,7 @@ fun RemindersDialog(reminders: ReminderScheduler, programs: List<StoredProgram>,
         }
     }
 
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onDismiss,
         title = { Text("Rappels") },
         text = {
@@ -139,7 +139,7 @@ private fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Un
 @Composable
 private fun TimeSelectDialog(initialMinutes: Int, onSelect: (Int) -> Unit, onDismiss: () -> Unit) {
     val state = rememberTimePickerState(initialHour = initialMinutes / 60, initialMinute = initialMinutes % 60, is24Hour = true)
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onDismiss,
         text = {
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {

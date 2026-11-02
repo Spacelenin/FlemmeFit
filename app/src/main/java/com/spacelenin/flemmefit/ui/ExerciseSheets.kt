@@ -80,7 +80,7 @@ fun ExerciseDetailSheet(
 ) {
     val exercise = prescription.exercise
     val restBonus = LocalRestBonus.current
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = sheetColor(), sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).navigationBarsPadding().padding(bottom = 16.dp),
@@ -269,7 +269,7 @@ fun SetsLogSheet(
     val log = ExerciseLog.ofSets(values, prescription.allOut, sided?.order)
     val complete = prescription.isMetBy(log)
 
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = sheetColor(), sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(
             verticalArrangement = Arrangement.spacedBy(14.dp),
             modifier = Modifier.padding(horizontal = 20.dp).navigationBarsPadding().padding(bottom = 16.dp),

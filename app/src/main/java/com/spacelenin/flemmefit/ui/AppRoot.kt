@@ -208,8 +208,14 @@ fun AppRoot(
         LocalRestBonus provides restBonus,
         LocalSessionGuard provides guard,
         LocalOpenExos provides openExos,
+        // Thème fit : chaque onglet a sa salle (le détail d'un jour reste dans celle de l'accueil).
+        LocalFitRoom provides when {
+            dayProgram != null -> FitRooms.Home
+            showSettings -> FitRooms.Settings
+            else -> FitRooms.forTab(tab)
+        },
     ) {
-        Box(Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize().screenBackground()) {
             when {
                 dayProgram != null -> {
                     BackHandler { dayProgramId = null }
@@ -326,7 +332,7 @@ fun AppRoot(
     if (showTutorial) TutorialDialog(onClose = { showTutorial = false })
 
     restarting?.let { old ->
-        AlertDialog(
+        PanelDialog(
             onDismissRequest = { restarting = null },
             title = { Text("Recommencer « ${old.plan.name} » ?") },
             text = {

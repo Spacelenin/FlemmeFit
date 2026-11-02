@@ -139,10 +139,12 @@ fun FullScreenDialog(
 /** Titre de section des listes (stats, exos). */
 @Composable
 fun SectionTitle(text: String) {
-    Text(
-        text,
-        style = MaterialTheme.typography.titleLarge,
-        fontWeight = FontWeight.ExtraBold,
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 6.dp),
-    )
+    FitSectionTitle(text) {
+        Text(
+            text,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.ExtraBold,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 6.dp),
+        )
+    }
 }

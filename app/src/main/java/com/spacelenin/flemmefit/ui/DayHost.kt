@@ -255,7 +255,7 @@ fun rememberDayActions(
 
     postponeIndex?.let { index ->
         val from = schedule.dateOf(index)
-        AlertDialog(
+        PanelDialog(
             onDismissRequest = { postponeIndex = null },
             title = { Text("Décaler la séance ?") },
             text = {
@@ -283,7 +283,7 @@ fun rememberDayActions(
 @Composable
 private fun ExtraDialog(onSave: (String) -> Unit, onDismiss: () -> Unit) {
     var text by rememberSaveable { mutableStateOf("") }
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onDismiss,
         title = { Text("J'ai fait autre chose") },
         text = {
@@ -318,7 +318,7 @@ val LocalOpenExos = staticCompositionLocalOf<(() -> Unit)?> { null }
 /** Fin de séance : ce que l'adaptation a changé pour la suite, exo par exo. */
 @Composable
 private fun AdaptChangesDialog(changes: List<AdaptChange>, onDetail: (() -> Unit)?, onDismiss: () -> Unit) {
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onDismiss,
         title = { Text("Ta prochaine séance s'adapte") },
         text = {
@@ -338,7 +338,7 @@ private fun AdaptChangesDialog(changes: List<AdaptChange>, onDetail: (() -> Unit
 /** Ressenti juste après la séance, à passer si on veut. */
 @Composable
 private fun FeelingDialog(onPick: (Int) -> Unit, onSkip: () -> Unit) {
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onSkip,
         title = { Text("Séance finie ! Comment c'était ?") },
         text = {

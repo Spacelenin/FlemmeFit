@@ -57,7 +57,7 @@ fun ChallengeHost(manager: ChallengeManager, requested: Boolean, onDismissReques
         onDismissRequest()
     }
 
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = close,
         title = { Text(if (status == Challenge.Status.ASK_RESULT) "🎯 Temps écoulé !" else "🎯 Défi surprise !") },
         text = {

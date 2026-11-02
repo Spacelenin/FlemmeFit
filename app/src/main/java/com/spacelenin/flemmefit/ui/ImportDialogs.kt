@@ -62,7 +62,7 @@ import java.time.LocalDate
 @Composable
 fun PasteDialog(onDismiss: () -> Unit, onSubmit: (String) -> Unit) {
     var text by rememberSaveable { mutableStateOf("") }
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onDismiss,
         title = { Text("Coller un programme") },
         text = {
@@ -81,7 +81,7 @@ fun PasteDialog(onDismiss: () -> Unit, onSubmit: (String) -> Unit) {
 
 @Composable
 fun ImportErrorDialog(errors: List<String>, onDismiss: () -> Unit) {
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onDismiss,
         title = { Text("Import impossible") },
         text = {
@@ -123,7 +123,7 @@ fun ImportConfirmDialog(
     val sessionsPerCycle = plan.weeks.sumOf { it.days.size }
     val end = if (plan.isForever) null else start.plusDays(plan.weeks.size * plan.repeat * DAYS_PER_WEEK - 1L)
 
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onDismiss,
         title = { Text(plan.name) },
         text = {
@@ -352,7 +352,7 @@ fun TestsDialog(
         val test = tests.first { it.id == testId }
         val option = test.option(optionId) ?: return@let
         var max by remember { mutableStateOf("") }
-        AlertDialog(
+        PanelDialog(
             onDismissRequest = { switching = null },
             title = { Text("Passer aux ${option.name.lowercase()} ?") },
             text = {

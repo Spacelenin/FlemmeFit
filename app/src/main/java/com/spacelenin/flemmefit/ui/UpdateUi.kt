@@ -50,7 +50,7 @@ fun UpdateGate(updater: AppUpdater) {
     }
     if (release == null && state != State.Installing) return
 
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = {},
         properties = blocking,
         title = { Text("Mise à jour obligatoire") },
@@ -145,7 +145,7 @@ private fun BannerCard(modifier: Modifier, content: @Composable () -> Unit) {
 fun ChangelogDialog(updater: AppUpdater) {
     val release by updater.changelog.collectAsStateWithLifecycle()
     val r = release ?: return
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = updater::markChangelogSeen,
         title = { Text("Quoi de neuf · build ${r.versionCode}") },
         text = {

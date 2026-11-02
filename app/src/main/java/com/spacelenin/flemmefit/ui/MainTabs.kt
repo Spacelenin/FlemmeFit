@@ -1,5 +1,6 @@
 package com.spacelenin.flemmefit.ui
 
+import com.spacelenin.flemmefit.ui.theme.LocalFitTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -40,7 +41,9 @@ fun MainTabs(tab: Int, onTab: (Int) -> Unit, content: @Composable () -> Unit) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         if (maxWidth >= TwoPaneMinWidth) {
             Row(Modifier.fillMaxSize()) {
-                NavigationRail {
+                if (LocalFitTheme.current) {
+                    FitTabRail(Destinations.map { it.label to it.icon }, tab, onTab)
+                } else NavigationRail {
                     Destinations.forEachIndexed { i, d ->
                         NavigationRailItem(
                             selected = tab == i,
@@ -57,7 +60,9 @@ fun MainTabs(tab: Int, onTab: (Int) -> Unit, content: @Composable () -> Unit) {
             Column(Modifier.fillMaxSize()) {
                 // La barre du bas prend déjà la place de la barre de navigation Android.
                 Box(Modifier.weight(1f).consumeWindowInsets(WindowInsets.navigationBars)) { content() }
-                NavigationBar {
+                if (LocalFitTheme.current) {
+                    FitTabBar(Destinations.map { it.label to it.icon }, tab, onTab)
+                } else NavigationBar {
                     Destinations.forEachIndexed { i, d ->
                         NavigationBarItem(
                             selected = tab == i,
