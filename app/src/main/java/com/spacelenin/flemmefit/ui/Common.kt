@@ -130,7 +130,7 @@ fun FullScreenDialog(
             end = maxOf(outer.calculateEndPadding(dir), inner.calculateEndPadding(dir), px(root?.right)),
             bottom = maxOf(outer.calculateBottomPadding(), inner.calculateBottomPadding(), px(root?.bottom)),
         )
-        Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) {
+        Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize().screenBackground()) {
             Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.padding(padding), content = content)
         }
     }

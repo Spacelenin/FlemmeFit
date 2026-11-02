@@ -1,5 +1,7 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,6 +41,7 @@ fun profileChangeText(from: AdaptProfile, to: AdaptProfile): String {
 @Composable
 fun ProfileDialog(current: AdaptProfile, programName: String, onSelect: (AdaptProfile) -> Unit, onDismiss: () -> Unit) {
     var picked by rememberSaveable { mutableStateOf(current.id) }
+    val context = LocalContext.current
     val choice = AdaptProfile.of(picked)
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -68,7 +71,13 @@ fun ProfileDialog(current: AdaptProfile, programName: String, onSelect: (AdaptPr
             }
         },
         confirmButton = {
-            TextButton(onClick = { if (choice != current) onSelect(choice); onDismiss() }) {
+            TextButton(onClick = {
+                if (choice != current) {
+                    onSelect(choice)
+                    Toast.makeText(context, "${choice.emoji} Rythme ${choice.label} à partir d'aujourd'hui", Toast.LENGTH_SHORT).show()
+                }
+                onDismiss()
+            }) {
                 Text(if (choice != current) "Passer en ${choice.label}" else "Fermer")
             }
         },
@@ -86,24 +95,30 @@ fun ProfileSuggestionCard(
     onLater: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val faster = suggestion.ordinal > current.ordinal
     Card(colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.14f)), modifier = modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                if (faster) "${suggestion.emoji} Ça a l'air facile pour toi" else "${suggestion.emoji} Ça a l'air dur en ce moment",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                (if (faster) "Ces 3 dernières semaines, tu fais souvent plus que prévu. "
-                else "Ces 3 dernières semaines, beaucoup de séries sont sous le prévu. ") +
-                    "Passer en ${suggestion.label} ? " + profileChangeText(current, suggestion),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Button(onClick = onAccept) { Text("Passer en ${suggestion.label}") }
-                TextButton(onClick = onLater) { Text("Plus tard") }
-            }
+            ProfileSuggestionContent(current, suggestion, onAccept, onLater)
         }
+    }
+}
+
+/** Le texte et les boutons de la proposition (dans une carte, ou une bulle sur le thème fit). */
+@Composable
+fun ProfileSuggestionContent(current: AdaptProfile, suggestion: AdaptProfile, onAccept: () -> Unit, onLater: () -> Unit) {
+    val faster = suggestion.ordinal > current.ordinal
+    Text(
+        if (faster) "${suggestion.emoji} Ça a l'air facile pour toi" else "${suggestion.emoji} Ça a l'air dur en ce moment",
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+    )
+    Text(
+        (if (faster) "Ces 3 dernières semaines, tu fais souvent plus que prévu. "
+        else "Ces 3 dernières semaines, beaucoup de séries sont sous le prévu. ") +
+            "Passer en ${suggestion.label} ? " + profileChangeText(current, suggestion),
+        style = MaterialTheme.typography.bodyMedium,
+    )
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        PillButton(onClick = onAccept) { Text("Passer en ${suggestion.label}") }
+        TextButton(onClick = onLater) { Text("Plus tard") }
     }
 }

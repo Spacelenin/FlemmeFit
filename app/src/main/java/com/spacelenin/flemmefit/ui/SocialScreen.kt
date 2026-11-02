@@ -294,7 +294,7 @@ private fun PseudoSetup(onDone: (String) -> Unit, modifier: Modifier = Modifier)
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(4.dp))
-        Button(onClick = { onDone(name) }, enabled = name.isNotBlank()) { Text("C'est parti") }
+        PillButton(onClick = { onDone(name) }, enabled = name.isNotBlank()) { Text("C'est parti") }
     }
 }
 

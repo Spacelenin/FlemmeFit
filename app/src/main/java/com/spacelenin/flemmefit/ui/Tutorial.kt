@@ -172,7 +172,7 @@ fun TutorialDialog(onClose: () -> Unit) {
             }
         },
         confirmButton = {
-            Button(onClick = { if (last) onClose() else page++ }) { Text(if (last) "C'est compris" else "Suivant") }
+            PillButton(onClick = { if (last) onClose() else page++ }) { Text(if (last) "C'est compris" else "Suivant") }
         },
         dismissButton = {
             if (page > 0) TextButton(onClick = { page-- }) { Text("Précédent") }

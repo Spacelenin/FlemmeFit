@@ -35,6 +35,7 @@ import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.SessionStatus
 import java.time.DayOfWeek
 import java.time.LocalDate
+import com.spacelenin.flemmefit.ui.theme.LocalFitTheme
 import java.time.YearMonth
 
 private val WeekDays = listOf("L", "M", "M", "J", "V", "S", "D")
@@ -52,6 +53,10 @@ fun MonthCalendar(
     /** Autres programmes : un point de leur couleur les jours où ils ont une séance. */
     others: List<Pair<ProgramSchedule, Color>> = emptyList(),
 ) {
+    if (LocalFitTheme.current) {
+        FitMonthCalendar(schedule, color, month, onMonthChange, selected, today, onSelect, modifier, others)
+        return
+    }
     Column(modifier.widthIn(max = 520.dp).fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = { onMonthChange(month.minusMonths(1)) }) {
@@ -129,19 +134,7 @@ private fun DayCell(
         SessionStatus.PENDING, null -> Color.Transparent to
             if (schedule.isInProgram(date)) scheme.onSurface else scheme.onSurface.copy(alpha = 0.4f)
     }
-    val label = buildString {
-        append(date.longLabel())
-        when (status) {
-            SessionStatus.DONE -> append(", séance faite")
-            SessionStatus.SAVED -> append(", Boss fait aux trois quarts")
-            SessionStatus.PARTIAL -> append(", séance commencée")
-            SessionStatus.MISSED -> append(", séance manquée")
-            SessionStatus.PENDING -> append(", séance prévue")
-            null -> {}
-        }
-        if (session?.isBoss == true) append(", jour Boss")
-        if (hasExtra) append(", activité en plus")
-    }
+    val label = dayCellLabel(date, status, session?.isBoss == true, hasExtra)
 
     Box(
         contentAlignment = Alignment.Center,
@@ -183,4 +176,19 @@ private fun DayCell(
             }
         }
     }
+}
+
+/** Ce que lit le lecteur d'écran pour un jour du calendrier. */
+fun dayCellLabel(date: LocalDate, status: SessionStatus?, boss: Boolean, hasExtra: Boolean): String = buildString {
+    append(date.longLabel())
+    when (status) {
+        SessionStatus.DONE -> append(", séance faite")
+        SessionStatus.SAVED -> append(", Boss fait aux trois quarts")
+        SessionStatus.PARTIAL -> append(", séance commencée")
+        SessionStatus.MISSED -> append(", séance manquée")
+        SessionStatus.PENDING -> append(", séance prévue")
+        null -> {}
+    }
+    if (boss) append(", jour Boss")
+    if (hasExtra) append(", activité en plus")
 }

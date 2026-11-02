@@ -247,12 +247,12 @@ fun TimerOverlay(timer: WorkoutTimer, modifier: Modifier = Modifier) {
                 if (current.finished) {
                     val done = timer.onFinished
                     if (done != null) {
-                        Button(onClick = { timer.stop(); done() }) { Text("Marquer comme fait") }
+                        PillButton(onClick = { timer.stop(); done() }) { Text("Marquer comme fait") }
                     }
                     Spacer(Modifier.weight(1f))
                     TextButton(onClick = timer::stop) { Text("Fermer") }
                 } else if (phase.seconds == null) {
-                    Button(onClick = { timer.update { r, t -> r.next(t) } }) { Text("Stop") }
+                    PillButton(onClick = { timer.update { r, t -> r.next(t) } }) { Text("Stop") }
                 } else {
                     FilledTonalButton(onClick = { timer.update { r, t -> if (r.paused) r.resume(t) else r.pause(t) } }) {
                         Text(if (current.paused) "Reprendre" else "Pause")

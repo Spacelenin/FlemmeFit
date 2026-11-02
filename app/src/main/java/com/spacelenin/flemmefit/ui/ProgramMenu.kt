@@ -83,7 +83,7 @@ fun ProgramMenuButton(
                 val ok = withContext(Dispatchers.IO) {
                     runCatching { context.contentResolver.openOutputStream(picked)?.use { it.write(text.toByteArray()) } != null }.getOrDefault(false)
                 }
-                Toast.makeText(context, if (ok) "Routine exportée" else "Export impossible", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, if (!ok) "Export impossible" else if (exportTemplate) "Modèle exporté : modifie-le puis « Mettre à jour la routine »" else "Routine exportée", Toast.LENGTH_LONG).show()
             }
         }
     }

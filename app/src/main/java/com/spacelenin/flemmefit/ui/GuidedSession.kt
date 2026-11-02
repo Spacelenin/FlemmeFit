@@ -270,7 +270,7 @@ fun GuidedSession(
                     Spacer(Modifier.height(20.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         FilledTonalButton(onClick = { run = run?.addSeconds(15) }) { Text("+15 s") }
-                        Button(onClick = { run = null; step = Step.SET }) { Text("Passer le repos") }
+                        PillButton(onClick = { run = null; step = Step.SET }) { Text("Passer le repos") }
                     }
                 }
             } else {
@@ -423,19 +423,19 @@ private fun SetContent(
                     else -> Text("Tiens le plus longtemps possible", style = MaterialTheme.typography.bodyLarge)
                 }
                 Spacer(Modifier.height(20.dp))
-                Button(onClick = onStop, colors = ButtonDefaults.buttonColors(containerColor = if (left == null) BossColor else MaterialTheme.colorScheme.primary)) {
+                PillButton(onClick = onStop, colors = ButtonDefaults.buttonColors(containerColor = if (left == null) BossColor else MaterialTheme.colorScheme.primary)) {
                     Text(if (left == null) "Stop" else "J'arrête là")
                 }
             }
             countdown != null -> {
                 Text(clock(countdown), style = MaterialTheme.typography.displayLarge, fontWeight = FontWeight.ExtraBold)
                 Spacer(Modifier.height(20.dp))
-                Button(onClick = { onStart(countdown) }, modifier = Modifier.height(56.dp)) { Text("▶ Démarrer") }
+                PillButton(onClick = { onStart(countdown) }, modifier = Modifier.height(56.dp)) { Text("▶ Démarrer") }
             }
             guided.countUp(set) -> {
                 Text("0:00", style = MaterialTheme.typography.displayLarge, fontWeight = FontWeight.ExtraBold)
                 Spacer(Modifier.height(20.dp))
-                Button(onClick = { onStart(null) }, modifier = Modifier.height(56.dp)) { Text("▶ Démarrer le chrono") }
+                PillButton(onClick = { onStart(null) }, modifier = Modifier.height(56.dp)) { Text("▶ Démarrer le chrono") }
             }
             guided.needsValue(set) -> {
                 val stepSize = if (guided.inSeconds) 5 else 1
@@ -452,13 +452,13 @@ private fun SetContent(
                     }
                 }
                 Spacer(Modifier.height(20.dp))
-                Button(onClick = onSetDone, modifier = Modifier.height(56.dp)) { Text("✓ Série faite") }
+                PillButton(onClick = onSetDone, modifier = Modifier.height(56.dp)) { Text("✓ Série faite") }
             }
             else -> {
                 p.durationLabel?.let { Text(it, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.ExtraBold) }
                 p.repsLabel?.let { Text("$it reps", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.ExtraBold) }
                 Spacer(Modifier.height(20.dp))
-                Button(onClick = onSetDone, modifier = Modifier.height(56.dp)) { Text(if (guided.sets > 1) "✓ Série faite" else "✓ C'est fait") }
+                PillButton(onClick = onSetDone, modifier = Modifier.height(56.dp)) { Text(if (guided.sets > 1) "✓ Série faite" else "✓ C'est fait") }
             }
         }
 
@@ -505,7 +505,7 @@ private fun EndContent(schedule: ProgramSchedule, session: Session, onClose: () 
         Spacer(Modifier.height(28.dp))
         feeling()
         Spacer(Modifier.height(20.dp))
-        Button(onClick = onClose) { Text("Fermer") }
+        PillButton(onClick = onClose) { Text("Fermer") }
     }
 }
 
