@@ -43,7 +43,7 @@ fun ProfileDialog(current: AdaptProfile, programName: String, onSelect: (AdaptPr
     var picked by rememberSaveable { mutableStateOf(current.id) }
     val context = LocalContext.current
     val choice = AdaptProfile.of(picked)
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onDismiss,
         title = { Text("Rythme d'adaptation") },
         text = {

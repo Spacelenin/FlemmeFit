@@ -1,5 +1,7 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.lerp
 import com.spacelenin.flemmefit.ui.theme.FitPalette
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ButtonDefaults
@@ -42,15 +44,32 @@ import kotlin.math.sin
 
 /** Fond d'un écran entier : le fond du thème, ou la salle claire au sol carrelé du thème fit. */
 @Composable
-fun Modifier.screenBackground(): Modifier =
-    if (LocalFitTheme.current) drawBehind { drawFitRoom() } else background(MaterialTheme.colorScheme.background)
+fun Modifier.screenBackground(): Modifier {
+    if (!LocalFitTheme.current) return background(MaterialTheme.colorScheme.background)
+    val room = LocalFitRoom.current
+    return drawBehind { drawFitRoom(room) }
+}
 
-/** Blanc lumineux en haut, sol carrelé en perspective qui s'estompe vers l'horizon. */
-private fun DrawScope.drawFitRoom() {
-    drawRect(Brush.verticalGradient(listOf(Color.White, Color(0xFFF4F6F8), Color(0xFFE9EDF1))))
+/**
+ * La salle : murs blancs teintés de la couleur [tint] vers le bas, une plinthe colorée à l'horizon, un sol carrelé
+ * en perspective, teinté lui aussi, qui s'estompe vers l'horizon.
+ */
+private fun DrawScope.drawFitRoom(tint: Color) {
     val horizon = size.height * 0.58f
     val floor = size.height - horizon
-    val line = Color(0xFFCBD3DA)
+    drawRect(
+        Brush.verticalGradient(listOf(Color.White, lerp(Color.White, tint, 0.08f), lerp(Color.White, tint, 0.2f)), endY = horizon),
+        size = androidx.compose.ui.geometry.Size(size.width, horizon),
+    )
+    drawRect(
+        Brush.verticalGradient(listOf(lerp(Color.White, tint, 0.14f), lerp(Color(0xFFF2F4F6), tint, 0.08f)), startY = horizon, endY = size.height),
+        topLeft = Offset(0f, horizon),
+    )
+    // Plinthe : une bande de la couleur de la salle, avec un liseré clair.
+    val plinth = 10.dp.toPx()
+    drawRect(lerp(tint, Color.White, 0.25f), topLeft = Offset(0f, horizon - plinth), size = androidx.compose.ui.geometry.Size(size.width, plinth))
+    drawLine(lerp(tint, Color.White, 0.7f), Offset(0f, horizon - plinth), Offset(size.width, horizon - plinth), strokeWidth = 2.dp.toPx())
+    val line = lerp(Color(0xFFCBD3DA), tint, 0.25f)
     // Lignes horizontales : de plus en plus serrées vers l'horizon.
     var t = 1f
     while (t > 0.04f) {
@@ -72,8 +91,8 @@ private fun DrawScope.drawFitRoom() {
     }
     // Brume claire sur l'horizon.
     drawRect(
-        Brush.verticalGradient(listOf(Color.White.copy(alpha = 0f), Color.White.copy(alpha = 0.85f), Color.White.copy(alpha = 0f)), startY = horizon - 40f, endY = horizon + floor * 0.35f),
-        topLeft = Offset(0f, horizon - 40f),
+        Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.7f), Color.White.copy(alpha = 0f)), startY = horizon, endY = horizon + floor * 0.35f),
+        topLeft = Offset(0f, horizon),
     )
 }
 
@@ -159,9 +178,10 @@ fun PillButton(
     val accent = colors?.containerColor?.takeIf { it != scheme.onSurface && it != Color.Unspecified } ?: scheme.outline
     OutlinedButton(
         onClick = onClick,
-        modifier = modifier,
+        // Petite brillance : blanc en haut, gris très clair en bas.
+        modifier = modifier.clip(CircleShape).background(Brush.verticalGradient(listOf(Color.White, Color(0xFFE9EEF2))), CircleShape),
         enabled = enabled,
-        colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White, contentColor = FitPalette.Text),
+        colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent, contentColor = FitPalette.Text),
         border = BorderStroke(3.dp, if (enabled) accent else scheme.outlineVariant),
         content = content,
     )

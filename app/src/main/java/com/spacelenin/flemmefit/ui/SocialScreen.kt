@@ -81,7 +81,7 @@ fun rememberPseudoPicker(social: SocialSync, onAccepted: () -> Unit = {}): (Stri
     var checking by remember { mutableStateOf(false) }
     var taken by remember { mutableStateOf<Pair<String, FriendCard>?>(null) }
     taken?.let { (name, owner) ->
-        AlertDialog(
+        PanelDialog(
             onDismissRequest = { taken = null },
             title = { Text("Pseudo déjà pris") },
             text = {
@@ -302,7 +302,7 @@ private fun PseudoSetup(onDone: (String) -> Unit, modifier: Modifier = Modifier)
 private fun SocialSettingsDialog(pseudo: String, topic: String, onSave: (String, String) -> Unit, onDismiss: () -> Unit) {
     var p by rememberSaveable { mutableStateOf(pseudo) }
     var t by rememberSaveable { mutableStateOf(topic) }
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onDismiss,
         title = { Text("Réglages des potes") },
         text = {
@@ -326,7 +326,7 @@ private fun SocialSettingsDialog(pseudo: String, topic: String, onSave: (String,
 @Composable
 fun PseudoPromptDialog(onSave: (String) -> Unit, onLater: () -> Unit) {
     var name by rememberSaveable { mutableStateOf("") }
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onLater,
         title = { Text("Ton pseudo pour les potes") },
         text = {

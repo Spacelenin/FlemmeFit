@@ -116,7 +116,7 @@ private val Pages = listOf(
 /** Faut-il un petit tour ? Proposé une fois, au premier programme. */
 @Composable
 fun TutorialOfferDialog(onYes: () -> Unit, onNo: () -> Unit) {
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onNo,
         title = { Text("Un petit tour de l'appli ?") },
         text = { Text("Sept écrans pour comprendre l'accueil, le mode séance, la progression, les niveaux, les variantes, les Boss, le Burst et le Chill. Toujours dispo dans Réglages › Aide.") },
@@ -130,7 +130,7 @@ fun TutorialDialog(onClose: () -> Unit) {
     var page by rememberSaveable { mutableIntStateOf(0) }
     val p = Pages[page]
     val last = page == Pages.lastIndex
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onClose,
         icon = { Text(p.icon, style = MaterialTheme.typography.displaySmall) },
         title = { Text(p.title, fontWeight = FontWeight.ExtraBold, maxLines = 1) },

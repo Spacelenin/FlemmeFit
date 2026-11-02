@@ -151,6 +151,7 @@ fun LazyListScope.dayDetailItems(
     session.order.forEach { i ->
         val prescription = session.prescriptions[i]
         item(key = "ex-${session.index}-$i") {
+            FitRowFrame(number = session.order.indexOf(i) + 1, done = schedule.exerciseState(session, i) == ExerciseState.DONE) {
             ExerciseRow(
                 tag = when {
                     i == session.variantIndex -> prescription.variant!!.let { v ->
@@ -174,6 +175,7 @@ fun LazyListScope.dayDetailItems(
                 onDetail = { actions.onDetail(session, i) },
                 onWeights = { actions.onWeights(session, i, it) },
             )
+            }
         }
     }
     extraItems(schedule, date, color, actions)

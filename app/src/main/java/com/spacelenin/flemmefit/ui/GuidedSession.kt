@@ -318,7 +318,7 @@ fun GuidedSession(
 @Composable
 private fun OvertimeDialog(planned: Int, extra: Int, onDone: (Int) -> Unit) {
     var value by remember { mutableIntStateOf(extra) }
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = {},
         title = { Text("Temps en plus") },
         text = {
@@ -430,12 +430,12 @@ private fun SetContent(
             countdown != null -> {
                 Text(clock(countdown), style = MaterialTheme.typography.displayLarge, fontWeight = FontWeight.ExtraBold)
                 Spacer(Modifier.height(20.dp))
-                PillButton(onClick = { onStart(countdown) }, modifier = Modifier.height(56.dp)) { Text("▶ Démarrer") }
+                StartButton(onClick = { onStart(countdown) }, modifier = Modifier.height(56.dp)) { Text("▶ Démarrer") }
             }
             guided.countUp(set) -> {
                 Text("0:00", style = MaterialTheme.typography.displayLarge, fontWeight = FontWeight.ExtraBold)
                 Spacer(Modifier.height(20.dp))
-                PillButton(onClick = { onStart(null) }, modifier = Modifier.height(56.dp)) { Text("▶ Démarrer le chrono") }
+                StartButton(onClick = { onStart(null) }, modifier = Modifier.height(56.dp)) { Text("▶ Démarrer le chrono") }
             }
             guided.needsValue(set) -> {
                 val stepSize = if (guided.inSeconds) 5 else 1
@@ -452,19 +452,19 @@ private fun SetContent(
                     }
                 }
                 Spacer(Modifier.height(20.dp))
-                PillButton(onClick = onSetDone, modifier = Modifier.height(56.dp)) { Text("✓ Série faite") }
+                StartButton(onClick = onSetDone, modifier = Modifier.height(56.dp)) { Text("✓ Série faite") }
             }
             else -> {
                 p.durationLabel?.let { Text(it, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.ExtraBold) }
                 p.repsLabel?.let { Text("$it reps", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.ExtraBold) }
                 Spacer(Modifier.height(20.dp))
-                PillButton(onClick = onSetDone, modifier = Modifier.height(56.dp)) { Text(if (guided.sets > 1) "✓ Série faite" else "✓ C'est fait") }
+                StartButton(onClick = onSetDone, modifier = Modifier.height(56.dp)) { Text(if (guided.sets > 1) "✓ Série faite" else "✓ C'est fait") }
             }
         }
 
         p.exercise.description?.let {
             Spacer(Modifier.height(28.dp))
-            Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            InstructionBubble(it)
         }
     }
 }

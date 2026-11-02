@@ -78,7 +78,7 @@ fun rememberRestore(backup: BackupManager): () -> Unit {
     }
 
     pending?.let { b ->
-        AlertDialog(
+        PanelDialog(
             onDismissRequest = { if (!restoring) pending = null },
             title = { Text("Restaurer cette sauvegarde ?") },
             text = {
@@ -118,7 +118,7 @@ fun rememberRestore(backup: BackupManager): () -> Unit {
         )
     }
     error?.let {
-        AlertDialog(
+        PanelDialog(
             onDismissRequest = { error = null },
             title = { Text("Restauration") },
             text = { Text(it) },
@@ -169,7 +169,7 @@ fun BackupSection(backup: BackupManager, settings: AppSettings, row: @Composable
     row("Restaurer une sauvegarde", "Reprendre programmes, suivi et réglages depuis un fichier", restore)
 
     if (manage) {
-        AlertDialog(
+        PanelDialog(
             onDismissRequest = { manage = false },
             title = { Text("Sauvegarde automatique") },
             text = {

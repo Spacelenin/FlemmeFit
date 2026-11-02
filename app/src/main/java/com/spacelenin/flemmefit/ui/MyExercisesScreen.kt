@@ -140,7 +140,7 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
                                 modifier = Modifier.clickable { rhythmFor = owner.id }.padding(horizontal = 16.dp, vertical = 8.dp),
                             )
                         }
-                        itemsIndexed(list, key = { i, a -> "adapt-$k-$i-${a.name}" }) { _, a -> AdaptationRow(a, balances.firstOrNull { it.name == a.name }) }
+                        itemsIndexed(list, key = { i, a -> "adapt-$k-$i-${a.name}" }) { i, a -> FitRowFrame(number = i + 1) { AdaptationRow(a, balances.firstOrNull { it.name == a.name }) } }
                     }
                 }
                 if (program == null) return@LazyColumn
@@ -166,7 +166,7 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
                     )
                 }
                 item(key = "routine-title") { SectionTitle("Variantes de la routine 🎲") }
-                items(progress.filter { !it.custom }, key = { "routine-${it.variant.id}" }) { v -> VariantRow(v) }
+                itemsIndexed(progress.filter { !it.custom }, key = { _, v -> "routine-${v.variant.id}" }) { i, v -> FitRowFrame(number = i + 1) { VariantRow(v) } }
                 item(key = "end") { Spacer(Modifier.height(96.dp)) }
             }
         }
@@ -197,7 +197,7 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
     deleting?.let { id ->
         val p = program ?: return@let
         val c = p.custom.firstOrNull { it.id == id } ?: return@let
-        AlertDialog(
+        PanelDialog(
             onDismissRequest = { deleting = null },
             title = { Text("Supprimer ${c.name} ?") },
             text = { Text("Il ne sera plus proposé à partir de demain. Ce que tu as déjà fait reste dans tes stats.") },
@@ -321,7 +321,7 @@ private fun AddExerciseDialog(
     val startValue = start.trim().toIntOrNull()?.takeIf { it > 0 }
     val valid = name.isNotBlank() && if (other) startValue != null else unknown || ratioValue != null
 
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onDismiss,
         title = { Text("Ajouter un exo") },
         text = {

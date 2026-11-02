@@ -52,7 +52,7 @@ fun CounterRow(counter: Counter) {
 /** Le jour où un compteur passe le cap : les compteurs se dévoilent. */
 @Composable
 fun CountersUnlockedDialog(milestone: Counter, onSee: () -> Unit, onDismiss: () -> Unit) {
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onDismiss,
         title = { Text("🔓 Compteurs débloqués") },
         text = {

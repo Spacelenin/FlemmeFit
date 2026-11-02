@@ -87,7 +87,7 @@ fun ProgramMenuButton(
             }
         }
     }
-    fun fileName(suffix: String) = program.plan.name.lowercase().replace(Regex("[^a-z0-9]+"), "-").trim('-').ifEmpty { "routine" } + suffix + ".json"
+    fun fileName(suffix: String) = program.plan.name.lowercase().replace(Regex("[^a-z0-9]+"), "-").trim('-').ifEmpty { "routine" } + suffix + "-$today.json"
 
     Box {
         IconButton(onClick = { open = true }) { Icon(Icons.Default.MoreVert, "Options de ${program.plan.name}", tint = tint) }
@@ -176,7 +176,7 @@ fun ProgramMenuButton(
                 },
             )
         }
-        DIALOG_COLOR -> AlertDialog(
+        DIALOG_COLOR -> PanelDialog(
             onDismissRequest = { dialog = null },
             title = { Text("Couleur de « ${program.plan.name} »") },
             text = {
@@ -200,7 +200,7 @@ fun ProgramMenuButton(
             },
             confirmButton = { TextButton(onClick = { dialog = null }) { Text("Fermer") } },
         )
-        DIALOG_DELETE -> AlertDialog(
+        DIALOG_DELETE -> PanelDialog(
             onDismissRequest = { dialog = null },
             title = { Text("Supprimer « ${program.plan.name} » ?") },
             text = { Text("Le programme et toute sa progression seront effacés.") },

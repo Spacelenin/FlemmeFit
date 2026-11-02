@@ -1,5 +1,6 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -74,7 +75,7 @@ fun LazyListScope.statsOverviewItems(stats: Stats, color: Color, showProgram: Bo
         }
     }
     item(key = "stats-history-title") { SectionTitle("Historique") }
-    itemsIndexed(stats.history, key = { i, _ -> "h-$i" }) { _, h -> HistoryRow(h, showProgram) }
+    itemsIndexed(stats.history, key = { i, _ -> "h-$i" }) { _, h -> FitRowFrame(done = h.doneExercises >= h.totalExercises) { HistoryRow(h, showProgram) } }
 }
 
 fun LazyListScope.statsExerciseItems(stats: Stats, color: Color) {
@@ -82,12 +83,14 @@ fun LazyListScope.statsExerciseItems(stats: Stats, color: Color) {
     val shown = stats.exercises.filter { !it.optional }
     if (shown.isEmpty()) return
     item(key = "stats-ex-title") { SectionTitle("Par exercice") }
-    items(shown, key = { "e-${it.key}" }) { ExerciseStatsCard(it, color) }
+    itemsIndexed(shown, key = { _, e -> "e-${e.key}" }) { i, e -> FitRowFrame(number = i + 1) { ExerciseStatsCard(e, color) } }
 }
 
 /** Tuiles de chiffres, deux par ligne. */
 @Composable
 private fun Totals(stats: Stats, color: Color) {
+    val fit = LocalFitTheme.current
+    val room = LocalFitRoom.current
     val tiles = listOf(
         Triple("${stats.sessionsDone}", "séances faites", color),
         Triple("${stats.currentStreak} 🔥", "d'affilée · record ${stats.bestStreak}", null),
@@ -105,9 +108,15 @@ private fun Totals(stats: Stats, color: Color) {
                             .weight(1f)
                             .clip(RoundedCornerShape(16.dp))
                             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                            .then(if (fit) Modifier.border(2.5.dp, tint ?: room, RoundedCornerShape(16.dp)) else Modifier)
                             .padding(horizontal = 14.dp, vertical = 12.dp),
                     ) {
-                        Text(value, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold, color = tint ?: MaterialTheme.colorScheme.onSurface)
+                        Text(
+                            value,
+                            style = if (fit) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.headlineSmall,
+                            fontWeight = if (fit) FontWeight.Black else FontWeight.ExtraBold,
+                            color = tint ?: if (fit) room else MaterialTheme.colorScheme.onSurface,
+                        )
                         Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }

@@ -59,7 +59,7 @@ fun LogDialog(
     )
     val complete = prescription.isMetBy(log)
 
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onDismiss,
         title = { Text(prescription.exercise.name) },
         text = {
@@ -95,7 +95,7 @@ fun LogDialog(
 @Composable
 fun BossMaxDialog(prescription: Prescription, onSave: (max: Int?) -> Unit, onDismiss: () -> Unit) {
     var max by rememberSaveable { mutableStateOf(prescription.target?.toString().orEmpty()) }
-    AlertDialog(
+    PanelDialog(
         onDismissRequest = onDismiss,
         title = {
             val icon = when {
