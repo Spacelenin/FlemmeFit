@@ -83,7 +83,6 @@ fun SettingsScreen(
     val theme by settings.theme.collectAsStateWithLifecycle()
     val fitTheme by settings.fitTheme.collectAsStateWithLifecycle()
     val restBonus by settings.restBonus.collectAsStateWithLifecycle()
-    val countersUnlocked by settings.countersUnlocked.collectAsStateWithLifecycle()
     val reminderSettings by reminders.settings.collectAsStateWithLifecycle()
     val pseudo by social.pseudo.collectAsStateWithLifecycle()
     var showReminders by remember { mutableStateOf(false) }
@@ -184,55 +183,6 @@ fun SettingsScreen(
                 Section("AIDE")
                 SettingRow(title = "Comment marche l'appli", subtitle = "Le petit tour en six écrans", onClick = onTutorial)
 
-                // Juste au-dessus du champ secret : ouvrir les compteurs les montre là où on regarde.
-                if (countersUnlocked) {
-                    Section("COMPTEURS 🔓")
-                    val counters = remember(programs) { countersOf(programs, java.time.LocalDate.now()) }
-                    if (counters.isEmpty()) {
-                        Text(
-                            "Rien à compter pour l'instant : chaque exercice fait viendra s'ajouter ici.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
-                        )
-                    }
-                    counters.forEach { CounterRow(it) }
-                }
-
-                // Un champ sans rien autour. Le bon mot ouvre (ou referme) les compteurs.
-                var word by remember { mutableStateOf("") }
-                val context = LocalContext.current
-                OutlinedTextField(
-                    value = word,
-                    onValueChange = { text ->
-                        // On agit quand le mot apparaît, sans vider le champ : le clavier renverrait le mot
-                        // en cours de frappe, et ça refermerait aussitôt ce qui vient de s'ouvrir.
-                        val before = Counter.isSecretWord(word)
-                        word = text.take(20)
-                        if (!before && Counter.isSecretWord(word)) {
-                            val on = !countersUnlocked
-                            settings.setCountersByHand(on)
-                            Toast.makeText(context, if (on) "🔓" else "🔒", Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    singleLine = true,
-                    // Thème clair : un contour à peine visible, comme sur fond sombre (le contour vert le trahirait).
-                    colors = if (fitTheme) {
-                        OutlinedTextFieldDefaults.colors(
-                            unfocusedBorderColor = Color(0x14000000),
-                            focusedBorderColor = Color(0x33000000),
-                            cursorColor = Color(0x66000000),
-                        )
-                    } else {
-                        OutlinedTextFieldDefaults.colors()
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        capitalization = KeyboardCapitalization.None,
-                        autoCorrectEnabled = false,
-                        keyboardType = KeyboardType.Password,
-                    ),
-                    modifier = Modifier.align(Alignment.CenterHorizontally).width(160.dp).padding(top = 32.dp, bottom = 24.dp),
-                )
             }
         }
     }

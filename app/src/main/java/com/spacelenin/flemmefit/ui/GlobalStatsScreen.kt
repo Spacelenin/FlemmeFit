@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.spacelenin.flemmefit.model.Badges
+import com.spacelenin.flemmefit.model.Counter
 import com.spacelenin.flemmefit.model.Progress
 import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.Stats
@@ -40,6 +41,8 @@ fun GlobalStatsScreen(programs: List<StoredProgram>) {
     val variants = remember(schedules) { schedules.flatMap { it.variantProgress() } }
     val balances = remember(schedules) { schedules.flatMap { it.balances() } }
     val badges = remember(stats) { Badges.of(stats) }
+    // Compteurs cachés : ils n'apparaissent qu'une fois un cap passé (1000 reps ou 10 h d'un même exercice).
+    val counters = remember(programs, today) { countersOf(programs, today).takeIf { Counter.unlocked(it) }.orEmpty() }
     val color = MaterialTheme.colorScheme.primary
     val several = programs.size > 1
 
@@ -65,6 +68,10 @@ fun GlobalStatsScreen(programs: List<StoredProgram>) {
                     }
                 }
                 statsBadgeItems(badges, color)
+                if (counters.isNotEmpty()) {
+                    item(key = "counters-title") { SectionTitle("Compteurs 🔓") }
+                    counters.forEachIndexed { i, c -> item(key = "counter-$i") { FitRowFrame { CounterRow(c) } } }
+                }
             },
         )
     }
