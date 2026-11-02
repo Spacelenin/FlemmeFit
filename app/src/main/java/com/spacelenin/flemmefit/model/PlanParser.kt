@@ -143,6 +143,16 @@ object PlanParser {
                     }
                     addAll(validateLevels(ex, testIds, "$at.exercises[$e]"))
                     ex.tuning?.let { addAll(validateTuning(it, "$at.exercises[$e].tuning", root = false)) }
+                    ex.alternatives.forEachIndexed { a, alt ->
+                        val where = "$at.exercises[$e].alternatives[$a]"
+                        if (alt.id.isBlank()) add("$where.id ne doit pas être vide.")
+                        if (alt.name.isBlank()) add("$where.name ne doit pas être vide.")
+                        if (alt.factor <= 0.0 || alt.factor > 10.0) add("$where.factor doit être entre 0 et 10 (reçu ${alt.factor}).")
+                        val follows = alt.follows.trim().lowercase()
+                        if (plan.weeks.none { w -> w.days.any { d -> d.exercises.any { it.key == follows } } }) {
+                            add("$where.follows : aucun exercice \"${alt.follows}\" dans la routine.")
+                        }
+                    }
                     ex.progression?.let { p ->
                         // Avec des paliers, chaque palier doit pouvoir progresser.
                         val variants = if (ex.levels.isEmpty()) listOf(ex) else ex.levels.indices.map(ex::atLevel)

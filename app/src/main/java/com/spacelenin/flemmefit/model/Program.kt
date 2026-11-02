@@ -105,6 +105,10 @@ data class StoredProgram(
     val profiles: List<ProfileChange> = emptyList(),
     /** Dernière suggestion de rythme écartée (date ISO) : pas de nouvelle avant un moment. */
     val profileHintDismissed: String? = null,
+    /** Remplacements d'un seul jour, mêmes clés que [done] : id de l'option, ou "" pour garder l'exercice prévu. */
+    val dayReplacements: Map<String, String> = emptyMap(),
+    /** Remplacements gardés d'une séance à l'autre, datés. */
+    val replacements: List<ReplacementChange> = emptyList(),
 ) {
     val start: LocalDate get() = LocalDate.parse(startDate)
 
@@ -179,6 +183,24 @@ data class StoredProgram(
     fun weightsChoice(dayIndex: Int, exerciseIndex: Int): Boolean? = weights[doneKey(dayIndex, exerciseIndex)]
 
     fun withWeights(dayIndex: Int, exerciseIndex: Int, on: Boolean) = copy(weights = weights + (doneKey(dayIndex, exerciseIndex) to on))
+
+    /** L'option qui remplace l'exercice [key] (index [exerciseIndex] du jour [dayIndex], le [date]), null s'il est fait tel quel. */
+    fun replacementOn(dayIndex: Int, exerciseIndex: Int, key: String, date: LocalDate): String? {
+        dayReplacements[doneKey(dayIndex, exerciseIndex)]?.let { return it.ifEmpty { null } }
+        return replacements.filter { it.exercise == key && it.date <= date.toString() }.maxByOrNull { it.date }?.option
+    }
+
+    /**
+     * Remplace l'exercice ([option] null : remet celui prévu), pour ce jour seulement ou à partir de [date].
+     * Ce qui était noté sur cet exercice ce jour-là est effacé : ce n'est plus le même exercice.
+     */
+    fun withReplacement(dayIndex: Int, exerciseIndex: Int, key: String, option: String?, date: LocalDate, keep: Boolean): StoredProgram {
+        val k = doneKey(dayIndex, exerciseIndex)
+        val cleared = copy(done = done - k, logs = logs - k, exerciseFeelings = exerciseFeelings - k)
+        if (!keep) return cleared.copy(dayReplacements = dayReplacements + (k to (option ?: "")))
+        val kept = replacements.filterNot { it.exercise == key && it.date >= date.toString() }
+        return cleared.copy(dayReplacements = dayReplacements - k, replacements = kept + ReplacementChange(key, option, date.toString()))
+    }
 
     fun skipVariant(dayIndex: Int) = copy(variantSkips = variantSkips + dayIndex)
 

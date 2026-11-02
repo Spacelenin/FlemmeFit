@@ -157,6 +157,10 @@ class ProgramRepository(dir: File) {
     /** Nouveau rythme d'adaptation, pour les séances à partir de [from]. */
     fun setProfile(id: String, profile: AdaptProfile, from: LocalDate) = updateProgram(id) { it.withProfile(profile, from) }
 
+    /** Change l'exercice [exerciseIndex] du jour [dayIndex] ([option] null : celui prévu), ce jour-là ou à partir de [date]. */
+    fun replaceExercise(id: String, dayIndex: Int, exerciseIndex: Int, key: String, option: String?, date: LocalDate, keep: Boolean) =
+        updateProgram(id) { it.withReplacement(dayIndex, exerciseIndex, key, option, date, keep) }
+
     fun dismissProfileHint(id: String, date: LocalDate) = updateProgram(id) { it.copy(profileHintDismissed = date.toString()) }
 
     fun changeTestOption(id: String, testId: String, option: String, result: Int?) =
