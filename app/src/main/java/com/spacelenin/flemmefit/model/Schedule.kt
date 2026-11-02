@@ -456,6 +456,16 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             otherIndex = prescriptions.size
             prescriptions += prescribe(otherIndex, otherPick.asExercise())
         }
+        // Exercices remplacés (choix fait depuis la page du jour) : l'exercice choisi, dosé comme celui qu'il suit.
+        for (e in 0 until n) {
+            if (e == variantIndex || e == variantBase) continue
+            val ex = day.exercises[e]
+            if (ex.retest) continue
+            val id = program.replacementOn(i, e, ex.key, date) ?: continue
+            val option = replacementOptions(ex, day).firstOrNull { it.id == id } ?: continue
+            runCatching { replacementPrescription(option, ex, date, deload || chill, boss, burst) }
+                .onFailure(Safety::report).getOrNull()?.let { prescriptions[e] = it }
+        }
         val order = (0 until n).toMutableList()
         variantIndex?.takeIf { it != variantBase }?.let { order.add(order.indexOf(variantBase!!) + 1, it) }
         // L'exercice perso passe avant le dernier de la séance (les étirements).
@@ -500,6 +510,82 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     }
 
     /** `{id du test}` dans les noms : le choix d'exercice en cours pour ce test (« crunch »). */
+    // --- Remplacements ---
+
+    private val exerciseByKey: Map<String, Exercise> = buildMap {
+        plan.weeks.forEach { w -> w.days.forEach { d -> d.exercises.forEach { putIfAbsent(it.key, it) } } }
+    }
+    // Alternatives d'un exercice, écrites sur n'importe lequel de ses jours.
+    private val alternativesByKey: Map<String, List<Alternative>> =
+        plan.weeks.flatMap { w -> w.days.flatMap { it.exercises } }.groupBy { it.key }
+            .mapValues { (_, list) -> list.flatMap { it.alternatives }.distinctBy { it.id.trim() } }
+
+    /** Nom d'un exercice de la routine. */
+    fun exerciseName(key: String): String? = exerciseByKey[key]?.name
+
+    /**
+     * Ce qui peut remplacer [ex] dans la séance [day] : ses alternatives de la routine, puis les autres exercices de sa
+     * famille (sauf ceux déjà au programme ce jour-là).
+     */
+    fun replacementOptions(ex: Exercise, day: PlanDay): List<ReplacementOption> {
+        val inDay = day.exercises.map { it.key }.toSet()
+        val alternatives = alternativesByKey[ex.key].orEmpty().map {
+            ReplacementOption(ReplacementOption.ALT + it.id.trim(), it.name, it.description, it.follows.trim().lowercase(), it.factor, alternative = true)
+        }
+        val family = plan.families.filter { ex.key in it.exercises }.flatMap { it.exercises }.distinct()
+            .filter { it != ex.key && it !in inDay }
+            .mapNotNull { k -> exerciseByKey[k]?.let { ReplacementOption(ReplacementOption.EXERCISE + k, it.name, it.description, k, 1.0, alternative = false) } }
+        return alternatives + family
+    }
+
+    /** Exercices de la séance qu'on peut remplacer (pas la variante ni son exercice de base, pas un test). */
+    fun replaceable(session: Session): List<Int> = session.day.exercises.indices.filter { e ->
+        e != session.variantIndex && e != session.variantBaseIndex && !session.day.exercises[e].retest &&
+            replacementOptions(session.day.exercises[e], session.day).isNotEmpty()
+    }
+
+    /** L'option choisie pour l'exercice [e] de la séance, null s'il est fait tel que prévu. */
+    fun currentReplacement(session: Session, e: Int): String? =
+        session.day.exercises.getOrNull(e)?.let { program.replacementOn(session.index, e, it.key, session.date) }
+
+    /** L'exercice [key] tel qu'il serait prescrit ce jour-là : son niveau du moment (réglage compris), sans rien apprendre. */
+    private fun followed(key: String, date: LocalDate, light: Boolean, boss: Boolean, burst: Boolean): Prescription? {
+        val ex = exerciseByKey[key] ?: return null
+        val extra = if (ex.progression == null) 0 else if (boss) BOSS_STEPS else if (burst) BURST_STEPS else 0
+        val view = adaptViews[key]
+        if (view != null) {
+            val level = (view.steps + (adapt[key]?.applied ?: view.applied)).coerceAtLeast(0) + extra
+            return Prescription.of(view.exercise, level, light, boss = boss, lastMax = lastMax[key], burst = burst, weighted = view.weighted)
+        }
+        val palier = if (ex.levels.isEmpty()) null else ex.levelIndexFor(ex.test?.let(testResults::get))
+        val base = palier?.let { named(ex.atLevel(it), date) } ?: ex
+        return Prescription.of(base, extra, light, boss = boss, lastMax = lastMax[key], palier = palier, burst = burst)
+    }
+
+    private fun replacementPrescription(option: ReplacementOption, original: Exercise, date: LocalDate, light: Boolean, boss: Boolean, burst: Boolean): Prescription? {
+        val f = followed(option.follows, date, light, boss, burst) ?: return null
+        val originalName = named(original, date).name
+        if (!option.alternative) return f.copy(replaces = originalName)
+        fun scale(v: Int?) = v?.let { maxOf(1, Math.round(it * option.factor).toInt()) }
+        val reps = scale(f.reps)
+        val seconds = scale(f.seconds)
+        // Sans progression : l'exercice suit celui qu'il imite, ce qui y est noté ne règle rien.
+        val exercise = Exercise(
+            name = option.name,
+            id = option.id.removePrefix(ReplacementOption.ALT),
+            description = option.description,
+            sets = f.sets,
+            reps = reps?.toString(),
+            duration = seconds?.let(Measures::formatSeconds),
+            rest = f.exercise.rest,
+            amrap = f.allOut,
+        )
+        return f.copy(
+            exercise = exercise, reps = reps, seconds = seconds, target = scale(f.target),
+            sided = null, variant = null, replacedBy = null, replaces = originalName, palier = null, levelCount = 0,
+        )
+    }
+
     private fun named(ex: Exercise, date: LocalDate): Exercise {
         if (optionTests.isEmpty() || '{' !in ex.name) return ex
         return ex.copy(name = program.exerciseName(ex.name, date))

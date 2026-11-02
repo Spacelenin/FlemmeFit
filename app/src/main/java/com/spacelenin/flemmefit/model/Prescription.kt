@@ -35,6 +35,8 @@ data class Prescription(
     val replacedBy: String? = null,
     /** Une série par côté, en alternance : ce qui est demandé de chaque côté ([sets] compte toutes les séries). */
     val sided: SidedPlan? = null,
+    /** Fait à la place de cet exercice de la routine (remplacement choisi depuis la page du jour). */
+    val replaces: String? = null,
 ) {
     val key get() = exercise.key
     val repsLabel: String? get() = reps?.toString() ?: exercise.reps

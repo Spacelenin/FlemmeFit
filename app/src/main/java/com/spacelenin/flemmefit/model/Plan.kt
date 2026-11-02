@@ -225,6 +225,8 @@ data class Exercise(
     val perSide: String? = null,
     /** Réglages du sur-mesure propres à cet exercice (sur tous les jours où il revient). */
     val tuning: Tuning? = null,
+    /** Exercices à faire à la place, au choix (matériel, envie), depuis la page du jour. */
+    val alternatives: List<Alternative> = emptyList(),
 ) {
     /** Clé de regroupement : stable entre jours et entre programmes. */
     val key: String get() = (id ?: name).trim().lowercase()

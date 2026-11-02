@@ -64,6 +64,7 @@ fun rememberDayActions(
     var postponeIndex by rememberSaveable(program.id) { mutableStateOf<Int?>(null) }
     var guidedDay by rememberSaveable(program.id) { mutableStateOf<Int?>(null) }
     var extraFor by rememberSaveable(program.id) { mutableStateOf<Long?>(null) }
+    var replaceDay by rememberSaveable(program.id) { mutableStateOf<Int?>(null) }
     // Ressenti : demandé quand la séance du jour vient d'être terminée (après le mode séance s'il est ouvert).
     var feelingFor by rememberSaveable(program.id) { mutableStateOf<Int?>(null) }
     // Puis ce que la séance a changé au réglage des exos, s'il y a quelque chose à dire.
@@ -104,7 +105,21 @@ fun rememberDayActions(
         onAddExtra = { date -> extraFor = date.toEpochDay() },
         onRemoveExtra = { date, i -> repository.removeExtra(program.id, date, i) },
         onSkipVariant = { s -> repository.skipVariant(program.id, s.index) },
+        onReplace = { s -> replaceDay = s.index },
     )
+
+    replaceDay?.let { dayIndex ->
+        val session = schedule.sessionAt(dayIndex) ?: return@let
+        ReplaceExerciseDialog(
+            schedule = schedule,
+            session = session,
+            onApply = { e, key, option, keep ->
+                repository.replaceExercise(program.id, dayIndex, e, key, option, session.date, keep)
+                replaceDay = null
+            },
+            onDismiss = { replaceDay = null },
+        )
+    }
 
     logDay?.let { dayIndex ->
         val session = schedule.sessionAt(dayIndex)

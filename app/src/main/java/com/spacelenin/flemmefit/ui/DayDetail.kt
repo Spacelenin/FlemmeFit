@@ -1,5 +1,6 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.width
@@ -105,6 +106,8 @@ class DayActions(
     val onRemoveExtra: (date: LocalDate, index: Int) -> Unit,
     /** « Pas aujourd'hui » : la variante du jour est replacée plus tard dans le cycle. */
     val onSkipVariant: (session: Session) -> Unit,
+    /** « Changer un exo » : ouvre le choix des exercices de la séance et de ce qui peut les remplacer. */
+    val onReplace: (session: Session) -> Unit = {},
 )
 
 /** Détail du jour sélectionné, sous forme d'éléments de liste pour s'insérer dans n'importe quelle LazyColumn. */
@@ -154,6 +157,7 @@ fun LazyListScope.dayDetailItems(
             FitRowFrame(number = session.order.indexOf(i) + 1, done = schedule.exerciseState(session, i) == ExerciseState.DONE) {
             ExerciseRow(
                 tag = when {
+                    prescription.replaces != null -> "🔄 À la place de ${prescription.replaces}"
                     i == session.variantIndex -> prescription.variant!!.let { v ->
                         if (v.whole) "🎲 Variante : à la place de ${v.baseName.lowercase()}"
                         else "🎲 Variante : à la place de ta série max de ${v.baseName.lowercase()}"
@@ -176,6 +180,15 @@ fun LazyListScope.dayDetailItems(
                 onWeights = { actions.onWeights(session, i, it) },
             )
             }
+        }
+    }
+    // Changer un exo : aujourd'hui ou plus tard, s'il y a de quoi le remplacer.
+    if (!session.date.isBefore(schedule.today) && schedule.replaceable(session).isNotEmpty()) {
+        item(key = "replace-${session.index}") {
+            OutlinedButton(
+                onClick = { actions.onReplace(session) },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            ) { Text("🔄 Changer un exo") }
         }
     }
     extraItems(schedule, date, color, actions)

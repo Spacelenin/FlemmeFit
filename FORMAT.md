@@ -98,6 +98,7 @@ Ce sont des **textes libres** (tu peux écrire `"12"`, `"8-10"`, `"max"`, `"10 p
 | `optional`    | booléen | non (défaut `false`) | `true` | **Facultatif** (échauffement, étirements) : le passer ne compte pas contre la séance. Elle est finie quand tout le reste est fait. |
 | `sides`       | texte  | non         | `"Bras droit, puis bras gauche."` | Exercice d'**un côté à la fois** : quels membres travaillent. Affiché en évidence en séance et dans le détail. |
 | `perSide`     | texte  | non         | `"jambe"` | **Une série par côté**, en alternance 🔴 gauche / 🔵 droite : ce qui travaille (`"bras"`, `"jambe"`, `"côté"`). `sets` compte alors les séries **de chaque côté**. Repos court (20 s) entre les deux côtés d'une paire. Chaque côté se règle sur ses propres séries ; si l'écart dépasse 10 % sur 3 séances, le côté faible commence chaque paire, fait une série de plus et rattrape en environ 6 semaines ; au-delà de 20 %, le côté fort ne monte plus. |
+| `alternatives` | tableau | non       | —         | **Exercices de remplacement**, au choix depuis la page du jour (« 🔄 Changer un exo ») : `id`, `name`, `description`, `follows` (id de l'exercice dont il suit le dosage : même niveau, mêmes séries) et `factor` (reps ou secondes × factor, défaut 1). Ex. Russian twist : `"follows": "abdos", "factor": 2` (2 twists = 1 rep d'abdos). Il ne progresse pas seul, il suit l'autre. Les autres exercices de la même famille sont aussi proposés, avec leur propre niveau. |
 
 Affichage dans l'app : `sets × reps · load · repos rest`, par ex. **4 × 8-10 · 60 kg · repos 90s**.
 

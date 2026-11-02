@@ -16,6 +16,8 @@ et une progression.
   l'exo, même en dessous du prévu (sauf jour Boss). En fin de séance, une fenêtre annonce ce qui change.
   Rythme au choix par programme (🐢 Doux, 🙂 Normal, 🚀 Vif), avec une suggestion quand tout est facile ou dur ;
   réglages fins dans le JSON (`tuning`), et export de la routine ou d'un modèle à modifier.
+- **Changer un exo** 🔄 depuis la page du jour : un remplaçant prévu par la routine (Russian twist à la place des
+  hip dips, dosé comme les abdos, reps × 2) ou un exo de la même famille, juste ce jour-là ou pour la suite.
 - **Mode séance** guidé : série par série, repos décompté, chrono qui continue en temps en plus, ressenti par exo.
 - **Exos d'un côté à la fois** : une série par côté, 🔴 gauche / 🔵 droite. Chaque côté est suivi à part ; un côté en
   retard commence, fait une série de plus et rattrape l'autre (écart dans les stats).
