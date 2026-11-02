@@ -84,6 +84,8 @@ object PlanParser {
             if (it != 0 && it !in 2..52) add("\"deloadEvery\" doit valoir 0 (jamais) ou être entre 2 et 52 (reçu $it).")
         }
 
+        plan.tuning?.let { addAll(validateTuning(it, "tuning", root = true)) }
+
         val testIds = mutableSetOf<String>()
         plan.tests.forEachIndexed { t, test ->
             val at = "tests[$t]"
@@ -120,6 +122,7 @@ object PlanParser {
             if (variant.unit != PlanTest.UNIT_REPS && variant.unit != PlanTest.UNIT_SECONDS) {
                 add("$at.unit doit valoir \"reps\" ou \"seconds\" (reçu \"${variant.unit}\").")
             }
+            variant.tuning?.let { addAll(validateTuning(it, "$at.tuning", root = false)) }
         }
 
         plan.weeks.forEachIndexed { w, week ->
@@ -139,6 +142,7 @@ object PlanParser {
                         if (w.factor <= 0.0 || w.factor > 1.0) add("$at.exercises[$e].weights.factor doit être entre 0 et 1 (reçu ${w.factor}).")
                     }
                     addAll(validateLevels(ex, testIds, "$at.exercises[$e]"))
+                    ex.tuning?.let { addAll(validateTuning(it, "$at.exercises[$e].tuning", root = false)) }
                     ex.progression?.let { p ->
                         // Avec des paliers, chaque palier doit pouvoir progresser.
                         val variants = if (ex.levels.isEmpty()) listOf(ex) else ex.levels.indices.map(ex::atLevel)
@@ -149,6 +153,42 @@ object PlanParser {
         }
         if (plan.weeks.isNotEmpty() && plan.weeks.all { it.days.isEmpty() }) {
             add("Le programme ne contient aucune séance.")
+        }
+    }
+
+    /** Réglages du sur-mesure : chaque valeur écrite doit rester dans des bornes raisonnables. */
+    private fun validateTuning(t: Tuning, at: String, root: Boolean): List<String> = buildList {
+        fun check(name: String, value: Number?, min: Double, max: Double) {
+            if (value != null && value.toDouble() !in min..max) add("$at.$name doit être entre ${Variants.decimal(min)} et ${Variants.decimal(max)} (reçu $value).")
+        }
+        t.adapt?.let { a ->
+            check("adapt.calibration", a.calibration, 2.0, 30.0)
+            check("adapt.gainStart", a.gainStart, 0.05, 1.0)
+            check("adapt.gainEnd", a.gainEnd, 0.05, 1.0)
+            check("adapt.gainDown", a.gainDown, 0.1, 1.0)
+            check("adapt.threshold", a.threshold, 0.5, 3.0)
+            check("adapt.exerciseFeeling", a.exerciseFeeling, 0.0, 3.0)
+            check("adapt.sessionFeeling", a.sessionFeeling, 0.0, 3.0)
+            check("adapt.testCeiling", a.testCeiling, 0.3, 0.95)
+            check("adapt.testTarget", a.testTarget, 0.2, 0.9)
+            if (a.gainStart != null && a.gainEnd != null && a.gainStart < a.gainEnd) add("$at.adapt.gainStart doit être au moins égal à gainEnd.")
+            if (a.testTarget != null && a.testCeiling != null && a.testTarget >= a.testCeiling) add("$at.adapt.testTarget doit être sous testCeiling.")
+        }
+        t.sides?.let { s ->
+            check("sides.evenBelow", s.evenBelow, 0.02, 0.5)
+            check("sides.weakOnlyFrom", s.weakOnlyFrom, 0.04, 0.8)
+            check("sides.catchUpDays", s.catchUpDays, 7.0, 365.0)
+            check("sides.switchSessions", s.switchSessions, 1.0, 10.0)
+            check("sides.switchRest", s.switchRest, 0.0, 300.0)
+            if (s.evenBelow != null && s.weakOnlyFrom != null && s.weakOnlyFrom <= s.evenBelow) add("$at.sides.weakOnlyFrom doit être au-dessus de evenBelow.")
+        }
+        t.variants?.let { v ->
+            if (!root) add("$at.variants : seulement dans le \"tuning\" de la routine.")
+            check("variants.sets", v.sets, 1.0, 10.0)
+            check("variants.share", v.share, 0.2, 1.0)
+            check("variants.easyFactor", v.easyFactor, 0.1, 1.0)
+            check("variants.cycleWeeks", v.cycleWeeks, 1.0, 12.0)
+            check("variants.otherPerWeek", v.otherPerWeek, 0.0, 7.0)
         }
     }
 

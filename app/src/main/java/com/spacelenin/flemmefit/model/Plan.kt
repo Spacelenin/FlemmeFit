@@ -54,6 +54,8 @@ data class Plan(
     /** Variantes plus dures, glissées au hasard à la place d'une partie des séries de leur famille. */
     val variants: List<Variant> = emptyList(),
     val weeks: List<PlanWeek>,
+    /** Réglages du sur-mesure pour toute la routine (voir [Tuning]). */
+    val tuning: Tuning? = null,
 ) {
     val isForever get() = repeat == REPEAT_FOREVER
 
@@ -143,6 +145,8 @@ data class Variant(
     val perSide: String? = null,
     /** Proposée seulement si chacun de ces tests (id → minimum) est atteint. */
     val requires: Map<String, Int> = emptyMap(),
+    /** Réglages du sur-mesure propres à cette variante. */
+    val tuning: Tuning? = null,
 ) {
     val isSeconds get() = unit == PlanTest.UNIT_SECONDS
 }
@@ -219,6 +223,8 @@ data class Exercise(
      * [sets] compte alors les séries de chaque côté, et chaque côté est suivi à part (voir [Balance]).
      */
     val perSide: String? = null,
+    /** Réglages du sur-mesure propres à cet exercice (sur tous les jours où il revient). */
+    val tuning: Tuning? = null,
 ) {
     /** Clé de regroupement : stable entre jours et entre programmes. */
     val key: String get() = (id ?: name).trim().lowercase()

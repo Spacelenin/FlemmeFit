@@ -84,7 +84,7 @@ class AdaptationTest {
             exerciseFeeling = Adaptation.FEELING_EASY, sessionFeeling = Adaptation.FEELING_HARD,
         )!!
         assertTrue(s in 0.1..0.5)
-        assertEquals(Adaptation.EXERCISE_FEELING, e, 1e-9)
+        assertEquals(AdaptParams().exerciseFeeling, e, 1e-9)
         assertNull(Adaptation.signal(ProgramSchedule(p, start).sessionAt(0)!!.prescriptions[1], null, false, true, 1.0, null, null))
     }
 
@@ -115,12 +115,12 @@ class AdaptationTest {
 
     @Test
     fun `gain is strong at first then smooth, always firm downwards`() {
-        assertEquals(0.75, Adaptation.gain(0, 1.0), 1e-9)
-        assertEquals(0.3, Adaptation.gain(10, 1.0), 1e-9)
-        assertEquals(0.6, Adaptation.gain(10, -1.0), 1e-9)
+        assertEquals(0.75, AdaptParams().gain(0, 1.0), 1e-9)
+        assertEquals(0.3, AdaptParams().gain(10, 1.0), 1e-9)
+        assertEquals(0.6, AdaptParams().gain(10, -1.0), 1e-9)
         val calm = AdaptState(value = 2.0, applied = 2, samples = 10)
         assertEquals(2, Adaptation.update(calm, 2.5).applied) // +0,75 : pas encore un cran net
-        assertFalse(Adaptation.update(AdaptState(), 0.0).stable)
+        assertFalse(Adaptation.update(AdaptState(), 0.0).isStable())
     }
 
     @Test

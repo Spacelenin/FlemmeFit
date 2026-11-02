@@ -36,6 +36,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import com.spacelenin.flemmefit.model.PlanExport
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.spacelenin.flemmefit.data.ProgramRepository
 import com.spacelenin.flemmefit.model.ProgramSchedule
 import com.spacelenin.flemmefit.model.StoredProgram
@@ -60,6 +71,23 @@ fun ProgramMenuButton(
 ) {
     var open by remember { mutableStateOf(false) }
     var dialog by rememberSaveable(program.id) { mutableStateOf(if (askTests) DIALOG_TESTS else null) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val today = rememberToday()
+    // Export : la routine telle quelle, ou en modèle avec tous les réglages écrits.
+    var exportTemplate by rememberSaveable { mutableStateOf(false) }
+    val export = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { picked ->
+        if (picked != null) {
+            val text = if (exportTemplate) PlanExport.template(program.plan) else PlanExport.routine(program.plan)
+            scope.launch {
+                val ok = withContext(Dispatchers.IO) {
+                    runCatching { context.contentResolver.openOutputStream(picked)?.use { it.write(text.toByteArray()) } != null }.getOrDefault(false)
+                }
+                Toast.makeText(context, if (ok) "Routine exportée" else "Export impossible", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    fun fileName(suffix: String) = program.plan.name.lowercase().replace(Regex("[^a-z0-9]+"), "-").trim('-').ifEmpty { "routine" } + suffix + ".json"
 
     Box {
         IconButton(onClick = { open = true }) { Icon(Icons.Default.MoreVert, "Options de ${program.plan.name}", tint = tint) }
@@ -77,6 +105,11 @@ fun ProgramMenuButton(
                 )
             }
             DropdownMenuItem(
+                text = { Text("Rythme d'adaptation · " + program.profileOn(today).let { "${it.emoji} ${it.label}" }) },
+                leadingIcon = { Icon(Icons.Default.Settings, null) },
+                onClick = { open = false; dialog = DIALOG_PROFILE },
+            )
+            DropdownMenuItem(
                 text = { Text("Couleur du programme") },
                 leadingIcon = { Dot(programColor(program.colorIndex), size = 18) },
                 onClick = { open = false; dialog = DIALOG_COLOR },
@@ -85,6 +118,24 @@ fun ProgramMenuButton(
                 text = { Text("Mettre à jour la routine") },
                 leadingIcon = { Icon(Icons.Default.Refresh, null) },
                 onClick = { open = false; onUpdateRoutine() },
+            )
+            DropdownMenuItem(
+                text = { Text("Exporter la routine (JSON)") },
+                leadingIcon = { Icon(Icons.Default.Share, null) },
+                onClick = {
+                    open = false
+                    exportTemplate = false
+                    export.launch(fileName(""))
+                },
+            )
+            DropdownMenuItem(
+                text = { Text("Exporter un modèle à modifier") },
+                leadingIcon = { Icon(Icons.Default.Share, null) },
+                onClick = {
+                    open = false
+                    exportTemplate = true
+                    export.launch(fileName("-modele"))
+                },
             )
             DropdownMenuItem(
                 text = { Text("Supprimer le programme", color = MaterialTheme.colorScheme.error) },
@@ -103,8 +154,13 @@ fun ProgramMenuButton(
             },
             onDismiss = { dialog = null },
         )
+        DIALOG_PROFILE -> ProfileDialog(
+            current = program.profileOn(today),
+            programName = program.plan.name,
+            onSelect = { repository.setProfile(program.id, it, today) },
+            onDismiss = { dialog = null },
+        )
         DIALOG_TESTS -> {
-            val today = rememberToday()
             TestsDialog(
                 program = program,
                 current = remember(program, today) { ProgramSchedule(program, today).currentTestResults() },
@@ -164,3 +220,4 @@ private const val DIALOG_START = "start"
 private const val DIALOG_TESTS = "tests"
 private const val DIALOG_DELETE = "delete"
 private const val DIALOG_COLOR = "color"
+private const val DIALOG_PROFILE = "profile"

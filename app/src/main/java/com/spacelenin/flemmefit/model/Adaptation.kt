@@ -16,37 +16,29 @@ data class AdaptState(
     /** Séances qui ont servi à régler. */
     val samples: Int = 0,
 ) {
-    val stable: Boolean get() = samples >= Adaptation.CALIBRATION
+    fun isStable(params: AdaptParams = AdaptParams()): Boolean = samples >= params.calibration
 }
 
 object Adaptation {
-    /** Séances de calibrage : les premières corrigent vite, ensuite ça se lisse. */
-    const val CALIBRATION = 6
     /** Une séance ne pèse jamais plus que ça, en crans : une faute de frappe ne fait pas tout exploser. */
     const val MAX_SIGNAL = 5.0
-    /** Ressenti d'un exercice (« dur » / « facile »), en crans. */
-    const val EXERCISE_FEELING = 0.7
-    /** Ressenti de la séance, pour les exercices sans ressenti propre : compte moins. */
-    const val SESSION_FEELING = 0.35
-    /** Le test refait : une série prévue au-dessus de cette part du max est trop ambitieuse… */
-    const val TEST_CEILING = 0.8
-    /** … et redescend jusqu'à cette part. */
-    const val TEST_TARGET = 0.65
-
-    /** Part de l'écart corrigée par une séance : forte au début, plus douce une fois calé, toujours franche à la baisse. */
-    fun gain(samples: Int, signal: Double): Double {
-        val g = maxOf(0.3, 0.75 - 0.075 * samples)
-        return if (signal < 0) maxOf(g, 0.6) else g
-    }
+    /** Écart (en crans) avant de bouger pendant le calibrage. */
+    private const val CALIBRATION_THRESHOLD = 0.5
 
     /**
      * Ajoute une séance au réglage, entre [minimum] (le départ du palier) et [maximum] (le plafond de l'exercice).
      * Les crans appliqués ne bougent que si l'écart est net (un demi-cran en calibrage, presque un cran ensuite).
      */
-    fun update(state: AdaptState, signal: Double, minimum: Int = Int.MIN_VALUE, maximum: Int = Int.MAX_VALUE): AdaptState {
-        val value = (state.value + gain(state.samples, signal) * signal).coerceIn(minimum.toDouble(), maxOf(minimum, maximum).toDouble())
+    fun update(
+        state: AdaptState,
+        signal: Double,
+        minimum: Int = Int.MIN_VALUE,
+        maximum: Int = Int.MAX_VALUE,
+        params: AdaptParams = AdaptParams(),
+    ): AdaptState {
+        val value = (state.value + params.gain(state.samples, signal) * signal).coerceIn(minimum.toDouble(), maxOf(minimum, maximum).toDouble())
         val samples = state.samples + 1
-        val threshold = if (samples <= CALIBRATION) 0.5 else 0.9
+        val threshold = if (samples <= params.calibration) CALIBRATION_THRESHOLD else params.threshold
         val diff = value - state.applied
         val applied = if (abs(diff) >= threshold) state.applied + (sign(diff) * floor(abs(diff) + 0.5)).toInt() else state.applied
         return AdaptState(value, applied.coerceIn(minimum, maxOf(minimum, maximum)), samples)
@@ -73,17 +65,18 @@ object Adaptation {
         side: Side? = null,
         /** Crans ajoutés ce jour-là (Boss, Burst) : ce qui est fait se compare au prévu sans eux. */
         extra: Int = 0,
+        params: AdaptParams = AdaptParams(),
     ): Double? {
         val numeric = numeric(prescription, log, done, final, step, side)?.plus(extra)
         val touched = done || numeric != null || exerciseFeeling != null
         if (!touched) return null
         val feeling = when (exerciseFeeling) {
-            FEELING_HARD -> -EXERCISE_FEELING
-            FEELING_EASY -> EXERCISE_FEELING
+            FEELING_HARD -> -params.exerciseFeeling
+            FEELING_EASY -> params.exerciseFeeling
             FEELING_OK -> 0.0
             else -> when (sessionFeeling) {
-                FEELING_HARD -> -SESSION_FEELING
-                FEELING_EASY -> SESSION_FEELING
+                FEELING_HARD -> -params.sessionFeeling
+                FEELING_EASY -> params.sessionFeeling
                 else -> 0.0
             }
         }
@@ -135,10 +128,10 @@ object Adaptation {
         return level
     }
 
-    /** [level] ramené sous [TEST_TARGET] du max [test] s'il dépasse [TEST_CEILING], jamais sous [floor]. */
-    fun guard(exercise: Exercise, level: Int, test: Int, floor: Int = 0): Int {
+    /** [level] ramené sous [AdaptParams.testTarget] du max [test] s'il dépasse [AdaptParams.testCeiling], jamais sous [floor]. */
+    fun guard(exercise: Exercise, level: Int, test: Int, floor: Int = 0, params: AdaptParams = AdaptParams()): Int {
         var l = level
-        if (perSet(exercise, l) > TEST_CEILING * test) while (l > floor && perSet(exercise, l) > TEST_TARGET * test) l--
+        if (perSet(exercise, l) > params.testCeiling * test) while (l > floor && perSet(exercise, l) > params.testTarget * test) l--
         return l
     }
 
@@ -177,6 +170,7 @@ data class ExerciseAdaptation(
     val crans: Int,
     val samples: Int,
     val stable: Boolean,
+    val calibration: Int = AdaptParams().calibration,
 ) {
     private fun format(v: Int) = if (seconds) Measures.formatSeconds(v) else "$v"
 
@@ -199,7 +193,7 @@ data class ExerciseAdaptation(
             val now = label(adaptedSets, adapted)
             val plain = label(baseSets, base)
             return (if (now == plain) now else "$now au lieu de $plain") + " · " +
-                if (stable) "calé" else "en calibrage ($samples/${Adaptation.CALIBRATION})"
+                if (stable) "calé" else "en calibrage ($samples/$calibration)"
         }
 }
 

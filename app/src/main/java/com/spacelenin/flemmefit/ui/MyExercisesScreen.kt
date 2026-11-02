@@ -1,5 +1,6 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -73,10 +74,11 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
     val adapted = remember(schedules) {
         programs.mapNotNull { p ->
             val s = schedules.getValue(p.id)
-            s.adaptations().filter { it.samples > 0 }.takeIf { it.isNotEmpty() }?.let { Triple(p.plan.name, it, s.balances()) }
+            s.adaptations().filter { it.samples > 0 }.takeIf { it.isNotEmpty() }?.let { Triple(p, it, s.balances()) }
         }
     }
     var adding by rememberSaveable { mutableStateOf(false) }
+    var rhythmFor by rememberSaveable { mutableStateOf<String?>(null) }
     var deleting by rememberSaveable { mutableStateOf<String?>(null) }
 
     Scaffold(
@@ -123,11 +125,20 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
                             modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     }
-                    adapted.forEachIndexed { k, (name, list, balances) ->
+                    adapted.forEachIndexed { k, (owner, list, balances) ->
                         if (adapted.size > 1) {
                             item(key = "adapt-program-$k") {
-                                Text(name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp, top = 12.dp))
+                                Text(owner.plan.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp, top = 12.dp))
                             }
+                        }
+                        item(key = "adapt-rhythm-$k") {
+                            val profile = owner.profileOn(today)
+                            Text(
+                                "Rythme : ${profile.emoji} ${profile.label} · changer",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.clickable { rhythmFor = owner.id }.padding(horizontal = 16.dp, vertical = 8.dp),
+                            )
                         }
                         itemsIndexed(list, key = { i, a -> "adapt-$k-$i-${a.name}" }) { _, a -> AdaptationRow(a, balances.firstOrNull { it.name == a.name }) }
                     }
@@ -172,6 +183,15 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
             create = { name, family, seconds, ratio, start, description ->
                 CustomExercise.create(UUID.randomUUID().toString(), name, family, seconds, ratio, start, description, today)
             },
+        )
+    }
+    rhythmFor?.let { id ->
+        val owner = programs.firstOrNull { it.id == id } ?: return@let
+        ProfileDialog(
+            current = owner.profileOn(today),
+            programName = owner.plan.name,
+            onSelect = { repository.setProfile(owner.id, it, today) },
+            onDismiss = { rhythmFor = null },
         )
     }
     deleting?.let { id ->

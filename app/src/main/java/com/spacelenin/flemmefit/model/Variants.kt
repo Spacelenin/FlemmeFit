@@ -5,18 +5,11 @@ import java.time.LocalDate
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
-/** Séries d'un bloc variante, la dernière au max. */
+/** Séries d'un exercice perso « Autre ». */
 const val VARIANT_SETS = 3
-/** Un bloc variante se fait à cette part du max estimé. */
-const val VARIANT_SHARE = 0.6
 /** Part des séries de l'exercice de base qui laisse place au bloc variante (au moins une). */
 const val VARIANT_BASE_SHARE = 0.4
-/** La version facile compte pour moitié moins dure : le max estimé double. */
-const val VARIANT_EASY_FACTOR = 0.5
-/** Passages d'un exercice perso « Autre » par semaine. */
-const val OTHER_PER_WEEK = 2
-/** Taille d'un cycle de variantes quand la routine n'a pas de semaine allégée. */
-const val VARIANT_CYCLE_WEEKS = 4
+
 
 /** Période où un exercice perso est actif : à partir du lendemain de [from], jusqu'à [until] inclus. */
 @Serializable
@@ -193,19 +186,20 @@ object Variants {
     }
 
     /**
-     * Le bloc variante : 3 séries à [VARIANT_SHARE] du max estimé, la dernière au max ; une seule série au max sans repère.
+     * Le bloc variante : [VariantParams.sets] séries à [VariantParams.share] du max estimé, la dernière au max ; une seule série au max sans repère.
      * Variante d'un côté à la fois ([Variant.perSide]) : autant de chaque côté, en alternance (l'équilibre se règle
      * ensuite comme pour les autres exercices).
      */
     fun block(
         v: Variant, family: PlanFamily, base: Exercise, test: Int?, ratio: Double?, startRatio: Double?, custom: Boolean, testSeconds: Boolean,
+        params: VariantParams = VariantParams(),
     ): Prescription {
         val full = v.from == null || (test ?: 0) >= v.from
-        val r = ratio?.let { if (full) it else it * VARIANT_EASY_FACTOR }
+        val r = ratio?.let { if (full) it else it * params.easyFactor }
         val estimate = if (r != null && r > 0 && test != null && test > 0) test / r else null
         val per = estimate?.let {
-            if (v.isSeconds) (((it * VARIANT_SHARE) / 5).roundToInt() * 5).coerceAtLeast(5)
-            else (it * VARIANT_SHARE).roundToInt().coerceAtLeast(1)
+            if (v.isSeconds) (((it * params.share) / 5).roundToInt() * 5).coerceAtLeast(5)
+            else (it * params.share).roundToInt().coerceAtLeast(1)
         }
         val exercise = Exercise(
             name = if (full) v.name else "${v.name} (version facile)",
@@ -215,7 +209,7 @@ object Variants {
                 v.easy?.takeIf { !full }?.let { "Version facile : $it" },
                 if (per == null) "Pas encore de repère : une seule série, ton max. Il servira à doser la suite." else null,
             ).joinToString("\n\n").ifEmpty { null },
-            sets = if (per == null) 1 else VARIANT_SETS,
+            sets = if (per == null) 1 else params.sets,
             reps = per?.takeIf { !v.isSeconds }?.toString(),
             duration = per?.takeIf { v.isSeconds }?.let(Measures::formatSeconds),
             rest = base.rest,

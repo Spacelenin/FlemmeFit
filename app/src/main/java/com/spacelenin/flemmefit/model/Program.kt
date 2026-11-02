@@ -101,6 +101,10 @@ data class StoredProgram(
     val excused: Set<String> = emptySet(),
     /** Ressenti de chaque exercice fait, mêmes clés que [done] : voir [Adaptation.FEELING_HARD] et suivants. */
     val exerciseFeelings: Map<String, Int> = emptyMap(),
+    /** Rythme d'adaptation choisi, daté : chaque séance suit celui en vigueur ce jour-là. Vide : Normal. */
+    val profiles: List<ProfileChange> = emptyList(),
+    /** Dernière suggestion de rythme écartée (date ISO) : pas de nouvelle avant un moment. */
+    val profileHintDismissed: String? = null,
 ) {
     val start: LocalDate get() = LocalDate.parse(startDate)
 
@@ -156,6 +160,18 @@ data class StoredProgram(
     fun withExerciseFeeling(dayIndex: Int, exerciseIndex: Int, feeling: Int?): StoredProgram {
         val key = doneKey(dayIndex, exerciseIndex)
         return copy(exerciseFeelings = if (feeling == null) exerciseFeelings - key else exerciseFeelings + (key to feeling.coerceIn(0, 2)))
+    }
+
+    /** Rythme d'adaptation en vigueur le [date]. */
+    fun profileOn(date: LocalDate): AdaptProfile =
+        profiles.filter { runCatching { !LocalDate.parse(it.date).isAfter(date) }.getOrDefault(false) }
+            .maxByOrNull { it.date }?.let { AdaptProfile.of(it.profile) } ?: AdaptProfile.NORMAL
+
+    /** Nouveau rythme à partir du [from] : un changement le même jour remplace le précédent. */
+    fun withProfile(profile: AdaptProfile, from: LocalDate): StoredProgram {
+        if (profileOn(from) == profile && profiles.none { it.date > from.toString() }) return this
+        val kept = profiles.filter { it.date < from.toString() }
+        return copy(profiles = kept + ProfileChange(from.toString(), profile.id), profileHintDismissed = from.toString())
     }
 
     fun withFeeling(dayIndex: Int, feeling: Int) = copy(feelings = feelings + (dayIndex.toString() to feeling.coerceIn(0, 2)))

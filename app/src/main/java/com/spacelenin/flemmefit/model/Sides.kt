@@ -17,11 +17,11 @@ enum class Side(val code: Char) {
 
 /** Où en est l'équilibre gauche / droite d'un exercice. */
 enum class BalanceMode {
-    /** Écart sous [Sides.EVEN_BELOW] : les deux côtés font pareil. */
+    /** Écart sous [SidesParams.evenBelow] : les deux côtés font pareil. */
     EVEN,
     /** Écart modéré : les deux côtés montent, le faible un peu plus (une série et des crans en plus). */
     CATCH_UP,
-    /** Gros écart (à partir de [Sides.WEAK_ONLY_FROM]) : le côté fort ne monte plus, seul le faible progresse. */
+    /** Gros écart (à partir de [SidesParams.weakOnlyFrom]) : le côté fort ne monte plus, seul le faible progresse. */
     WEAK_ONLY,
 }
 
@@ -38,6 +38,8 @@ data class SidedPlan(
     val mode: BalanceMode = BalanceMode.EVEN,
     /** Côté qui rattrape (le premier de chaque paire), null si équilibré. */
     val weak: Side? = null,
+    /** Repos entre les deux côtés d'une paire, en secondes. */
+    val switchRest: Int = Sides.SWITCH_REST,
 ) {
     fun sideAt(set: Int): Side? = order.getOrNull(set)
 
@@ -74,14 +76,8 @@ data class BalanceState(
 }
 
 object Sides {
-    /** Repos entre les deux côtés d'une paire : l'autre côté s'est reposé pendant ce temps. */
-    const val SWITCH_REST = 20
-    const val EVEN_BELOW = 0.10
-    const val WEAK_ONLY_FROM = 0.20
-    /** Séances de suite dans un autre cas avant d'en changer : une mauvaise séance ne fait pas tout basculer. */
-    const val SWITCH_SESSIONS = 3
-    /** Temps visé pour rattraper l'écart. */
-    const val CATCH_UP_DAYS = 42
+    /** Repos par défaut entre les deux côtés d'une paire : l'autre côté s'est reposé pendant ce temps. */
+    val SWITCH_REST = SidesParams().switchRest
 
     fun label(limb: String, side: Side): String {
         val feminine = limb.trim().lowercase() == "jambe"
@@ -120,16 +116,16 @@ object Sides {
         return (strong - minOf(left, right)).toDouble() / strong
     }
 
-    fun band(gap: Double): BalanceMode = when {
-        gap < EVEN_BELOW -> BalanceMode.EVEN
-        gap < WEAK_ONLY_FROM -> BalanceMode.CATCH_UP
+    fun band(gap: Double, params: SidesParams = SidesParams()): BalanceMode = when {
+        gap < params.evenBelow -> BalanceMode.EVEN
+        gap < params.weakOnlyFrom -> BalanceMode.CATCH_UP
         else -> BalanceMode.WEAK_ONLY
     }
 
     /**
      * Une séance de plus dans le suivi : [gap] l'écart du moment, [weakNow] le côté le plus faible,
      * [gapLevels] l'écart en crans, [sessionsPerWeek] la fréquence de l'exercice. [strongLevel] : niveau du côté fort.
-     * Le cas ne change qu'après [SWITCH_SESSIONS] séances de suite qui y poussent. Le rattrapage n'avance que quand
+     * Le cas ne change qu'après [SidesParams.switchSessions] séances de suite qui y poussent. Le rattrapage n'avance que quand
      * le côté faible a tenu ce qui lui était demandé ([weakMet]).
      */
     fun next(
@@ -140,22 +136,25 @@ object Sides {
         sessionsPerWeek: Double,
         strongLevel: Int,
         weakMet: Boolean,
+        params: SidesParams = SidesParams(),
     ): BalanceState {
         // Le côté qui rattrape a dépassé l'autre : on n'est plus dans le même écart.
-        val band = if (state.weak != null && weakNow != state.weak) BalanceMode.EVEN else band(gap)
+        val band = if (state.weak != null && weakNow != state.weak) BalanceMode.EVEN else band(gap, params)
         var s = state
         if (band == s.mode) {
             s = s.copy(pending = null, pendingCount = 0)
         } else {
             val count = if (s.pending == band) s.pendingCount + 1 else 1
-            s = if (count >= SWITCH_SESSIONS) switchTo(s, band, weakNow, gapLevels, sessionsPerWeek, strongLevel) else s.copy(pending = band, pendingCount = count)
+            s = if (count >= params.switchSessions) switchTo(s, band, weakNow, gapLevels, sessionsPerWeek, strongLevel, params) else s.copy(pending = band, pendingCount = count)
         }
         if (weakMet && s.mode != BalanceMode.EVEN && s.weak == state.weak && state.mode != BalanceMode.EVEN) s = s.copy(boost = s.boost + s.rate)
         return s
     }
 
-    private fun switchTo(s: BalanceState, band: BalanceMode, weak: Side, gapLevels: Int, sessionsPerWeek: Double, strongLevel: Int): BalanceState {
-        val sessions = (sessionsPerWeek * CATCH_UP_DAYS / 7).coerceAtLeast(1.0)
+    private fun switchTo(
+        s: BalanceState, band: BalanceMode, weak: Side, gapLevels: Int, sessionsPerWeek: Double, strongLevel: Int, params: SidesParams,
+    ): BalanceState {
+        val sessions = (sessionsPerWeek * params.catchUpDays / 7).coerceAtLeast(1.0)
         return when (band) {
             BalanceMode.EVEN -> BalanceState()
             else -> {
