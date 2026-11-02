@@ -59,7 +59,7 @@ fun CountersUnlockedDialog(milestone: Counter, onSee: () -> Unit, onDismiss: () 
             Text(
                 "${milestone.milestoneLabel().replaceFirstChar { it.titlecase(Locale.FRENCH) }} au total, rien que ça.\n\n" +
                     "Tous tes totaux (pompes, abdos, temps de boxe, de gainage, de Beat Saber…) et ce qu'ils représentent " +
-                    "t'attendent dans Réglages › Compteurs.",
+                    "t'attendent dans les Stats, tout en bas.",
             )
         },
         confirmButton = { TextButton(onClick = onSee) { Text("Voir") } },

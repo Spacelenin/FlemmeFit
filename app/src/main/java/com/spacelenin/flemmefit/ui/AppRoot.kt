@@ -68,6 +68,7 @@ fun AppRoot(
     onOpenRequestConsumed: () -> Unit,
 ) {
     val state by repository.state.collectAsStateWithLifecycle()
+    val countersUnlocked by settings.countersUnlocked.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val timer = remember { WorkoutTimer() }
@@ -287,13 +288,12 @@ fun AppRoot(
     }
 
     // Compteurs cachés : dévoilés le jour où l'un d'eux passe le cap, une seule fois.
-    val countersUnlocked by settings.countersUnlocked.collectAsStateWithLifecycle()
     val counters = remember(state.programs, countersUnlocked) {
         if (countersUnlocked) emptyList() else countersOf(state.programs, LocalDate.now())
     }
     var unlockedBy by remember { mutableStateOf<Counter?>(null) }
     LaunchedEffect(counters) {
-        if (!countersUnlocked && !settings.countersLockedByHand && Counter.unlocked(counters)) {
+        if (!countersUnlocked && Counter.unlocked(counters)) {
             settings.unlockCounters()
             unlockedBy = Counter.milestone(counters)
         }
@@ -305,7 +305,8 @@ fun AppRoot(
             onSee = {
                 unlockedBy = null
                 dayProgramId = null
-                showSettings = true
+                showSettings = false
+                tab = 1
             },
             onDismiss = { unlockedBy = null },
         )
