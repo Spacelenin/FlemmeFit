@@ -264,7 +264,8 @@ fun PanelDialog(
     }
 }
 
-/** Fond des volets du bas : un vert très pâle sur le thème fit. */
+/** Fond des volets du bas : la couleur de la salle, très pâle, sur le thème fit. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun sheetColor(): Color = if (LocalFitTheme.current) LocalFitRoom.current.pale(0.9f) else BottomSheetDefaults.ContainerColor
 
