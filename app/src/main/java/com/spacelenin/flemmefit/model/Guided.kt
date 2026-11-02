@@ -25,7 +25,10 @@ class GuidedExercise(val prescription: Prescription, restBonus: Int = 0) {
     fun isAllOut(set: Int) = prescription.allOut && if (sided != null) sided.isLastOf(set) else set == sets - 1
 
     /** Repos après la série [set] : court entre les deux côtés d'une paire, normal sinon. */
-    fun restAfter(set: Int): Int? = if (sided?.switchesAfter(set) == true) minOf(Sides.SWITCH_REST, restSeconds ?: Sides.SWITCH_REST) else restSeconds
+    fun restAfter(set: Int): Int? {
+        val s = sided ?: return restSeconds
+        return if (s.switchesAfter(set)) minOf(s.switchRest, restSeconds ?: s.switchRest) else restSeconds
+    }
 
     /** La série demande un chiffre (reps faites, temps tenu, max). Sinon un simple « Série faite ». */
     fun needsValue(set: Int) = planned != null || isAllOut(set)

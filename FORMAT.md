@@ -55,6 +55,7 @@ dans l'app : *Importer → Programme d'exemple*).
 | `families`    | tableau | non         | **Familles** d'exercices, pour les variantes (voir « Variantes »). |
 | `variants`    | tableau | non         | **Variantes** glissées au hasard dans leur famille (voir « Variantes »). |
 | `weeks`       | tableau | **oui**     | Au moins une semaine (voir ci-dessous). |
+| `tuning`      | objet   | non         | **Réglages du sur-mesure** pour toute la routine (voir « Réglages du sur-mesure »). |
 
 ### Semaine (`weeks[]`)
 
@@ -254,6 +255,55 @@ Une famille regroupe des exercices de base et le test qui leur sert d'étalon :
 - « Pas aujourd'hui » replace la variante plus loin dans le cycle.
 - **Exos perso** (onglet Exos) : dans une famille, ce sont des variantes comme les autres ; dans « Autre », ils
   s'ajoutent à 2 séances par semaine, avant le dernier exercice, avec leur propre progression.
+
+## Réglages du sur-mesure ⚙️
+
+Facultatif : sans `tuning`, l'app garde ses réglages par défaut. Un bloc `tuning` se met à la racine (toute la
+routine), ou sur un exercice ou une variante (`adapt` et `sides` seulement) : il prime alors pour lui, sur tous les
+jours où il revient. Chaque champ est facultatif ; une valeur hors bornes est refusée à l'import.
+
+```json
+{
+  "format": "flemmefit",
+  "version": 1,
+  "name": "Réglée à la main",
+  "tuning": {
+    "adapt":    { "calibration": 8, "sessionFeeling": 0.2 },
+    "sides":    { "catchUpDays": 30 },
+    "variants": { "cycleWeeks": 3 }
+  },
+  "weeks": [{ "days": [{ "day": 1, "exercises": [
+    { "name": "Pompes", "sets": 3, "reps": "8", "progression": { "reps": 1 },
+      "tuning": { "adapt": { "testCeiling": 0.7 } } }
+  ] }] }]
+}
+```
+
+| Champ | Défaut | Bornes | Rôle |
+|-------|--------|--------|------|
+| `adapt.calibration` | 6 | 2–30 | Séances pour te connaître : ça bouge vite pendant ce temps. |
+| `adapt.gainStart` / `gainEnd` | 0,75 / 0,3 | 0,05–1 | Part de l'écart rattrapée à la 1re séance / une fois calé. |
+| `adapt.gainDown` | 0,6 | 0,1–1 | Au minimum, à la baisse : quand ça ne passe pas, ça redescend vite. |
+| `adapt.threshold` | 0,9 | 0,5–3 | Écart (en crans) avant de bouger une fois calé. |
+| `adapt.exerciseFeeling` | 0,7 | 0–3 | Poids du ressenti d'un exo (en crans). |
+| `adapt.sessionFeeling` | 0,35 | 0–3 | Poids du ressenti de la séance. |
+| `adapt.testCeiling` / `testTarget` | 0,8 / 0,65 | 0,3–0,95 | Au test refait : au-delà de cette part du max, retour à celle-là. |
+| `sides.evenBelow` / `weakOnlyFrom` | 0,1 / 0,2 | 0,02–0,8 | Écarts gauche / droite : pareil des deux côtés, puis seul le faible progresse. |
+| `sides.catchUpDays` | 42 | 7–365 | Temps visé pour rattraper l'écart. |
+| `sides.switchSessions` | 3 | 1–10 | Séances de suite avant de changer de cas. |
+| `sides.switchRest` | 20 | 0–300 | Repos (s) entre les deux côtés d'une paire. |
+| `variants.sets` | 3 | 1–10 | Séries d'un bloc variante. |
+| `variants.share` | 0,6 | 0,2–1 | Part du max estimé pour un bloc variante. |
+| `variants.easyFactor` | 0,5 | 0,1–1 | La version facile, par rapport à la vraie. |
+| `variants.cycleWeeks` | 4 | 1–12 | Cycle des variantes quand la routine n'a pas de semaine allégée. |
+| `variants.otherPerWeek` | 2 | 0–7 | Passages par semaine d'un exo perso « Autre ». |
+
+**Rythme d'adaptation** (dans l'app, menu ⋮ du programme) : Doux, Normal ou Vif agit **par-dessus** ces réglages
+(Vif : calibrage ×⅔, rattrapage plus fort, ressenti ×9/7, garde-fou du test +5 points, côté faible en ⅔ du temps ;
+Doux : l'inverse). La baisse quand ça ne passe pas ne change jamais. Un changement vaut à partir du jour où il est fait.
+
+**Export** (menu ⋮) : « Exporter la routine » donne le JSON tel quel ; « Exporter un modèle à modifier » l'écrit avec
+tous les réglages en entier et une aide (`"aide"`, ignorée à l'import). Modifie, puis « Mettre à jour la routine ».
 
 ## Semaine de décharge 🌿
 

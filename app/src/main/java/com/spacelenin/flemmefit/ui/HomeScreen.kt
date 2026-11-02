@@ -237,7 +237,19 @@ private fun HomeContent(
             modifier = Modifier.padding(horizontal = 16.dp),
         )
     }
+    val suggestion = remember(schedule) { runCatching { schedule.profileSuggestion() }.getOrNull() }
     val notices: @Composable () -> Unit = {
+        if (suggestion != null) {
+            val current = program.profileOn(today)
+            ProfileSuggestionCard(
+                current = current,
+                suggestion = suggestion,
+                color = color,
+                onAccept = { repository.setProfile(program.id, suggestion, today) },
+                onLater = { repository.dismissProfileHint(program.id, today) },
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+        }
         if (program.missingTests.isNotEmpty()) {
             Card(
                 onClick = { editTests = true },

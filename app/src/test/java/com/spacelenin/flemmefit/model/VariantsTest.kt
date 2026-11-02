@@ -148,7 +148,7 @@ class VariantsTest {
         val s = schedule(StoredProgram("p", routine, start.toString(), tests = strong, custom = listOf(custom)))
         for (week in 0 until 3) {
             val sessions = (week * 7 until week * 7 + 7).mapNotNull(s::sessionAt)
-            assertEquals(OTHER_PER_WEEK, sessions.count { it.otherIndex != null })
+            assertEquals(VariantParams().otherPerWeek, sessions.count { it.otherIndex != null })
         }
         assertTrue((21 until 28).mapNotNull(s::sessionAt).none { it.otherIndex != null })
         val day = (0 until 28).mapNotNull(s::sessionAt).first { it.otherIndex != null }

@@ -42,6 +42,10 @@ data class Session(
 }
 
 private const val VARIANT_SALT = 0x5EED1L
+/** Suggestion de rythme : sur cette période, avec au moins tant de séances et de retours d'exercices. */
+private const val SUGGESTION_DAYS = 21L
+private const val SUGGESTION_MIN_SESSIONS = 5
+private const val SUGGESTION_MIN_SIGNALS = 12
 private const val OTHER_SALT = 0x5EED2L
 
 /** Crans de progression ajoutés par un Burst. */
@@ -178,10 +182,37 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     private val levelSince = HashMap<String, Int>()
     // Dernier choix « avec / sans poids » dit pour chaque exercice : proposé par défaut ensuite.
     private val lastWeights = HashMap<String, Boolean>()
+    // Ce que chaque séance finie a dit de chaque exercice (en crans) : de quoi suggérer un autre rythme.
+    private val recentSignals = ArrayList<Pair<LocalDate, Double>>()
 
     // --- Variantes et exercices perso ---
 
-    private val variantCycleWeeks = if (deloadEvery > 0) deloadEvery else VARIANT_CYCLE_WEEKS
+    // --- Réglages du sur-mesure : routine, puis exercice, puis rythme choisi (profil) à la date de la séance ---
+
+    private val variantParams = VariantParams().with(plan.tuning?.variants)
+    private val tuningByKey: Map<String, Tuning> = buildMap {
+        plan.weeks.forEach { w -> w.days.forEach { d -> d.exercises.forEach { e -> e.tuning?.let { putIfAbsent(e.key, it) } } } }
+        plan.variants.forEach { v -> v.tuning?.let { putIfAbsent(v.id.trim().lowercase(), it) } }
+    }
+    private val baseAdapt = AdaptParams().with(plan.tuning?.adapt)
+    private val baseSides = SidesParams().with(plan.tuning?.sides)
+    private val adaptCache = HashMap<Pair<String, AdaptProfile>, AdaptParams>()
+    private val sidesCache = HashMap<Pair<String, AdaptProfile>, SidesParams>()
+
+    /** Réglage de l'exercice [key] tel que le prévoit la routine (sans le rythme choisi). */
+    fun routineParams(key: String): AdaptParams = baseAdapt.with(tuningByKey[key]?.adapt)
+
+    fun adaptParams(key: String, date: LocalDate): AdaptParams {
+        val profile = program.profileOn(date)
+        return adaptCache.getOrPut(key to profile) { profile.apply(routineParams(key)) }
+    }
+
+    fun sidesParams(key: String, date: LocalDate): SidesParams {
+        val profile = program.profileOn(date)
+        return sidesCache.getOrPut(key to profile) { profile.apply(baseSides.with(tuningByKey[key]?.sides)) }
+    }
+
+    private val variantCycleWeeks = if (deloadEvery > 0) deloadEvery else variantParams.cycleWeeks
     private val variants: List<Pair<Variant, CustomExercise?>> = plan.variants.map { it to null } +
         program.custom.filter { !it.isOther && plan.family(it.family) != null }.map { it.asVariant() to it }
     private val others = program.custom.filter { it.isOther }
@@ -289,7 +320,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         }
         val slots = slotsLeft(i, (week + 1) * DAYS_PER_WEEK) { true }.coerceAtLeast(1)
         val candidates = others.filter { it.activeOn(date) }.mapNotNull { o ->
-            val left = otherLeft.getOrPut(o.id) { OTHER_PER_WEEK }
+            val left = otherLeft.getOrPut(o.id) { variantParams.otherPerWeek }
             if (left <= 0) null else o to left.toDouble() / slots
         }
         return draw(i, OTHER_SALT, candidates)?.also { otherLeft[it.id] = otherLeft.getValue(it.id) - 1 }
@@ -355,7 +386,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                     levelSince[ex.key] = weeksBefore - baseLevel * (p?.every ?: 1)
                     validated[ex.key] = baseLevel * (p?.every ?: 1)
                 }
-                val applied = Adaptation.guard(target, total, test) - baseLevel
+                val applied = Adaptation.guard(target, total, test, params = adaptParams(ex.key, date)) - baseLevel
                 if (applied != state.applied) adapt[ex.key] = state.copy(value = applied.toDouble(), applied = applied)
                 // Une série par côté : chaque côté bouge d'autant.
                 val delta = applied - state.applied
@@ -401,7 +432,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             val block = adaptVariant(
                 Variants.block(
                     v, family, base.exercise, family.test?.let(testResults::get), ratios[v.id] ?: v.ratio, v.ratio,
-                    custom = custom != null, testSeconds = plan.test(family.test)?.isSeconds == true,
+                    custom = custom != null, testSeconds = plan.test(family.test)?.isSeconds == true, params = variantParams,
                 ),
                 light = chill,
             )
@@ -527,6 +558,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             limb,
             Sides.order(n + if (weak == Side.LEFT) 1 else 0, n + if (weak == Side.RIGHT) 1 else 0, weak ?: Side.LEFT),
             left.perSetPlanned, right.perSetPlanned, if (weak == null) BalanceMode.EVEN else state.mode, weak,
+            switchRest = baseSides.with(tuningByKey[ex.key]?.sides).switchRest,
         )
         return main.copy(sets = sided.order.size, sided = sided)
     }
@@ -562,9 +594,11 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         val p = pr.exercise.progression ?: return
         val factor = if (pr.weighted == true) pr.exercise.weights?.factor ?: WeightsOption.DEFAULT_FACTOR else 1.0
         val step = (if (pr.maxIsSeconds) Measures.seconds(p.duration)?.toDouble() else p.reps?.toDouble())?.times(factor)
+        val params = adaptParams(pr.key, dateOf(i))
         fun signalOf(side: Side?) = Adaptation.signal(
             pr, program.logOf(i, e), done, final, step,
             exerciseFeeling = program.exerciseFeelingOf(i, e), sessionFeeling = program.feelingOf(i), side = side, extra = extra,
+            params = params,
         )
         val view = adaptViews[pr.key]
         // Jamais sous le départ du palier, ni au-delà du plafond de l'exercice (le réglage n'y servirait à rien).
@@ -576,7 +610,9 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         } ?: Int.MAX_VALUE
         val sided = pr.sided
         if (sided == null) {
-            adapt[pr.key] = Adaptation.update(adapt[pr.key] ?: AdaptState(), signalOf(null) ?: return, minimum, maximum)
+            val signal = signalOf(null) ?: return
+            adapt[pr.key] = Adaptation.update(adapt[pr.key] ?: AdaptState(), signal, minimum, maximum, params)
+            if (final) recentSignals += dateOf(i) to signal
             return
         }
         // Une série par côté : chaque côté se règle sur ses propres séries ; le niveau commun est leur moyenne.
@@ -585,7 +621,8 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         Side.entries.forEach { side ->
             val signal = signalOf(side) ?: return@forEach
             val k = pr.key to side
-            sideAdapt[k] = Adaptation.update(sideAdapt[k] ?: common, signal, minimum, maximum)
+            sideAdapt[k] = Adaptation.update(sideAdapt[k] ?: common, signal, minimum, maximum, params)
+            if (final) recentSignals += dateOf(i) to signal
             learned = true
         }
         if (!learned) return
@@ -628,7 +665,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             if (values.isNullOrEmpty()) done else values.size >= sided.setsOf(w) && values.all { it >= planned }
         } ?: false
         val perWeek = sessionsPerWeek(pr.key)
-        val after = Sides.next(before, gap, weakNow, gapLevels, perWeek, strongLevel, weakMet)
+        val after = Sides.next(before, gap, weakNow, gapLevels, perWeek, strongLevel, weakMet, sidesParams(pr.key, dateOf(i)))
         // Écart rattrapé : ce que le côté faible a gagné reste à lui.
         if (before.mode != BalanceMode.EVEN && after.mode == BalanceMode.EVEN && before.weak != null && before.boostLevels > 0) {
             val k = pr.key to before.weak
@@ -670,6 +707,37 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         return plan.weeks.sumOf { w -> w.days.count { d -> d.exercises.any { it.key == key } } }.toDouble() / plan.weeks.size.coerceAtLeast(1)
     }
 
+    /**
+     * Un autre rythme d'adaptation qui irait mieux, d'après les 3 dernières semaines : presque tout au-dessus du
+     * prévu (ou « facile ») → un cran plus vif ; beaucoup en dessous (ou « dur ») → un cran plus doux.
+     * Null : rien à proposer (trop tôt, rythme changé récemment, suggestion écartée récemment).
+     */
+    fun profileSuggestion(): AdaptProfile? {
+        ensure(lastIndexOnOrBefore(today))
+        val since = today.minusDays(SUGGESTION_DAYS)
+        val calm = listOfNotNull(program.profiles.maxOfOrNull { it.date }, program.profileHintDismissed)
+            .any { runCatching { LocalDate.parse(it).isAfter(since) }.getOrDefault(false) }
+        if (calm) return null
+        val recent = recentSignals.filter { !it.first.isBefore(since) && !it.first.isAfter(today) }
+        if (recent.size < SUGGESTION_MIN_SIGNALS || recent.map { it.first }.distinct().size < SUGGESTION_MIN_SESSIONS) return null
+        val easy = recent.count { it.second >= 0.5 }.toDouble() / recent.size
+        val hard = recent.count { it.second <= -0.5 }.toDouble() / recent.size
+        val current = program.profileOn(today)
+        return when {
+            hard >= 0.5 -> when (current) {
+                AdaptProfile.BRISK -> AdaptProfile.NORMAL
+                AdaptProfile.NORMAL -> AdaptProfile.GENTLE
+                AdaptProfile.GENTLE -> null
+            }
+            easy >= 0.7 -> when (current) {
+                AdaptProfile.GENTLE -> AdaptProfile.NORMAL
+                AdaptProfile.NORMAL -> AdaptProfile.BRISK
+                AdaptProfile.BRISK -> null
+            }
+            else -> null
+        }
+    }
+
     /** L'équilibre gauche / droite des exercices faits une série par côté, à ce jour. */
     fun balances(): List<SideBalance> {
         ensure(lastIndexOnOrBefore(today))
@@ -687,12 +755,14 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         ensure(lastIndexOnOrBefore(today))
         return adaptViews.mapNotNull { (key, v) ->
             val state = adapt[key] ?: return@mapNotNull null
+            val params = adaptParams(key, today)
             val level = (v.steps + state.applied).coerceAtLeast(0)
             val adapted = Prescription.of(v.exercise, level, false, false, null, weighted = v.weighted)
             val plain = Prescription.of(v.exercise, v.steps, false, false, null, weighted = v.weighted)
             ExerciseAdaptation(
                 v.exercise.name, adapted.perSetPlanned, plain.perSetPlanned, adapted.maxIsSeconds,
-                adapted.sets, plain.sets, state.applied, state.samples, state.stable,
+                adapted.sets, plain.sets, state.applied, state.samples, state.isStable(params),
+                calibration = params.calibration,
             )
         }
     }

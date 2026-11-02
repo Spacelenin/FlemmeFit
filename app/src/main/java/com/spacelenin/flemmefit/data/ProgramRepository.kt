@@ -2,6 +2,7 @@ package com.spacelenin.flemmefit.data
 
 import android.util.AtomicFile
 import android.util.Log
+import com.spacelenin.flemmefit.model.AdaptProfile
 import com.spacelenin.flemmefit.model.AppState
 import com.spacelenin.flemmefit.model.CustomExercise
 import com.spacelenin.flemmefit.model.ExerciseLog
@@ -152,6 +153,11 @@ class ProgramRepository(dir: File) {
     }
 
     fun setColor(id: String, colorIndex: Int) = updateProgram(id) { it.copy(colorIndex = colorIndex) }
+
+    /** Nouveau rythme d'adaptation, pour les séances à partir de [from]. */
+    fun setProfile(id: String, profile: AdaptProfile, from: LocalDate) = updateProgram(id) { it.withProfile(profile, from) }
+
+    fun dismissProfileHint(id: String, date: LocalDate) = updateProgram(id) { it.copy(profileHintDismissed = date.toString()) }
 
     fun changeTestOption(id: String, testId: String, option: String, result: Int?) =
         updateProgram(id) { it.changeTestOption(testId, option, LocalDate.now(), result) }
