@@ -61,7 +61,7 @@ Les autres branches produisent aussi l'APK, en artefact de l'onglet *Actions*.
 
 ## Développement
 
-- Kotlin + Jetpack Compose (Material 3), minSdk 36, targetSdk 36 (Android 16 minimum).
+- Kotlin + Jetpack Compose (Material 3), minSdk 34, targetSdk 36 (Android 14 minimum).
 - `./gradlew testReleaseUnitTest assembleRelease` (JDK 17, SDK Android requis).
 
 ```

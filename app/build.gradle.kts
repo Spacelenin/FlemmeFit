@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.spacelenin.flemmefit"
-        minSdk = 36
+        minSdk = 34
         targetSdk = 36
         // En CI, chaque build a un numéro croissant : les APK s'installent par-dessus sans perdre les données.
         versionCode = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
