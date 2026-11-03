@@ -245,9 +245,12 @@ fun TestsDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
+        // Fond opaque : sur le thème fit, les écrans sont transparents et la salle se dessine dessous ; une fenêtre à part
+        // doit la redessiner elle-même, sinon l'accueil se voit au travers.
         Scaffold(
+            modifier = Modifier.fillMaxSize().screenBackground(),
             topBar = {
-                TopAppBar(colors = fitBarColors(), 
+                TopAppBar(colors = fitBarColors(),
                     title = { Text("Tests de niveau") },
                     navigationIcon = { IconButton(onClick = onDismiss) { Icon(Icons.Default.Close, "Fermer") } },
                     actions = { TextButton(onClick = { onSave(results.parsedResults()) }) { Text("Enregistrer") } },
