@@ -307,7 +307,7 @@ fun GuidedSession(
     }
     confirmExtra?.let { extra ->
         val g = guided
-        OvertimeDialog(g?.countdown(set) ?: 0, extra) { chosen ->
+        OvertimeDialog(g?.countdown(set) ?: 0, extra, g?.maxOvertime(set) ?: 0) { chosen ->
             confirmExtra = null
             awayDuringOvertime = false
             finishSet(g?.withOvertime(set, chosen) ?: 0)
@@ -316,7 +316,7 @@ fun GuidedSession(
 }
 
 @Composable
-private fun OvertimeDialog(planned: Int, extra: Int, onDone: (Int) -> Unit) {
+private fun OvertimeDialog(planned: Int, extra: Int, maxExtra: Int, onDone: (Int) -> Unit) {
     var value by remember { mutableIntStateOf(extra) }
     PanelDialog(
         onDismissRequest = {},
@@ -328,7 +328,7 @@ private fun OvertimeDialog(planned: Int, extra: Int, onDone: (Int) -> Unit) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     FilledTonalIconButton(onClick = { value = (value - 5).coerceAtLeast(0) }) { Text("−") }
                     Text("+ ${clock(value)}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp))
-                    FilledTonalIconButton(onClick = { value = (value + 5).coerceAtMost(planned) }) { Text("+") }
+                    FilledTonalIconButton(onClick = { value = (value + 5).coerceAtMost(maxExtra) }) { Text("+") }
                 }
             }
         },
