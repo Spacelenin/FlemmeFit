@@ -34,6 +34,10 @@ data class FriendCard(
     val bursts: Int = 0,
     /** Défis surprise réussis. */
     val defis: Int = 0,
+    /** Détail de la séance du jour (null : pas partagé, ou version qui ne l'envoie pas). */
+    val todayExercises: List<SharedExercise>? = null,
+    /** Ressenti de la séance du jour : 0 dur, 1 bien, 2 en forme. */
+    val todayFeeling: Int? = null,
 ) {
     /** Points du concours : un Boss vaut plus qu'un exploit, qui vaut plus qu'un Burst, qui vaut plus qu'une séance. */
     val score: Int get() = bossDefeated * BOSS_POINTS + exploits * EXPLOIT_POINTS + bursts * BURST_POINTS + defis * Challenges.POINTS + sessionsDone
@@ -52,7 +56,24 @@ data class FriendCard(
     }
 }
 
+/** Un exercice de la séance du jour, tel que les potes le voient. */
+@Serializable
+data class SharedExercise(
+    val name: String,
+    /** « 3 × 15s ». */
+    val planned: String? = null,
+    /** « 15s · 15s · 43s », « fait », null si rien. */
+    val done: String? = null,
+    val finished: Boolean = false,
+    val exploit: Boolean = false,
+    /** Fait à la place d'un exercice de la routine. */
+    val replaced: Boolean = false,
+)
+
 object Social {
+    /** De quoi rester bien sous les 4 Ko d'un message ntfy. */
+    const val MAX_SHARED = 15
+    private const val MAX_CARD_BYTES = 3500
 
     /** Compact : une carte publiée doit rester petite (ntfy limite un message à 4 Ko). */
     private val compact = Json {
@@ -81,16 +102,22 @@ object Social {
         now: Long,
         build: Int,
         challengesWon: Int = 0,
+        /** Partager le détail de la séance du jour (exos, prévu, fait, ressenti). */
+        details: Boolean = true,
     ): FriendCard {
         var done = 0
         var total = 0
         var title: String? = null
+        var feeling: Int? = null
+        val shared = ArrayList<SharedExercise>()
         val stats = programs.map { p ->
             val schedule = ProgramSchedule(p, today)
             schedule.sessionOn(today)?.let { s ->
                 done += schedule.requiredDone(s)
                 total += s.requiredCount
                 if (title == null) title = s.day.title ?: p.plan.name
+                if (feeling == null) feeling = p.feelingOf(s.index)
+                if (details) runCatching { shared += sharedExercises(schedule, s) }.onFailure(Safety::report)
             }
             Stats.of(schedule)
         }
@@ -112,7 +139,39 @@ object Social {
             exploits = all.exploits.size,
             lastExploit = last?.label(),
             build = build,
+            todayExercises = shared.take(MAX_SHARED).takeIf { details },
+            todayFeeling = feeling.takeIf { details },
+        ).fitted()
+    }
+
+    /** Les exercices de la séance (sans échauffement ni étirements), dans l'ordre affiché. */
+    private fun sharedExercises(schedule: ProgramSchedule, s: Session): List<SharedExercise> = s.order.mapNotNull { e ->
+        val pr = s.prescriptions[e]
+        if (pr.exercise.optional) return@mapNotNull null
+        val log = schedule.program.logOf(s.index, e)
+        val finished = schedule.exerciseState(s, e) == ExerciseState.DONE
+        fun fmt(v: Int) = if (pr.maxIsSeconds) Measures.formatSeconds(v) else "$v"
+        val values = log?.perSet?.takeIf { it.isNotEmpty() }?.joinToString(" · ") { if (it == 0) "–" else fmt(it) }
+        val doneLabel = values ?: log?.max?.let { "max ${fmt(it)}" } ?: if (finished) "fait" else null
+        val planned = if (pr.maxIsSeconds) pr.seconds else pr.reps
+        val max = log?.max
+        SharedExercise(
+            name = pr.exercise.name.take(40),
+            planned = pr.summary().ifEmpty { null }?.take(40),
+            done = doneLabel?.take(60),
+            finished = finished,
+            exploit = max != null && planned != null && Exploit.isExploit(max, planned, pr.maxIsSeconds),
+            replaced = pr.replaces != null,
         )
+    }
+
+    /** Une carte trop grosse pour ntfy perd son détail, exercice par exercice en partant de la fin. */
+    private fun FriendCard.fitted(): FriendCard {
+        var card = this
+        while (encode(card).toByteArray().size > MAX_CARD_BYTES && !card.todayExercises.isNullOrEmpty()) {
+            card = card.copy(todayExercises = card.todayExercises!!.dropLast(1))
+        }
+        return card
     }
 
     /**

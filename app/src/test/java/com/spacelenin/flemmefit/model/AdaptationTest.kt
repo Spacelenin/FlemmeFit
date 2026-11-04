@@ -136,11 +136,13 @@ class AdaptationTest {
         val g = GuidedExercise(Prescription.of(shadow, 0, false, false, null))
         assertTrue(g.overtime(0))
         assertEquals(200, g.withOvertime(0, 20))
-        assertEquals(540, g.withOvertime(0, 999)) // Stop oublié : jamais plus du double du prévu en plus
-        // Exo court : au moins une minute en plus est gardée (superman 15 s tenu 43 s).
+        assertEquals(1179, g.withOvertime(0, 999)) // tout est gardé, même très long (confirmé avant)
+        assertTrue(!g.isLongOvertime(0, 360) && g.isLongOvertime(0, 361))
+        // Exo court : 43 s pour 15 s prévues, sans confirmation ; au-delà d'une minute en plus, on demande.
         val superman = GuidedExercise(Prescription.of(Exercise("Superman", sets = 3, duration = "15s", progression = Progression(duration = "5s", every = 2)), 0, false, false, null))
         assertEquals(43, superman.withOvertime(0, 28))
-        assertEquals(75, superman.withOvertime(0, 999))
+        assertEquals(195, superman.withOvertime(0, 180))
+        assertTrue(!superman.isLongOvertime(0, 28) && superman.isLongOvertime(0, 61))
         assertFalse(GuidedExercise(Prescription.of(shadow.copy(optional = true), 0, false, false, null)).overtime(0))
     }
 

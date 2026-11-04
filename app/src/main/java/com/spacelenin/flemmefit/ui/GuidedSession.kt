@@ -92,6 +92,8 @@ fun GuidedSession(
     // Temps en plus : l'appli a-t-elle été quittée pendant ? Alors « Stop » demande ce qui a vraiment été tenu.
     var awayDuringOvertime by remember { mutableStateOf(false) }
     var confirmExtra by remember { mutableStateOf<Int?>(null) }
+    // Temps en plus très long : confirmé avant d'être gardé (Stop oublié ?).
+    var longExtra by remember { mutableStateOf(false) }
     // Exercice qui vient d'être fini : son ressenti est proposé pendant le repos qui suit (ou à la fin).
     var feelingFor by remember { mutableStateOf<Int?>(null) }
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) { if (run?.index == 1) awayDuringOvertime = true }
@@ -168,7 +170,12 @@ fun GuidedSession(
         if (r.index == 0) return finishSet(elapsed)
         if (awayDuringOvertime && elapsed > AWAY_CHECK_SECONDS) {
             run = r.pause(SystemClock.elapsedRealtime())
-            confirmExtra = elapsed.coerceAtMost(g.countdown(set) ?: elapsed)
+            longExtra = false
+            confirmExtra = elapsed
+        } else if (g.isLongOvertime(set, elapsed)) {
+            run = r.pause(SystemClock.elapsedRealtime())
+            longExtra = true
+            confirmExtra = elapsed
         } else {
             finishSet(g.withOvertime(set, elapsed))
         }
@@ -307,7 +314,7 @@ fun GuidedSession(
     }
     confirmExtra?.let { extra ->
         val g = guided
-        OvertimeDialog(g?.countdown(set) ?: 0, extra, g?.maxOvertime(set) ?: 0) { chosen ->
+        OvertimeDialog(g?.countdown(set) ?: 0, extra, long = longExtra) { chosen ->
             confirmExtra = null
             awayDuringOvertime = false
             finishSet(g?.withOvertime(set, chosen) ?: 0)
@@ -316,23 +323,26 @@ fun GuidedSession(
 }
 
 @Composable
-private fun OvertimeDialog(planned: Int, extra: Int, maxExtra: Int, onDone: (Int) -> Unit) {
+private fun OvertimeDialog(planned: Int, extra: Int, long: Boolean, onDone: (Int) -> Unit) {
     var value by remember { mutableIntStateOf(extra) }
     PanelDialog(
         onDismissRequest = {},
-        title = { Text("Temps en plus") },
+        title = { Text(if (long) "Temps vraiment long" else "Temps en plus") },
         text = {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                Text("L'appli était fermée pendant ce temps-là : tu as continué combien après les ${Measures.formatSeconds(planned)} ?")
+                Text(
+                    if (long) "${clock(planned + value)} au total pour ${Measures.formatSeconds(planned)} prévues. Tu veux vraiment valider ce temps ? Corrige-le si tu as oublié d'appuyer sur Stop."
+                    else "L'appli était fermée pendant ce temps-là : tu as continué combien après les ${Measures.formatSeconds(planned)} ?",
+                )
                 Spacer(Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     FilledTonalIconButton(onClick = { value = (value - 5).coerceAtLeast(0) }) { Text("−") }
                     Text("+ ${clock(value)}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp))
-                    FilledTonalIconButton(onClick = { value = (value + 5).coerceAtMost(maxExtra) }) { Text("+") }
+                    FilledTonalIconButton(onClick = { value += 5 }) { Text("+") }
                 }
             }
         },
-        confirmButton = { TextButton(onClick = { onDone(value) }) { Text("OK") } },
+        confirmButton = { TextButton(onClick = { onDone(value) }) { Text(if (long) "Valider" else "OK") } },
         dismissButton = { TextButton(onClick = { onDone(0) }) { Text("Rien en plus") } },
     )
 }

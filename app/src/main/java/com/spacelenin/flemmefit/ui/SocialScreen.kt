@@ -1,5 +1,8 @@
 package com.spacelenin.flemmefit.ui
 
+import com.spacelenin.flemmefit.model.StoredProgram
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
@@ -126,6 +129,8 @@ fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() 
     val state by repository.state.collectAsStateWithLifecycle()
     val today = rememberToday()
     var settings by rememberSaveable { mutableStateOf(false) }
+    var detailFor by rememberSaveable { mutableStateOf<String?>(null) }
+    val shareDetails by social.shareDetails.collectAsStateWithLifecycle()
     val pickPseudo = rememberPseudoPicker(social)
 
     LaunchedEffect(pseudo) { if (pseudo != null) social.refresh() }
@@ -147,9 +152,12 @@ fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() 
         if (pseudo == null) {
             PseudoSetup(onDone = pickPseudo, modifier = Modifier.padding(padding))
         } else {
-            val me = remember(state, today, pseudo) { social.myCard(today) }
+            val me = remember(state, today, pseudo, shareDetails) { social.myCard(today) }
             val ranking = Social.ranking(friends + listOfNotNull(me), today)
             val now = System.currentTimeMillis()
+            ranking.firstOrNull { it.id == detailFor }?.let { card ->
+                FriendDayDialog(card, isMe = card.id == social.myId, today = today, onDismiss = { detailFor = null })
+            }
 
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 320.dp),
@@ -187,6 +195,7 @@ fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() 
                         isMe = card.id == social.myId,
                         today = today,
                         now = now,
+                        onClick = { detailFor = card.id },
                     )
                 }
             }
@@ -209,8 +218,9 @@ fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() 
 }
 
 @Composable
-private fun FriendRow(rank: Int, last: Boolean, card: FriendCard, isMe: Boolean, today: java.time.LocalDate, now: Long) {
+private fun FriendRow(rank: Int, last: Boolean, card: FriendCard, isMe: Boolean, today: java.time.LocalDate, now: Long, onClick: () -> Unit) {
     Card(
+        onClick = onClick,
         colors = CardDefaults.cardColors(
             containerColor = fitCardColor(
                 if (isMe) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -285,8 +295,8 @@ private fun PseudoSetup(onDone: (String) -> Unit, modifier: Modifier = Modifier)
     Column(modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Choisis ton pseudo", style = MaterialTheme.typography.headlineSmall)
         Text(
-            "Tes potes verront ce pseudo, ton avancée du jour, ta série, tes Boss vaincus et tes exploits. " +
-                "Rien d'autre ne quitte le téléphone.",
+            "Tes potes verront ce pseudo, ton avancée du jour, ta série, tes Boss vaincus et tes exploits, " +
+                "et le détail de ta séance du jour (exos, ressenti) : ça se coupe dans les Réglages. Rien d'autre ne quitte le téléphone.",
             style = MaterialTheme.typography.bodyMedium,
         )
         OutlinedTextField(
@@ -350,5 +360,51 @@ fun PseudoPromptDialog(onSave: (String) -> Unit, onLater: () -> Unit) {
         },
         confirmButton = { TextButton(onClick = { onSave(name) }, enabled = name.isNotBlank()) { Text("C'est parti") } },
         dismissButton = { TextButton(onClick = onLater) { Text("Plus tard") } },
+    )
+}
+
+/** La séance du jour d'un pote : ses exos (prévu, fait, exploits) et son ressenti, s'il les partage. */
+@Composable
+private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.LocalDate, onDismiss: () -> Unit) {
+    val exercises = card.todayExercises.takeIf { card.isToday(today) }
+    PanelDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(card.pseudo + if (isMe) " (toi)" else "") },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                when {
+                    !card.isToday(today) -> Text("Pas de nouvelles aujourd'hui 👀")
+                    card.todayTotal == 0 -> Text("Repos aujourd'hui 😴")
+                    exercises == null -> Text(
+                        if (isMe) "Tu ne partages pas le détail de ta séance (Réglages › Les potes)."
+                        else "Pas de détail : soit il ne le partage pas, soit son appli n'est pas à jour.",
+                    )
+                    else -> {
+                        Text(card.todayTitle ?: "Séance du jour", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        card.todayFeeling?.let { f ->
+                            val emoji = StoredProgram.FEELINGS.getOrNull(f)
+                            val label = StoredProgram.FEELING_LABELS.getOrNull(f)
+                            if (emoji != null && label != null) Text("Ressenti : $emoji $label", style = MaterialTheme.typography.bodyMedium)
+                        }
+                        exercises.forEach { e ->
+                            Column {
+                                Text(
+                                    (if (e.finished) "✅ " else "⏳ ") + e.name + (if (e.exploit) " 🏆" else "") + (if (e.replaced) " 🔄" else ""),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                Text(
+                                    listOfNotNull(e.planned?.let { "Prévu $it" }, e.done?.let { "fait : $it" } ?: "pas encore fait".takeIf { !e.finished })
+                                        .joinToString(" · "),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Fermer") } },
     )
 }
