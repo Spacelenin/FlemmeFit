@@ -85,6 +85,7 @@ fun SettingsScreen(
     val restBonus by settings.restBonus.collectAsStateWithLifecycle()
     val reminderSettings by reminders.settings.collectAsStateWithLifecycle()
     val pseudo by social.pseudo.collectAsStateWithLifecycle()
+    val shareDetails by social.shareDetails.collectAsStateWithLifecycle()
     var showReminders by remember { mutableStateOf(false) }
     var showNotes by remember { mutableStateOf(false) }
 
@@ -179,6 +180,20 @@ fun SettingsScreen(
 
                 Section("LES POTES")
                 SettingRow(title = "Pseudo et canal", subtitle = pseudo ?: "Pas encore choisi", onClick = onSocial)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().clickable { social.setShareDetails(!shareDetails) }.padding(horizontal = 20.dp, vertical = 8.dp),
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Partager le détail de ma séance", style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            "Les potes voient les exos du jour (prévu, fait) et ton ressenti en touchant ta carte. Sinon, seulement tes totaux.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(checked = shareDetails, onCheckedChange = { social.setShareDetails(it) })
+                }
 
                 Section("AIDE")
                 SettingRow(title = "Comment marche l'appli", subtitle = "Le petit tour en six écrans", onClick = onTutorial)

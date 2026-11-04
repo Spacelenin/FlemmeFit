@@ -96,4 +96,24 @@ class SocialTest {
         assertNull(Social.pseudoOwner(cards, "Al", "me", now))
         assertNull(Social.pseudoOwner(cards, "Zed", "me", now))
     }
+
+    @Test
+    fun `the card shares today's exercises and feeling unless turned off`() {
+        val program = StoredProgram("p", plan, start.toString())
+            .saveLog(0, 0, ExerciseLog(max = 21), complete = true)
+            .withFeeling(0, 2)
+        val card = Social.card("me", "Lenin", listOf(program), start, now = 1000, build = 12)
+        val shared = card.todayExercises!!
+        assertEquals(2, shared.size)
+        assertTrue(shared[0].finished && shared[0].exploit)
+        assertEquals("max 21", shared[0].done)
+        assertTrue(!shared[1].finished && shared[1].done == null)
+        assertEquals(2, card.todayFeeling)
+        // Relu par une autre version : rien ne casse, le détail suit.
+        assertEquals(card, Social.decodeAll("[" + Social.encode(card) + "]").single())
+        val hidden = Social.card("me", "Lenin", listOf(program), start, now = 1000, build = 12, details = false)
+        assertNull(hidden.todayExercises)
+        assertNull(hidden.todayFeeling)
+        assertTrue(Social.encode(card).toByteArray().size < 4000)
+    }
 }

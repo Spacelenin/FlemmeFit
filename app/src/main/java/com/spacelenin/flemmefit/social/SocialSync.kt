@@ -70,6 +70,10 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
     private val _status = MutableStateFlow<Status>(Status.Idle)
     val status: StateFlow<Status> = _status.asStateFlow()
 
+    /** Partager aux potes le détail de la séance du jour (exos, prévu, fait, ressenti). Oui par défaut. */
+    private val _shareDetails = MutableStateFlow(prefs.getBoolean(KEY_SHARE_DETAILS, true))
+    val shareDetails: StateFlow<Boolean> = _shareDetails.asStateFlow()
+
     init {
         // Republie quand la progression change ; le délai regroupe les cases cochées à la suite.
         scope.launch {
@@ -81,8 +85,17 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
     @Volatile
     var challengesWon: () -> Int = { 0 }
 
+    fun setShareDetails(on: Boolean) {
+        prefs.edit().putBoolean(KEY_SHARE_DETAILS, on).apply()
+        _shareDetails.value = on
+        scope.launch { publish(force = true) }
+    }
+
     fun myCard(today: LocalDate = LocalDate.now()): FriendCard? = _pseudo.value?.let {
-        Social.card(myId, it, repository.state.value.programs, today, System.currentTimeMillis(), BuildConfig.VERSION_CODE, challengesWon())
+        Social.card(
+            myId, it, repository.state.value.programs, today, System.currentTimeMillis(), BuildConfig.VERSION_CODE, challengesWon(),
+            details = _shareDetails.value,
+        )
     }
 
     fun setPseudo(value: String) {
@@ -244,6 +257,7 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
         private const val KEY_LAST = "lastPublished"
         private const val KEY_LAST_AT = "lastPublishedAt"
         private const val KEY_SEEN_BOSSES = "seenBosses"
+        private const val KEY_SHARE_DETAILS = "shareDetails"
         private const val PUBLISH_DEBOUNCE_MS = 20_000L
         private const val REPUBLISH_AFTER_MS = 6 * 60 * 60 * 1000L
         /** Un rappel tient dans les quelques secondes qu'Android laisse à une alarme. */
