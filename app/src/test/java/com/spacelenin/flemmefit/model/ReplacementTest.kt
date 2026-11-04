@@ -116,4 +116,18 @@ class ReplacementTest {
         val errors = (PlanParser.parse(bad) as ParseResult.Failure).errors
         assertTrue(errors.toString(), errors.any { "follows" in it && "inconnu" in it })
     }
+
+    @Test
+    fun `superman ends with a timed max that can be an exploit`() {
+        val routine = (PlanParser.parse(java.io.File("../examples/routine-maison.json").readText()) as ParseResult.Success).plan
+        val superman = routine.weeks.flatMap { w -> w.days.flatMap { it.exercises } }.first { it.key == "superman" }
+        val pr = Prescription.of(superman, 0, false, false, null)
+        assertTrue(pr.allOut && pr.maxIsSeconds)
+        val g = GuidedExercise(pr)
+        assertTrue(g.countUp(pr.sets!! - 1)) // dernière série : chrono qui monte, « tiens le max »
+        val log = ExerciseLog.ofSets(listOf(15, 15, 43), allOut = true)
+        assertEquals(43, log.max)
+        assertTrue(Exploit.isExploit(43, 15, isSeconds = true)) // au moins le double et +15 s
+        assertTrue(!Exploit.isExploit(29, 15, isSeconds = true))
+    }
 }

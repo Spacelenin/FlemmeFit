@@ -46,11 +46,14 @@ class GuidedExercise(val prescription: Prescription, restBonus: Int = 0) {
     fun overtime(set: Int): Boolean =
         countdown(set) != null && prescription.exercise.progression != null && !prescription.exercise.optional
 
-    /** Temps tenu au total pour [extra] secondes en plus : jamais plus du double du prévu (Stop oublié). */
-    fun withOvertime(set: Int, extra: Int): Int {
-        val base = countdown(set) ?: 0
-        return base + extra.coerceIn(0, base)
-    }
+    /**
+     * Temps en plus retenu au plus : le double du prévu, et au moins une minute (Stop oublié, sans couper un vrai
+     * bon temps sur un exo court : 43 s pour 15 s prévues restent 43 s).
+     */
+    fun maxOvertime(set: Int): Int = maxOf(2 * (countdown(set) ?: 0), MIN_OVERTIME_CAP)
+
+    /** Temps tenu au total pour [extra] secondes en plus, plafonné par [maxOvertime]. */
+    fun withOvertime(set: Int, extra: Int): Int = (countdown(set) ?: 0) + extra.coerceIn(0, maxOvertime(set))
 
     /** Série au temps chronométrée : à fond, ou test au temps. */
     fun countUp(set: Int): Boolean = inSeconds && isAllOut(set)
@@ -71,3 +74,6 @@ class GuidedExercise(val prescription: Prescription, restBonus: Int = 0) {
         }
     }
 }
+
+/** Temps en plus gardé au minimum, en secondes, quel que soit le prévu. */
+const val MIN_OVERTIME_CAP = 60
