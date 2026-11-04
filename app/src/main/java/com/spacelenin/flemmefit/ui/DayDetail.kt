@@ -1,5 +1,9 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.foundation.clickable
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.spacelenin.flemmefit.model.SessionEstimate
+import com.spacelenin.flemmefit.model.SessionTime
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -286,6 +290,7 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
     Text(session.title(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
+    SessionEstimateLine(session)
     schedule.program.feelingOf(session.index)?.let { f ->
         Text("Ressenti : ${StoredProgram.FEELINGS[f]} ${StoredProgram.FEELING_LABELS[f]}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
@@ -522,6 +527,42 @@ private fun ExerciseRow(
                     onClick = { menu = false; onDetail() },
                 )
             }
+        }
+    }
+}
+
+/** « ⏱ ≈ 34 min » : la durée estimée de la séance ; touchée, le détail par poste. */
+@Composable
+private fun SessionEstimateLine(session: Session) {
+    val restBonus = LocalRestBonus.current
+    val estimate = remember(session, restBonus) { SessionTime.estimate(session, restBonus) }
+    if (estimate.total <= 0) return
+    var open by rememberSaveable(session.index) { mutableStateOf(false) }
+    Column(Modifier.clickable { open = !open }.padding(vertical = 4.dp)) {
+        Text(
+            "⏱ ≈ ${estimate.minutes} min" + if (open) "" else " · détail",
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (open) {
+            listOf(
+                "Échauffement et étirements" to estimate.warmup,
+                "Exos" to estimate.work,
+                "Repos" to estimate.rest,
+                "Changements d'exo" to estimate.transitions,
+            ).filter { it.second > 0 }.forEach { (label, seconds) ->
+                Text(
+                    "$label : ${SessionEstimate.minutesOf(seconds)} min",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text(
+                "Estimation : ~${SessionTime.SECONDS_PER_REP} s par rep (${SessionTime.SECONDS_PER_SLOW_REP} s pour les exos lents), repos prévus compris.",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
