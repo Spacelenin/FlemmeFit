@@ -47,13 +47,15 @@ class GuidedExercise(val prescription: Prescription, restBonus: Int = 0) {
         countdown(set) != null && prescription.exercise.progression != null && !prescription.exercise.optional
 
     /**
-     * Temps en plus retenu au plus : le double du prévu, et au moins une minute (Stop oublié, sans couper un vrai
-     * bon temps sur un exo court : 43 s pour 15 s prévues restent 43 s).
+     * Au-delà de ce temps en plus (le double du prévu, au moins une minute), c'est vraiment long : on demande
+     * confirmation (Stop oublié ?), sans jamais rien couper.
      */
-    fun maxOvertime(set: Int): Int = maxOf(2 * (countdown(set) ?: 0), MIN_OVERTIME_CAP)
+    fun longOvertime(set: Int): Int = maxOf(2 * (countdown(set) ?: 0), MIN_OVERTIME_CAP)
 
-    /** Temps tenu au total pour [extra] secondes en plus, plafonné par [maxOvertime]. */
-    fun withOvertime(set: Int, extra: Int): Int = (countdown(set) ?: 0) + extra.coerceIn(0, maxOvertime(set))
+    fun isLongOvertime(set: Int, extra: Int): Boolean = extra > longOvertime(set)
+
+    /** Temps tenu au total pour [extra] secondes en plus : tout est gardé. */
+    fun withOvertime(set: Int, extra: Int): Int = (countdown(set) ?: 0) + extra.coerceAtLeast(0)
 
     /** Série au temps chronométrée : à fond, ou test au temps. */
     fun countUp(set: Int): Boolean = inSeconds && isAllOut(set)
@@ -75,5 +77,5 @@ class GuidedExercise(val prescription: Prescription, restBonus: Int = 0) {
     }
 }
 
-/** Temps en plus gardé au minimum, en secondes, quel que soit le prévu. */
+/** Temps en plus au-delà duquel on demande confirmation, au minimum, en secondes. */
 const val MIN_OVERTIME_CAP = 60
