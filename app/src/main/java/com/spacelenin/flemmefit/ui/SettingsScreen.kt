@@ -144,7 +144,7 @@ fun SettingsScreen(
                 )
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)) {
                     listOf(0, 25, 50, 75, 100).forEach { percent ->
-                        FilterChip(
+                        FitChip(
                             selected = restBonus == percent,
                             onClick = { settings.setRestBonus(percent) },
                             label = { Text(if (percent == 0) "Prévu" else "+$percent %") },

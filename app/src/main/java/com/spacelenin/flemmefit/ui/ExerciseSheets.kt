@@ -379,7 +379,7 @@ fun SetsLogSheet(
 fun ExerciseFeelingChips(current: Int?, onPick: (Int?) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         StoredProgram.FEELINGS.forEachIndexed { i, emoji ->
-            FilterChip(selected = current == i, onClick = { onPick(if (current == i) null else i) }, label = { Text("$emoji ${StoredProgram.FEELING_LABELS[i]}") })
+            FitChip(selected = current == i, onClick = { onPick(if (current == i) null else i) }, label = { Text("$emoji ${StoredProgram.FEELING_LABELS[i]}") })
         }
     }
 }
@@ -398,7 +398,7 @@ private fun FeelingSection(prescription: Prescription, feeling: Int?, onFeeling:
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeightsChip(on: Boolean, enabled: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
-    FilterChip(
+    FitChip(
         selected = on,
         enabled = enabled,
         onClick = { onChange(!on) },

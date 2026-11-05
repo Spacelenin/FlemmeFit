@@ -53,9 +53,9 @@ fun LazyListScope.statsTestItems(tests: List<TestProgress>, color: Color) {
 @Composable
 private fun TestCard(t: TestProgress, color: Color) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+        colors = CardDefaults.cardColors(containerColor = fitCardColor(MaterialTheme.colorScheme.surfaceContainerHigh)),
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp).fitBorder(LocalFitRoom.current, 3.dp, RoundedCornerShape(16.dp)),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row {
@@ -126,9 +126,9 @@ fun LazyListScope.statsVariantItems(variants: List<VariantProgress>, color: Colo
 @Composable
 private fun VariantCard(v: VariantProgress, color: Color) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+        colors = CardDefaults.cardColors(containerColor = fitCardColor(MaterialTheme.colorScheme.surfaceContainerHigh)),
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp).fitBorder(LocalFitRoom.current, 3.dp, RoundedCornerShape(16.dp)),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row {
@@ -162,9 +162,9 @@ fun LazyListScope.statsBalanceItems(balances: List<SideBalance>, color: Color) {
 @Composable
 private fun BalanceCard(b: SideBalance, color: Color) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+        colors = CardDefaults.cardColors(containerColor = fitCardColor(MaterialTheme.colorScheme.surfaceContainerHigh)),
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp).fitBorder(LocalFitRoom.current, 3.dp, RoundedCornerShape(16.dp)),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row {

@@ -216,7 +216,7 @@ private fun HomeContent(
                 modifier = Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
             ) {
                 programs.forEach { p ->
-                    FilterChip(
+                    FitChip(
                         selected = p.id == program.id,
                         onClick = { onSelectProgram(p.id) },
                         label = { Text(p.plan.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },

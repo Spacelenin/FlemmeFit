@@ -168,6 +168,7 @@ fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() 
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Column {
+                        if (com.spacelenin.flemmefit.ui.theme.LocalFitTheme.current) FitBand("Classement", LocalFitRoom.current, Modifier.padding(bottom = 6.dp))
                         Text(
                             "Points : Boss 💀 = ${FriendCard.BOSS_POINTS}, exploit 🏆 = ${FriendCard.EXPLOIT_POINTS}, Burst 🚀 = +${FriendCard.BURST_POINTS}, séance = 1. " +
                                 "Exploit = un max au moins ${Exploit.FACTOR}× plus grand que la série prévue.",
@@ -219,6 +220,16 @@ fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() 
 
 @Composable
 private fun FriendRow(rank: Int, last: Boolean, card: FriendCard, isMe: Boolean, today: java.time.LocalDate, now: Long, onClick: () -> Unit) {
+    if (com.spacelenin.flemmefit.ui.theme.LocalFitTheme.current) {
+        val todayText = when {
+            !card.isToday(today) -> "👀 Pas de nouvelles aujourd'hui"
+            card.todayTotal == 0 -> "😴 Repos aujourd'hui"
+            card.todayDone == card.todayTotal -> "✅ Séance du jour faite"
+            else -> "Aujourd'hui : ${card.todayDone}/${card.todayTotal} exos"
+        }
+        PodiumRow(rank, last, card, isMe, todayText, updated = if (isMe) null else "mis à jour ${ago(card.updatedAt, now)}", onClick = onClick)
+        return
+    }
     Card(
         onClick = onClick,
         colors = CardDefaults.cardColors(

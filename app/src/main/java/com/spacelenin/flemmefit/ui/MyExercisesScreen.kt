@@ -347,13 +347,13 @@ private fun AddExerciseDialog(
                 Text("Famille", style = MaterialTheme.typography.labelLarge)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     (families.map { it.id to it.name } + (CustomExercise.OTHER to "Autre")).forEach { (id, label) ->
-                        FilterChip(selected = family == id, onClick = { family = id }, label = { Text(label) })
+                        FitChip(selected = family == id, onClick = { family = id }, label = { Text(label) })
                     }
                 }
                 Text("Mesure", style = MaterialTheme.typography.labelLarge)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilterChip(selected = !seconds, onClick = { seconds = false }, label = { Text("Répétitions") })
-                    FilterChip(selected = seconds, onClick = { seconds = true }, label = { Text("Durée") })
+                    FitChip(selected = !seconds, onClick = { seconds = false }, label = { Text("Répétitions") })
+                    FitChip(selected = seconds, onClick = { seconds = true }, label = { Text("Durée") })
                 }
                 if (other) {
                     OutlinedTextField(
