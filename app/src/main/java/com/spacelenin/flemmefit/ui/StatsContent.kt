@@ -202,7 +202,7 @@ private fun WeeklyChart(weeks: List<WeekVolume>, color: Color) {
 private fun ExerciseStatsCard(e: ExerciseStats, color: Color) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp).fitBorder(LocalFitRoom.current, 3.dp, RoundedCornerShape(16.dp)),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -238,7 +238,7 @@ private fun ExerciseStatsCard(e: ExerciseStats, color: Color) {
 private fun HistoryRow(h: HistoryEntry, showProgram: Boolean) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp).fitBorder(LocalFitRoom.current, 3.dp, RoundedCornerShape(16.dp)),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
     ) {
         Box(Modifier.size(10.dp).clip(CircleShape).background(if (h.isBoss) BossColor else programColor(h.colorIndex)))
         Spacer(Modifier.width(12.dp))

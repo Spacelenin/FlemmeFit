@@ -56,35 +56,23 @@ fun Modifier.screenBackground(): Modifier {
  */
 private fun DrawScope.drawFitRoom(tint: Color) {
     // Le sol n'occupe que le bas de l'écran : la plinthe ne passe pas au milieu du contenu.
-    // Plus bas qu'avant : sur les écrans qui défilent, le contenu passe moins souvent devant.
-    val horizon = size.height * 0.88f
+    val horizon = size.height * 0.8f
     val floor = size.height - horizon
     drawRect(
-        Brush.verticalGradient(listOf(Color.White, lerp(Color.White, tint, 0.05f), lerp(Color.White, tint, 0.11f)), endY = horizon),
+        Brush.verticalGradient(listOf(Color.White, lerp(Color.White, tint, 0.08f), lerp(Color.White, tint, 0.2f)), endY = horizon),
         size = androidx.compose.ui.geometry.Size(size.width, horizon),
     )
     drawRect(
-        Brush.verticalGradient(listOf(lerp(Color.White, tint, 0.06f), lerp(Color(0xFFF2F4F6), tint, 0.03f)), startY = horizon, endY = size.height),
+        Brush.verticalGradient(listOf(lerp(Color.White, tint, 0.14f), lerp(Color(0xFFF2F4F6), tint, 0.08f)), startY = horizon, endY = size.height),
         topLeft = Offset(0f, horizon),
     )
-    // Reflet blanc, comme un sol brillant.
-    drawOval(
-        Brush.radialGradient(
-            listOf(Color.White.copy(alpha = 0.9f), Color.White.copy(alpha = 0f)),
-            center = Offset(size.width / 2, horizon + floor * 0.35f),
-            radius = size.width * 0.45f,
-        ),
-        topLeft = Offset(size.width * 0.05f, horizon),
-        size = androidx.compose.ui.geometry.Size(size.width * 0.9f, floor * 0.7f),
-    )
-    // Plinthe : une bande de la couleur de la salle, avec un liseré clair.
     val plinth = 4.dp.toPx()
     // Plinthe : une bande pâle et fondue, pas un trait net qui couperait le texte qui passe devant.
     drawRect(
         Brush.verticalGradient(listOf(lerp(tint, Color.White, 0.85f).copy(alpha = 0f), lerp(tint, Color.White, 0.7f).copy(alpha = 0.6f)), startY = horizon - plinth * 3, endY = horizon),
         topLeft = Offset(0f, horizon - plinth * 3), size = androidx.compose.ui.geometry.Size(size.width, plinth * 3),
     )
-    val line = lerp(Color(0xFFCBD3DA), tint, 0.12f)
+    val line = lerp(Color(0xFFCBD3DA), tint, 0.25f)
     // Lignes horizontales : de plus en plus serrées vers l'horizon.
     var t = 1f
     while (t > 0.04f) {

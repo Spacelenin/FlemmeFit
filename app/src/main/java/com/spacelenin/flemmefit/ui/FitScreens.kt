@@ -90,16 +90,17 @@ fun FitChip(
             .background(fill, shape)
             .drawBehind {
                 // Reflet sur la moitié haute.
+                // Reflet léger et étalé : sur une puce choisie, il ne doit pas faire une bulle au milieu.
                 drawRoundRect(
-                    Brush.verticalGradient(listOf(Color.White.copy(alpha = if (selected) 0.45f else 0.9f), Color.White.copy(alpha = 0f)), endY = size.height * 0.5f),
-                    topLeft = Offset(size.height * 0.3f, 1.5.dp.toPx()),
-                    size = Size((size.width - size.height * 0.6f).coerceAtLeast(0f), size.height * 0.42f),
+                    Brush.verticalGradient(listOf(Color.White.copy(alpha = if (selected) 0.22f else 0.8f), Color.White.copy(alpha = 0f)), endY = size.height * 0.55f),
+                    topLeft = Offset(size.height * 0.2f, 1.5.dp.toPx()),
+                    size = Size((size.width - size.height * 0.4f).coerceAtLeast(0f), size.height * 0.45f),
                     cornerRadius = CornerRadius(size.height / 2),
                 )
             }
             .border(2.5.dp, if (!enabled) FitPalette.Line else if (selected) lerp(room, Color.Black, 0.2f) else lerp(room, Color.White, 0.3f), shape)
             .clickable(enabled = enabled, role = Role.Checkbox, onClick = onClick)
-            .padding(horizontal = 14.dp),
+            .padding(horizontal = 12.dp),
     ) {
         leadingIcon?.invoke()
         androidx.compose.material3.ProvideTextStyle(
