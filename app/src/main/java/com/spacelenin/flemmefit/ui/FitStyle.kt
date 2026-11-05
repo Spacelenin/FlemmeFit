@@ -77,6 +77,8 @@ object FitRooms {
 
 private val White = Color.White
 private val TitleShadow = Shadow(Color(0x55000000), Offset(0f, 2f), 3f)
+// Plus léger : juste de quoi détacher un texte blanc d'un fond clair.
+private val SoftShadow = Shadow(Color(0x33000000), Offset(0f, 1.5f), 2f)
 
 /** Une teinte plus sombre, pour les contours. */
 private fun Color.deeper() = lerp(this, Color.Black, 0.18f)
@@ -90,18 +92,47 @@ fun FitSectionTitle(text: String, plain: @Composable () -> Unit) {
         plain()
         return
     }
-    val room = LocalFitRoom.current
-    Text(
-        text,
-        style = MaterialTheme.typography.titleMedium.copy(color = White, shadow = TitleShadow),
-        fontWeight = FontWeight.Black,
-        modifier = Modifier
-            .padding(start = 16.dp, end = 16.dp, top = 18.dp, bottom = 6.dp)
-            .clip(RoundedCornerShape(14.dp))
-            .background(Brush.horizontalGradient(listOf(room, room.pale(0.3f))))
-            .border(2.dp, room.deeper(), RoundedCornerShape(14.dp))
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+    FitBand(text, LocalFitRoom.current, Modifier.padding(top = 14.dp, bottom = 4.dp))
+}
+
+/**
+ * Bandeau de titre qui traverse l'écran : rayé de fines lignes, bords qui s'estompent, double liseré clair dessus
+ * et dessous, titre blanc centré.
+ */
+@Composable
+fun FitBand(text: String, color: Color, modifier: Modifier = Modifier) {
+    val fade = Brush.horizontalGradient(
+        0f to color.copy(alpha = 0f), 0.12f to color, 0.88f to color, 1f to color.copy(alpha = 0f),
     )
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .fillMaxWidth()
+            .drawBehind {
+                // Halo pâle autour de la bande.
+                drawRect(Brush.verticalGradient(listOf(color.copy(alpha = 0f), color.copy(alpha = 0.18f), color.copy(alpha = 0f))))
+            }
+            .padding(vertical = 4.dp)
+            .background(fade)
+            .fitStripes(White, alpha = 0.14f)
+            .drawBehind {
+                val line = 1.5.dp.toPx()
+                val gap = 3.dp.toPx()
+                val light = Brush.horizontalGradient(
+                    0f to White.copy(alpha = 0f), 0.12f to White.copy(alpha = 0.75f), 0.88f to White.copy(alpha = 0.75f), 1f to White.copy(alpha = 0f),
+                )
+                listOf(gap, gap * 2 + line, size.height - gap - line, size.height - gap * 2 - line * 2).forEach { y ->
+                    drawRect(light, topLeft = Offset(0f, y), size = androidx.compose.ui.geometry.Size(size.width, line))
+                }
+            }
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+    ) {
+        Text(
+            text,
+            style = MaterialTheme.typography.titleLarge.copy(color = White, shadow = SoftShadow, fontWeight = FontWeight.SemiBold),
+            textAlign = TextAlign.Center,
+        )
+    }
 }
 
 /**
@@ -234,6 +265,7 @@ fun PanelDialog(
                 .widthIn(max = 560.dp)
                 .clip(shape)
                 .background(White)
+                .linedPaper()
                 .border(3.dp, room, shape),
         ) {
             if (title != null || icon != null) {
@@ -243,11 +275,12 @@ fun PanelDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Brush.verticalGradient(listOf(room.pale(0.15f), room)))
+                        .fitStripes(White, alpha = 0.14f)
                         .padding(horizontal = 20.dp, vertical = 12.dp),
                 ) {
                     CompositionLocalProvider(LocalContentColor provides White) {
                         icon?.invoke()
-                        ProvideTextStyle(MaterialTheme.typography.titleLarge.copy(color = White, shadow = TitleShadow, fontWeight = FontWeight.Black)) {
+                        ProvideTextStyle(MaterialTheme.typography.titleLarge.copy(color = White, shadow = SoftShadow, fontWeight = FontWeight.SemiBold)) {
                             title?.invoke()
                         }
                     }
@@ -277,22 +310,51 @@ fun sheetColor(): Color = if (LocalFitTheme.current) LocalFitRoom.current.pale(0
 
 /** Le gros bouton d'action de la séance guidée : sur le thème fit, une pastille verte dégradée au texte blanc. */
 @Composable
-fun StartButton(onClick: () -> Unit, modifier: Modifier = Modifier, content: @Composable RowScope.() -> Unit) {
+fun StartButton(onClick: () -> Unit, modifier: Modifier = Modifier, badge: String? = null, content: @Composable RowScope.() -> Unit) {
     if (!LocalFitTheme.current) {
-        PillButton(onClick = onClick, modifier = modifier, content = content)
+        PillButton(onClick = onClick, modifier = modifier) {
+            badge?.let { Text("$it ") }
+            content()
+        }
         return
     }
     OutlinedButton(
         onClick = onClick,
         modifier = modifier
             .clip(CircleShape)
-            .background(Brush.verticalGradient(listOf(Color(0xFF9BE05A), FitPalette.Green, FitPalette.GreenDark)), CircleShape),
+            .background(Brush.verticalGradient(listOf(Color(0xFFB8F0F2), Color(0xFF5CCFD6), Color(0xFF2FA9B4))), CircleShape)
+            .drawBehind {
+                // Reflet : la moitié haute plus claire.
+                drawRoundRect(
+                    Brush.verticalGradient(listOf(White.copy(alpha = 0.55f), White.copy(alpha = 0.05f)), endY = size.height * 0.5f),
+                    topLeft = Offset(size.height * 0.25f, 2.dp.toPx()),
+                    size = androidx.compose.ui.geometry.Size(size.width - size.height * 0.5f, size.height * 0.45f),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(size.height / 2),
+                )
+            },
         colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent, contentColor = White),
-        border = androidx.compose.foundation.BorderStroke(3.dp, Color(0xFF2F7412)),
+        border = androidx.compose.foundation.BorderStroke(3.dp, Color(0xFF1E8590)),
     ) {
-        ProvideTextStyle(MaterialTheme.typography.titleMedium.copy(color = White, shadow = TitleShadow, fontWeight = FontWeight.Black), ) {
+        badge?.let { RoundBadge(it, Color(0xFF1E8590)) }
+        ProvideTextStyle(MaterialTheme.typography.titleLarge.copy(color = White, shadow = SoftShadow, fontWeight = FontWeight.SemiBold)) {
             content()
         }
+    }
+}
+
+/** Pastille ronde à gauche d'un bouton : un symbole cerclé. */
+@Composable
+fun RoundBadge(symbol: String, color: Color) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .padding(end = 10.dp)
+            .size(32.dp)
+            .clip(CircleShape)
+            .background(White)
+            .border(2.5.dp, color, CircleShape),
+    ) {
+        Text(symbol, style = MaterialTheme.typography.titleMedium.copy(color = color, shadow = null), fontWeight = FontWeight.Black)
     }
 }
 
@@ -304,14 +366,24 @@ fun InstructionBubble(text: String, title: String = "Comment faire") {
         return
     }
     val shape = RoundedCornerShape(18.dp)
-    Column(Modifier.fillMaxWidth().clip(shape).background(White).border(2.5.dp, FitPalette.Green, shape)) {
+    Column(Modifier.fillMaxWidth().clip(shape).background(White).linedPaper().border(2.5.dp, FitPalette.Green, shape)) {
         Text(
             title,
-            style = MaterialTheme.typography.titleSmall.copy(color = White, shadow = TitleShadow),
-            fontWeight = FontWeight.Black,
-            modifier = Modifier.fillMaxWidth().background(FitPalette.Green).padding(horizontal = 14.dp, vertical = 6.dp),
+            style = MaterialTheme.typography.titleSmall.copy(color = White, shadow = SoftShadow),
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Brush.verticalGradient(listOf(FitPalette.Green.pale(0.25f), FitPalette.Green)))
+                .fitStripes(White, alpha = 0.16f)
+                .padding(horizontal = 14.dp, vertical = 6.dp),
         )
-        Text(text, style = MaterialTheme.typography.bodyMedium, color = FitPalette.Text, textAlign = TextAlign.Start, modifier = Modifier.padding(14.dp))
+        Text(
+            highlightKeywords(text),
+            style = MaterialTheme.typography.bodyLarge,
+            color = FitPalette.Text,
+            textAlign = TextAlign.Start,
+            modifier = Modifier.padding(14.dp),
+        )
     }
 }
 

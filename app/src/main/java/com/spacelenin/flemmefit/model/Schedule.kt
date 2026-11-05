@@ -176,6 +176,8 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     private val lastMax = HashMap<String, Int>()
     // Meilleure série notée de chaque exercice, et meilleur max de chaque variante en vraie version : les prérequis.
     private val bestMax = HashMap<String, Int>()
+    // Meilleure série de l'exo avant chaque séance (mêmes clés que [StoredProgram.done]) : de quoi fêter un record.
+    private val priorBest = HashMap<String, Int>()
     private val variantBest = HashMap<String, Int>()
     // Variantes à progression fixe : blocs validés depuis le début de l'étape, et vraie version atteinte.
     private val fixedSteps = HashMap<String, Int>()
@@ -307,6 +309,12 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             val seconds = test?.isSeconds ?: variant?.isSeconds ?: (exerciseByKey[key.trim().lowercase()]?.duration != null)
             VariantRequirement(key, name, min, reached(key), seconds)
         }
+
+    /** Meilleure série notée de l'exo [e] avant cette séance, null s'il n'a jamais été noté. */
+    fun previousBest(session: Session, e: Int): Int? {
+        ensure(session.index)
+        return priorBest[StoredProgram.doneKey(session.index, e)]
+    }
 
     /** Variantes débloquées qui attendent une confirmation ([Variant.check]). */
     fun pendingChecks(): List<Variant> {
@@ -558,6 +566,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 }
                 return@forEachIndexed
             }
+            bestMax[key]?.let { priorBest[StoredProgram.doneKey(i, e)] = it }
             val done = program.isDone(i, e)
             if (done && !deload && !chill) validated[key] = (validated[key] ?: 0) + 1
             // Le réglage n'est qu'un plus : s'il échoue, la séance reste calculée sans lui (jamais de plantage).

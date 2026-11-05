@@ -154,16 +154,17 @@ private val Rounded = FontFamily(
 
 private fun Typography.rounded(): Typography {
     fun TextStyle.r() = copy(fontFamily = Rounded)
-    // Grands titres : vert, avec un léger relief.
-    val title = Shadow(Color(0x403C8E17), Offset(0f, 3f), 4f)
+    // Grands titres : verts, grands et peu gras, avec un relief à peine marqué.
+    val title = Shadow(Color(0x283C8E17), Offset(0f, 2f), 3f)
+    fun TextStyle.bigger(by: Float) = copy(fontSize = fontSize * by, lineHeight = lineHeight * by)
     return Typography(
         displayLarge = displayLarge.r(), displayMedium = displayMedium.r(), displaySmall = displaySmall.r(),
-        headlineLarge = headlineLarge.r().copy(fontWeight = FontWeight.Black, color = FitPalette.Green, shadow = title),
-        headlineMedium = headlineMedium.r().copy(fontWeight = FontWeight.Black, color = FitPalette.Green, shadow = title),
+        headlineLarge = headlineLarge.r().copy(fontWeight = FontWeight.SemiBold, color = FitPalette.Green, shadow = title),
+        headlineMedium = headlineMedium.r().copy(fontWeight = FontWeight.SemiBold, color = FitPalette.Green, shadow = title),
         headlineSmall = headlineSmall.r(),
-        titleLarge = titleLarge.r().copy(fontWeight = FontWeight.Black, color = FitPalette.Green, shadow = title),
-        titleMedium = titleMedium.r(), titleSmall = titleSmall.r(),
-        bodyLarge = bodyLarge.r(), bodyMedium = bodyMedium.r(), bodySmall = bodySmall.r(),
+        titleLarge = titleLarge.r().bigger(1.08f).copy(fontWeight = FontWeight.SemiBold, color = FitPalette.Green, shadow = title),
+        titleMedium = titleMedium.r().bigger(1.06f), titleSmall = titleSmall.r(),
+        bodyLarge = bodyLarge.r().bigger(1.04f), bodyMedium = bodyMedium.r().bigger(1.05f), bodySmall = bodySmall.r(),
         labelLarge = labelLarge.r().copy(fontWeight = FontWeight.Bold), labelMedium = labelMedium.r(), labelSmall = labelSmall.r(),
     )
 }
