@@ -273,7 +273,7 @@ fun GuidedSession(
                 Column(Modifier.weight(1f).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                     Text("Repos", style = MaterialTheme.typography.titleLarge, color = DeloadColor, fontWeight = FontWeight.Bold)
                     Text(clock(left), style = MaterialTheme.typography.displayLarge, fontWeight = FontWeight.ExtraBold)
-                    LinearProgressIndicator(progress = { r?.progress(now) ?: 1f }, color = DeloadColor, modifier = Modifier.fillMaxWidth(0.6f).padding(vertical = 12.dp))
+                    FitProgress(progress = { r?.progress(now) ?: 1f }, color = DeloadColor, modifier = Modifier.fillMaxWidth(0.6f).padding(vertical = 12.dp))
                     Text(
                         "Ensuite : " + if (set == 0) prescription.exercise.name else "série ${set + 1} sur $sets",
                         style = MaterialTheme.typography.bodyLarge,
@@ -444,7 +444,7 @@ private fun SetContent(
             running != null && running.inSetup -> {
                 Text(running.phase.label + "…", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = color)
                 Text("${running.leftSeconds(now) ?: 0}", style = MaterialTheme.typography.displayLarge, fontWeight = FontWeight.ExtraBold)
-                LinearProgressIndicator(progress = { running.progress(now) }, color = color, modifier = Modifier.fillMaxWidth(0.6f).padding(vertical = 12.dp))
+                FitProgress(progress = { running.progress(now) }, color = color, modifier = Modifier.fillMaxWidth(0.6f).padding(vertical = 12.dp))
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     TextButton(onClick = onStop) { Text("Annuler") }
@@ -463,7 +463,7 @@ private fun SetContent(
                 )
                 when {
                     overtime -> Text("Temps en plus : Stop quand tu t'arrêtes", style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
-                    left != null -> LinearProgressIndicator(progress = { running.progress(now) }, color = color, modifier = Modifier.fillMaxWidth(0.6f).padding(vertical = 12.dp))
+                    left != null -> FitProgress(progress = { running.progress(now) }, color = color, modifier = Modifier.fillMaxWidth(0.6f).padding(vertical = 12.dp))
                     else -> Text("Tiens le plus longtemps possible", style = MaterialTheme.typography.bodyLarge)
                 }
                 Spacer(Modifier.height(20.dp))

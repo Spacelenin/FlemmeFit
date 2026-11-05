@@ -289,7 +289,8 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
         style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
-    Text(session.title(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
+    if (LocalFitTheme.current) FitBand(session.title(), LocalFitRoom.current, Modifier.padding(vertical = 4.dp))
+    else Text(session.title(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
     SessionEstimateLine(session)
     schedule.program.feelingOf(session.index)?.let { f ->
         Text("Ressenti : ${StoredProgram.FEELINGS[f]} ${StoredProgram.FEELING_LABELS[f]}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -300,7 +301,7 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
     }
     Spacer(Modifier.height(12.dp))
     Row(verticalAlignment = Alignment.CenterVertically) {
-        LinearProgressIndicator(progress = { ratio }, color = accent, modifier = Modifier.weight(1f))
+        FitProgress(progress = { ratio }, color = accent, modifier = Modifier.weight(1f))
         Spacer(Modifier.size(12.dp))
         Text("${(ratio * 100).toInt()} %", style = MaterialTheme.typography.labelLarge)
     }
@@ -400,6 +401,8 @@ private fun ExerciseRow(
     val timer = LocalWorkoutTimer.current
     val restBonus = LocalRestBonus.current
     val chrono = remember(prescription, restBonus) { TimerPlans.exercise(prescription, restBonus) }
+    val fit = LocalFitTheme.current
+    val room = LocalFitRoom.current
     val rest = remember(prescription, restBonus) { TimerPlans.rest(prescription, restBonus) }
 
     Row(
@@ -415,12 +418,15 @@ private fun ExerciseRow(
             modifier = Modifier
                 .size(48.dp)
                 .clip(RoundedCornerShape(14.dp))
-                .background(
-                    when {
-                        done -> color
-                        partial -> color.copy(alpha = 0.35f)
-                        else -> MaterialTheme.colorScheme.surfaceContainerHighest
-                    },
+                .then(
+                    if (fit) Modifier.fitThumb(room, done = done, partial = partial)
+                    else Modifier.background(
+                        when {
+                            done -> color
+                            partial -> color.copy(alpha = 0.35f)
+                            else -> MaterialTheme.colorScheme.surfaceContainerHighest
+                        },
+                    ),
                 )
                 .toggleable(value = done, enabled = !locked, role = Role.Checkbox, onValueChange = { onToggle() })
                 .semantics {
@@ -432,13 +438,13 @@ private fun ExerciseRow(
                 },
         ) {
             if (done) {
-                Icon(Icons.Default.Check, null, tint = Color(0xFF0F0F0F))
+                Icon(Icons.Default.Check, null, tint = if (fit) Color.White else Color(0xFF0F0F0F))
             } else {
                 Text(
                     exerciseInitials(exercise.name),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.ExtraBold,
-                    color = if (partial) MaterialTheme.colorScheme.onSurface else color,
+                    color = if (fit) Color.White else if (partial) MaterialTheme.colorScheme.onSurface else color,
                 )
             }
         }
@@ -457,7 +463,8 @@ private fun ExerciseRow(
                     prescription.isTest -> "Une seule série, à fond"
                     else -> prescription.summary(restBonus).ifEmpty { null }
                 },
-                prescription.palier?.let { "niveau ${it + 1}/${prescription.levelCount}" },
+                // Thème fit : le palier se lit aux étoiles.
+                prescription.palier?.takeIf { !fit }?.let { "niveau ${it + 1}/${prescription.levelCount}" },
                 prescription.beforeDeload?.let { "récup (au lieu de $it)" },
             ).joinToString(" · ")
             if (details.isNotEmpty()) {

@@ -100,7 +100,7 @@ fun ProgressSummary(progress: Progress, schedule: ProgramSchedule, color: Color,
                 )
             }
             Spacer(Modifier.height(8.dp))
-            LinearProgressIndicator(progress = { progress.ratio }, color = color, modifier = Modifier.fillMaxWidth())
+            FitProgress(progress = { progress.ratio }, color = color, modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                 Stat("${progress.doneExercises}/${progress.totalExercises}", "exos")

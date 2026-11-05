@@ -27,6 +27,13 @@ private fun Int.grouped() = String.format(Locale.FRENCH, "%,d", this)
 fun LazyListScope.statsBadgeItems(badges: List<Badge>, color: Color) {
     if (badges.isEmpty()) return
     item(key = "badges") {
+        if (com.spacelenin.flemmefit.ui.theme.LocalFitTheme.current) {
+            Column {
+                FitSectionTitle("Badges 🏅") {}
+                FitMedalGrid(badges, Modifier.padding(top = 4.dp))
+            }
+            return@item
+        }
         Column {
             Text(
                 "Badges 🏅",

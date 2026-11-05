@@ -236,6 +236,7 @@ fun TestsDialog(
     var switching by remember { mutableStateOf<Pair<String, String>?>(null) }
     val tests = program.plan.tests
     val scope = rememberCoroutineScope()
+    val fitTheme = com.spacelenin.flemmefit.ui.theme.LocalFitTheme.current
     // Premier exercice à paliers de chaque test : sert à montrer le palier atteint pendant la saisie.
     val levelled = remember(program.plan) {
         val exercises = program.plan.weeks.flatMap { it.days }.flatMap { it.exercises }
@@ -267,17 +268,16 @@ fun TestsDialog(
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
             ) {
-                Text(
-                    "Fais chaque test une fois, bien échauffé et à fond, puis note le résultat : il choisit ton niveau de départ. " +
-                        "Laissé vide : niveau le plus facile. Les tests refaits en cours de route prennent ensuite le relais.",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
+                val intro = "Fais chaque test une fois, bien échauffé et à fond, puis note le résultat : il choisit ton niveau de départ. " +
+                    "Laissé vide : niveau le plus facile. Les tests refaits en cours de route prennent ensuite le relais."
+                if (fitTheme) InstructionBubble(intro, title = "Avant de commencer")
+                else Text(intro, style = MaterialTheme.typography.bodyMedium)
                 tests.forEachIndexed { i, test ->
                     if (test.options.isNotEmpty()) {
                         val chosen = program.optionOn(test.id, today)
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             test.options.forEach { o ->
-                                FilterChip(
+                                FitChip(
                                     selected = chosen == o.id,
                                     onClick = {
                                         when {
@@ -294,7 +294,40 @@ fun TestsDialog(
                     }
                     // Le clavier s'ouvre après la prise de focus : on attend qu'il ait réduit l'écran avant de défiler.
                     val bringIntoView = remember { BringIntoViewRequester() }
-                    OutlinedTextField(
+                    val focusScroll = Modifier
+                        .bringIntoViewRequester(bringIntoView)
+                        .onFocusEvent { focus ->
+                            if (focus.isFocused) {
+                                scope.launch {
+                                    delay(350)
+                                    bringIntoView.bringIntoView()
+                                }
+                            }
+                        }
+                    if (fitTheme) {
+                        val step = if (test.isSeconds) 5 else 1
+                        val e = levelled[test.id]
+                        val index = e?.levelIndexFor(results[test.id]?.toIntOrNull())
+                        FitTestPanel(
+                            title = program.testName(test, today),
+                            value = results[test.id].orEmpty(),
+                            unit = if (test.isSeconds) "s" else "reps",
+                            onValue = { v -> results = results + (test.id to v.filter(Char::isDigit).take(4)) },
+                            onStep = { sign ->
+                                val v = (results[test.id]?.toIntOrNull() ?: 0) + sign * step
+                                results = results + (test.id to v.coerceIn(0, 9999).toString())
+                            },
+                            description = test.description,
+                            level = if (e != null && index != null) {
+                                val at = e.atLevel(index)
+                                "${program.exerciseName(e.name, today)} · niveau ${index + 1}/${e.levels.size}" +
+                                    listOfNotNull(at.sets?.let { "$it ×" }, at.reps ?: at.duration).joinToString(" ", prefix = " · ")
+                            } else null,
+                            stars = if (e != null && index != null) levelStars(index, e.levels.size) else null,
+                            last = i == tests.lastIndex,
+                            fieldModifier = focusScroll,
+                        )
+                    } else OutlinedTextField(
                         value = results[test.id].orEmpty(),
                         onValueChange = { v -> results = results + (test.id to v.filter(Char::isDigit).take(4)) },
                         label = { Text(program.testName(test, today)) },
@@ -326,17 +359,7 @@ fun TestsDialog(
                             keyboardType = KeyboardType.Number,
                             imeAction = if (i == tests.lastIndex) ImeAction.Done else ImeAction.Next,
                         ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .bringIntoViewRequester(bringIntoView)
-                            .onFocusEvent { focus ->
-                                if (focus.isFocused) {
-                                    scope.launch {
-                                        delay(350)
-                                        bringIntoView.bringIntoView()
-                                    }
-                                }
-                            },
+                        modifier = Modifier.fillMaxWidth().then(focusScroll),
                     )
                 }
                 val retested = tests.filter { t -> current[t.id] != null && current[t.id] != program.tests[t.id] }
@@ -346,6 +369,13 @@ fun TestsDialog(
                         val v = current.getValue(t.id)
                         Text("${program.testName(t, today)} : ${if (t.isSeconds) Measures.formatSeconds(v) else "$v reps"}", style = MaterialTheme.typography.bodyMedium)
                     }
+                }
+                if (fitTheme) {
+                    StartButton(
+                        onClick = { onSave(results.parsedResults()) },
+                        badge = "✓",
+                        modifier = Modifier.align(Alignment.CenterHorizontally).height(56.dp).padding(bottom = 4.dp),
+                    ) { Text("Enregistrer") }
                 }
             }
         }
