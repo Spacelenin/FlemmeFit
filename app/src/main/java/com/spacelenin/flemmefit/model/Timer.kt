@@ -10,7 +10,16 @@ data class TimerPhase(
     val rest: Boolean = false,
     /** Objectif affiché pendant un chrono à fond (« 1min05 »). */
     val target: String? = null,
-)
+    /** Mise en place avant une série au temps : rien n'est compté. */
+    val setup: Boolean = false,
+) {
+    companion object {
+        /** Secondes pour se mettre en place avant une série au temps, en mode séance. */
+        const val SETUP_SECONDS = 4
+
+        fun setup() = TimerPhase("Mets-toi en place", SETUP_SECONDS, setup = true)
+    }
+}
 
 /**
  * Minuteur en cours. Les temps sont des millisecondes d'une horloge monotone (elapsedRealtime) :
@@ -29,6 +38,11 @@ data class TimerRun(
     val phase: TimerPhase get() = phases[index]
     val isLast: Boolean get() = index == phases.lastIndex
     val paused: Boolean get() = pausedAt != null && !finished
+    /** Étape de l'effort lui-même (après la mise en place). */
+    val workIndex: Int get() = phases.indexOfFirst { !it.setup }.coerceAtLeast(0)
+    val inSetup: Boolean get() = phase.setup
+    /** Après le temps prévu : le temps en plus. */
+    val inOvertime: Boolean get() = index > workIndex
 
     fun elapsedMs(now: Long): Long = ((pausedAt ?: now) - phaseStart).coerceAtLeast(0)
 

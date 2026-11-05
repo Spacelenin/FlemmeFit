@@ -22,7 +22,7 @@ class VariantsTest {
 
     @Test
     fun `the routine describes its families and variants`() {
-        assertEquals(9, routine.variants.size)
+        assertEquals(10, routine.variants.size)
         val keys = routine.weeks.flatMap { w -> w.days.flatMap { d -> d.exercises.map { it.key } } }.toSet()
         routine.families.forEach { f -> f.exercises.forEach { assertTrue("${f.id} : $it", it in keys) } }
     }
@@ -34,7 +34,8 @@ class VariantsTest {
             val sessions = (cycle * 28 until (cycle + 1) * 28).mapNotNull(s::sessionAt)
             val picked = sessions.mapNotNull { it.variantIndex?.let { i -> it.prescriptions[i].variant!!.id } }
             // Les jambes (variante à la place de tout l'exercice) ont leur propre rythme, testé à part.
-            routine.variants.filter { it.family != "jambes" }.forEach { v -> assertTrue("cycle $cycle : ${v.id} absent", v.id in picked) }
+            // Le pont attend ses prérequis et une confirmation : testé à part (BridgeTest).
+            routine.variants.filter { it.family != "jambes" && it.check == null }.forEach { v -> assertTrue("cycle $cycle : ${v.id} absent", v.id in picked) }
             sessions.filter { it.isDeload }.forEach { assertNull(it.variantIndex) }
             sessions.forEach { assertTrue(it.prescriptions.count { p -> p.variant != null } <= 1) }
         }

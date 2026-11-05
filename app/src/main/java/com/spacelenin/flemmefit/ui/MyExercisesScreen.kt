@@ -215,10 +215,16 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
     }
 }
 
-private fun VariantProgress.status(): String = listOfNotNull(
-    if (points.isEmpty()) "pas encore fait" else "max ${format(points.last().value)}",
-    ratio?.let { "taux : ${ratioLabel(it)}" } ?: "taux mesuré au premier passage",
-).joinToString(" · ")
+private fun VariantProgress.status(): String {
+    if (locked) return "🔒 à débloquer : " + requirements.joinToString(" · ") { (if (it.met) "✓ " else "") + it.label }
+    return listOfNotNull(
+        if (points.isEmpty()) "pas encore fait" else "max ${format(points.last().value)}",
+        when {
+            variant.isFixed -> "progression : +${format(variant.step)} à chaque séance réussie"
+            else -> ratio?.let { "taux : ${ratioLabel(it)}" } ?: "taux mesuré au premier passage"
+        },
+    ).joinToString(" · ")
+}
 
 @Composable
 private fun AdaptationRow(a: ExerciseAdaptation, balance: SideBalance?) {
@@ -309,7 +315,9 @@ private fun AddExerciseDialog(
     create: (name: String, family: String, seconds: Boolean, ratio: Double?, start: Int?, description: String?) -> CustomExercise,
 ) {
     var name by rememberSaveable { mutableStateOf("") }
-    var family by rememberSaveable { mutableStateOf(plan.families.first().id) }
+    // Une variante perso se dose sur le test de sa famille : seulement les familles qui en ont un.
+    val families = plan.families.filter { it.test != null }
+    var family by rememberSaveable { mutableStateOf(families.firstOrNull()?.id ?: CustomExercise.OTHER) }
     var seconds by rememberSaveable { mutableStateOf(false) }
     var ratio by rememberSaveable { mutableStateOf("") }
     var unknown by rememberSaveable { mutableStateOf(false) }
@@ -338,7 +346,7 @@ private fun AddExerciseDialog(
                 )
                 Text("Famille", style = MaterialTheme.typography.labelLarge)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    (plan.families.map { it.id to it.name } + (CustomExercise.OTHER to "Autre")).forEach { (id, label) ->
+                    (families.map { it.id to it.name } + (CustomExercise.OTHER to "Autre")).forEach { (id, label) ->
                         FilterChip(selected = family == id, onClick = { family = id }, label = { Text(label) })
                     }
                 }

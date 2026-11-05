@@ -161,6 +161,9 @@ class ProgramRepository(dir: File) {
     fun replaceExercise(id: String, dayIndex: Int, exerciseIndex: Int, key: String, option: String?, date: LocalDate, keep: Boolean) =
         updateProgram(id) { it.withReplacement(dayIndex, exerciseIndex, key, option, date, keep) }
 
+    /** La variante [variant] est confirmée ([com.spacelenin.flemmefit.model.Variant.check]) : proposée dès demain. */
+    fun confirmVariant(id: String, variant: String, today: LocalDate) = updateProgram(id) { it.withVariantCheck(variant, today) }
+
     fun dismissProfileHint(id: String, date: LocalDate) = updateProgram(id) { it.copy(profileHintDismissed = date.toString()) }
 
     fun changeTestOption(id: String, testId: String, option: String, result: Int?) =

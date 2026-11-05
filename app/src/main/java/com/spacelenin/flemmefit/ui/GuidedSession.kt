@@ -96,7 +96,7 @@ fun GuidedSession(
     var longExtra by remember { mutableStateOf(false) }
     // Exercice qui vient d'être fini : son ressenti est proposé pendant le repos qui suit (ou à la fin).
     var feelingFor by remember { mutableStateOf<Int?>(null) }
-    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { if (run?.index == 1) awayDuringOvertime = true }
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { if (step == Step.RUN && run?.inOvertime == true) awayDuringOvertime = true }
 
     val exerciseIndex = queue.getOrNull(pos)
     val prescription = exerciseIndex?.let { session.prescriptions.getOrNull(it) }
@@ -166,8 +166,14 @@ fun GuidedSession(
     fun stopSet() {
         val g = guided ?: return
         val r = run ?: return finishSet(0)
+        // Pendant la mise en place : rien n'a commencé, retour avant « Démarrer ».
+        if (r.inSetup) {
+            run = null
+            step = Step.SET
+            return
+        }
         val elapsed = (r.elapsedMs(SystemClock.elapsedRealtime()) / 1000).toInt()
-        if (r.index == 0) return finishSet(elapsed)
+        if (!r.inOvertime) return finishSet(elapsed)
         if (awayDuringOvertime && elapsed > AWAY_CHECK_SECONDS) {
             run = r.pause(SystemClock.elapsedRealtime())
             longExtra = false
@@ -290,7 +296,9 @@ fun GuidedSession(
                     now = now,
                     color = color,
                     onStart = { seconds ->
+                        // Quelques secondes pour se mettre en place avant que le temps compte.
                         val phases = listOfNotNull(
+                            TimerPhase.setup(),
                             TimerPhase("Série", seconds),
                             TimerPhase(OVERTIME_LABEL, null).takeIf { guided.overtime(set) },
                         )
@@ -298,6 +306,7 @@ fun GuidedSession(
                         step = Step.RUN
                     },
                     onStop = ::stopSet,
+                    onSkipSetup = { run = run?.next(SystemClock.elapsedRealtime()) },
                     onSetDone = { finishSet(if (guided.needsValue(set)) value else 0) },
                     onWeights = { on -> exerciseIndex?.let { onWeights(it, on) } },
                     modifier = Modifier.weight(1f),
@@ -358,6 +367,7 @@ private fun SetContent(
     color: Color,
     onStart: (seconds: Int?) -> Unit,
     onStop: () -> Unit,
+    onSkipSetup: () -> Unit,
     onSetDone: () -> Unit,
     onWeights: (Boolean) -> Unit,
     modifier: Modifier,
@@ -417,10 +427,20 @@ private fun SetContent(
 
         val countdown = guided.countdown(set)
         when {
+            running != null && running.inSetup -> {
+                Text(running.phase.label + "…", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = color)
+                Text("${running.leftSeconds(now) ?: 0}", style = MaterialTheme.typography.displayLarge, fontWeight = FontWeight.ExtraBold)
+                LinearProgressIndicator(progress = { running.progress(now) }, color = color, modifier = Modifier.fillMaxWidth(0.6f).padding(vertical = 12.dp))
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    TextButton(onClick = onStop) { Text("Annuler") }
+                    PillButton(onClick = onSkipSetup) { Text("Go !") }
+                }
+            }
             running != null -> {
                 val left = running.leftSeconds(now)
                 val elapsed = (running.elapsedMs(now) / 1000).toInt()
-                val overtime = running.index > 0
+                val overtime = running.inOvertime
                 Text(
                     if (overtime) "+ ${clock(elapsed)}" else clock(left ?: elapsed),
                     style = MaterialTheme.typography.displayLarge,

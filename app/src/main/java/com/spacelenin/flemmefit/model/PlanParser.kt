@@ -110,6 +110,7 @@ object PlanParser {
             if (family.test != null && family.test !in testIds) add("$at.test : aucun test \"${family.test}\" dans \"tests\".")
         }
         val variantIds = mutableSetOf<String>()
+        val exerciseKeys = plan.weeks.flatMap { w -> w.days.flatMap { d -> d.exercises.map { it.key } } }.toSet()
         plan.variants.forEachIndexed { v, variant ->
             val at = "variants[$v]"
             if (variant.id.isBlank()) add("$at.id ne doit pas être vide.")
@@ -117,7 +118,14 @@ object PlanParser {
             if (variant.name.isBlank()) add("$at.name ne doit pas être vide.")
             if (variant.family !in familyIds) add("$at.family : aucune famille \"${variant.family}\" dans \"families\".")
             if (variant.ratio != null && variant.ratio <= 0.0) add("$at.ratio doit être positif (reçu ${variant.ratio}).")
-            variant.requires.keys.filter { id -> plan.tests.none { it.id == id } }.forEach { add("$at.requires : aucun test \"$it\" dans \"tests\".") }
+            variant.requires.keys.filter { id ->
+                plan.tests.none { it.id == id } && plan.variants.none { it.id == id } && id.trim().lowercase() !in exerciseKeys
+            }.forEach { add("$at.requires : aucun test, variante ou exercice \"$it\".") }
+            if (variant.start != null && variant.start < 1) add("$at.start doit être au moins 1 (reçu ${variant.start}).")
+            if (variant.step < 0) add("$at.step ne doit pas être négatif (reçu ${variant.step}).")
+            if (variant.cap != null && variant.start != null && variant.cap < variant.start) add("$at.cap doit être au moins start (reçu ${variant.cap}).")
+            if (variant.perCycle != null && variant.perCycle !in 1..10) add("$at.perCycle doit être entre 1 et 10 (reçu ${variant.perCycle}).")
+            if (variant.check != null && variant.check.isBlank()) add("$at.check ne doit pas être vide.")
             if (variant.perSide != null && variant.perSide.isBlank()) add("$at.perSide ne doit pas être vide.")
             if (variant.unit != PlanTest.UNIT_REPS && variant.unit != PlanTest.UNIT_SECONDS) {
                 add("$at.unit doit valoir \"reps\" ou \"seconds\" (reçu \"${variant.unit}\").")

@@ -232,7 +232,7 @@ Une famille regroupe des exercices de base et le test qui leur sert d'étalon :
 |-----------------|-------------|
 | `id`, `name`    | Identifiant (pas `"autre"`, réservé aux exos perso) et nom affiché. |
 | `exercises`     | Ids des exercices de base. |
-| `test`          | Test de la famille : l'étalon des variantes. |
+| `test`          | Test de la famille : l'étalon des variantes (facultatif pour une famille dont les variantes ont une progression fixe). |
 | `counter`       | Compteur caché où les variantes s'ajoutent, en équivalent. |
 | `replace`       | `true` : la variante prend toute la place de l'exercice de base, qui sert surtout d'étalon. Elle tombe sur la moitié des séances de la famille sous le `from` des variantes, sur 5 sur 6 au-dessus (l'exercice de base revient une fois tous les 2 cycles sur 3 séances). |
 | `minTest`       | En dessous de ce résultat au test, pas de variante dans cette famille. |
@@ -245,7 +245,12 @@ Une famille regroupe des exercices de base et le test qui leur sert d'étalon :
 | `from`           | Vraie version à partir de ce résultat au test ; en dessous, version facile (`easy`), comptée deux fois plus facile. |
 | `sides`          | Variante d'un côté à la fois : quels membres travaillent (« Les deux bras : bras droit, puis bras gauche »). |
 | `perSide`        | Une série par côté, en alternance (`"bras"`, `"jambe"`, `"côté"`) : voir `perSide` des exercices. Côté en retard de plus de 10 % : il commence et fait une série de plus. |
-| `requires`       | Proposée seulement si chaque test atteint son minimum : `{ "tractions": 10, "gainage": 60, "pompes": 20 }`. |
+| `requires`       | Proposée seulement si chaque minimum est atteint : `{ "tractions": 10, "gainage": 60, "pompes": 20 }`. La clé est un test (son dernier résultat), sinon une variante (son meilleur max en vraie version), sinon un exercice de la routine (sa meilleure série notée, en reps ou en secondes). Tant que ce n'est pas atteint, l'onglet Exos montre où on en est. |
+| `start`, `step`, `cap` | **Progression fixe**, sans test ni taux : 3 séries à `start` (reps ou secondes), `+step` à chaque bloc validé, jusqu'à `cap`. Au plafond, la dernière série va au max. |
+| `easyUntil`      | Progression fixe : version facile (`easy`) jusqu'à un bloc validé à ce niveau, puis vraie version en repartant de `start`. |
+| `perCycle`       | Blocs voulus par cycle, au lieu de 1 à 3 selon le test (réduit si la famille n'a pas assez de séances). |
+| `check`          | Phrase à confirmer avant le premier passage, une fois les prérequis atteints (« je touche le mur derrière ma tête ») : l'accueil la propose, et la variante arrive à partir du lendemain. |
+| `warning`        | Mise en garde montrée au déblocage et dans la consigne. |
 
 - **Jours variante** : tirés au sort séance par séance, seulement les jours où un exercice de base est prévu, au plus
   un par séance, jamais en semaine de décharge, et dévoilés le jour même. Sur un cycle (`deloadEvery` semaines, 4 sinon),

@@ -240,6 +240,8 @@ private fun HomeContent(
         )
     }
     val suggestion = remember(schedule) { runCatching { schedule.profileSuggestion() }.getOrNull() }
+    val unlocked = remember(schedule) { runCatching { schedule.pendingChecks() }.getOrDefault(emptyList()) }
+    var checksLater by rememberSaveable(program.id) { mutableStateOf(false) }
     val notices: @Composable () -> Unit = {
         if (suggestion != null) {
             val current = program.profileOn(today)
@@ -251,6 +253,18 @@ private fun HomeContent(
                 plain = { ProfileSuggestionCard(current, suggestion, color, accept, later, Modifier.padding(horizontal = 16.dp)) },
             ) {
                 ProfileSuggestionContent(current, suggestion, accept, later)
+            }
+        }
+        unlocked.firstOrNull()?.takeIf { !checksLater }?.let { v ->
+            val familyName = program.plan.family(v.family)?.name ?: v.family
+            val confirm = { repository.confirmVariant(program.id, v.id, today) }
+            val later = { checksLater = true }
+            NoticeBubble(
+                FitPalette.Orange,
+                Modifier.padding(horizontal = 16.dp),
+                plain = { VariantCheckCard(v, familyName, color, confirm, later, Modifier.padding(horizontal = 16.dp)) },
+            ) {
+                VariantCheckContent(v, familyName, confirm, later)
             }
         }
         if (program.missingTests.isNotEmpty()) {
