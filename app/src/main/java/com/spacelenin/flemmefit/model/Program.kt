@@ -109,12 +109,21 @@ data class StoredProgram(
     val dayReplacements: Map<String, String> = emptyMap(),
     /** Remplacements gardés d'une séance à l'autre, datés. */
     val replacements: List<ReplacementChange> = emptyList(),
+    /** Variantes à confirmer ([Variant.check]) : id → date de l'accord ; proposées à partir du lendemain. */
+    val variantChecks: Map<String, String> = emptyMap(),
 ) {
     val start: LocalDate get() = LocalDate.parse(startDate)
 
     fun isDone(dayIndex: Int, exerciseIndex: Int) = doneKey(dayIndex, exerciseIndex) in done
 
     fun logOf(dayIndex: Int, exerciseIndex: Int): ExerciseLog? = logs[doneKey(dayIndex, exerciseIndex)]
+
+    /** La variante [id] est proposée à [date] : sans confirmation demandée, ou confirmée la veille au plus tard. */
+    fun variantConfirmed(id: String, check: String?, date: LocalDate): Boolean =
+        check == null || variantChecks[id]?.let { runCatching { date.isAfter(LocalDate.parse(it)) }.getOrDefault(false) } == true
+
+    fun withVariantCheck(id: String, today: LocalDate): StoredProgram =
+        if (id in variantChecks) this else copy(variantChecks = variantChecks + (id to today.toString()))
 
     /** Cocher / décocher. Décocher efface aussi la saisie. */
     fun toggle(dayIndex: Int, exerciseIndex: Int): StoredProgram {

@@ -1,7 +1,7 @@
 {
   "format": "flemmefit",
   "version": 1,
-  "revision": 15,
+  "revision": 16,
   "name": "Routine maison",
   "description": "5 séances par semaine (jours 4 et 7 : repos, ou rien selon la fatigue). Paliers inspirés de 100pompes, 50tractions, musclesabdominaux et musclesdesjambes : un test de départ choisit ton palier, la dernière série va souvent au max, et la 4e semaine allège tout de moitié et refait les tests pour passer au palier suivant. Échauffement et étirements d'après echauffez-vous et etirez-vous.",
   "repeat": "forever",
@@ -100,6 +100,13 @@
       "counter": "Squats",
       "replace": true,
       "minTest": 15
+    },
+    {
+      "id": "dos",
+      "name": "Dos",
+      "exercises": [
+        "superman"
+      ]
     }
   ],
   "variants": [
@@ -190,6 +197,26 @@
         "pompes": 20
       },
       "description": "Équilibre sur les mains, contre un mur au début. Mains au sol à une main du mur, écartées largeur d'épaules, monte les jambes contre le mur : bras tendus, corps gainé, regard entre les mains. Pour commencer : dos au mur, marche avec les pieds sur le mur, ventre face à lui, et deviens de plus en plus vertical au fil des séances. Redescends doucement, une jambe après l'autre."
+    },
+    {
+      "id": "pont",
+      "name": "Pont (backbend)",
+      "family": "dos",
+      "unit": "seconds",
+      "start": 7,
+      "step": 2,
+      "cap": 30,
+      "easyUntil": 20,
+      "perCycle": 3,
+      "requires": {
+        "pompes-pike": 5,
+        "superman": 30,
+        "hip-thrust": 15
+      },
+      "check": "Debout, dos et fesses collés au mur, je lève les bras tendus au-dessus de la tête et je touche le mur avec les mains, sans décoller le bas du dos.",
+      "warning": "À faire échauffé, jamais à froid. Douleur aux poignets, aux lombaires ou à la nuque : stop, et reviens à la version d'avant.",
+      "description": "Allongé sur le dos, pieds à plat près des fesses, mains au sol de chaque côté de la tête, doigts vers les pieds. Pousse sur les mains et les pieds pour monter tout le corps en arche, bras tendus, tête entre les bras, et tiens en respirant. Pour redescendre, rentre le menton et pose d'abord le haut du dos, jamais la tête. La dernière série va au max une fois 30 s atteintes.",
+      "easy": "mains surélevées sur le bord d'un canapé, d'un lit ou d'une marche, pieds au sol : la même arche, avec moins de souplesse demandée. Tu passes au pont au sol une fois 20 s tenues."
     }
   ],
   "weeks": [
@@ -318,7 +345,7 @@
               "name": "Échauffement",
               "id": "echauffement",
               "duration": "5min",
-              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux.",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux. Puis 5 bird dogs de chaque côté : à quatre pattes, tends le bras et la jambe opposés, tiens 2 s, dos plat.",
               "optional": true
             },
             {
@@ -508,6 +535,29 @@
                 "every": 2
               },
               "counter": "Gainage"
+            },
+            {
+              "name": "Hip thrust",
+              "id": "hip-thrust",
+              "description": "Le haut du dos (sous les omoplates) appuyé sur le bord d'un canapé ou d'un banc stable, pieds à plat largeur de hanches, genoux pliés. Monte le bassin en serrant les fessiers jusqu'à l'alignement épaules-genoux, menton rentré, puis redescends sans poser les fesses. Ce sont les fessiers qui poussent, pas le bas du dos. Dernière série : le max possible. Arrivé à 25 : marque une pause de 2 s en haut à chaque rep.",
+              "sets": 3,
+              "reps": "12",
+              "rest": "60s",
+              "amrap": true,
+              "progression": {
+                "every": 2,
+                "reps": 1,
+                "maxReps": 25
+              },
+              "alternatives": [
+                {
+                  "id": "extension-lombaire",
+                  "name": "Extension lombaire sur support haut",
+                  "description": "À plat ventre sur un support haut et stable (banc, table solide), le bassin au bord, le buste dans le vide, les jambes bloquées (sous un meuble, ou tenues). Descends le buste puis remonte jusqu'à l'alignement, sans cambrer plus loin. Mains aux tempes ou croisées sur la poitrine.",
+                  "follows": "hip-thrust",
+                  "factor": 1.0
+                }
+              ]
             },
             {
               "name": "Étirements",
@@ -709,6 +759,55 @@
                 "reps": 1
               },
               "counter": "Pompes"
+            },
+            {
+              "name": "Dips sur chaise",
+              "id": "dips",
+              "description": "Dos à une chaise stable (calée contre un mur), mains sur le bord à largeur d'épaules, doigts vers l'avant, jambes tendues devant toi. Descends en pliant les coudes vers l'arrière jusqu'à ce que les bras fassent un angle droit, puis remonte en poussant. Épaules basses, dos près de la chaise. Dernière série : le max possible, proprement.",
+              "rest": "60s",
+              "test": "pompes",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Palier facile : genoux pliés, pieds près de la chaise."
+                },
+                {
+                  "from": 11,
+                  "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 21,
+                  "sets": 3,
+                  "reps": "10"
+                },
+                {
+                  "from": 31,
+                  "sets": 3,
+                  "reps": "12"
+                },
+                {
+                  "from": 41,
+                  "sets": 3,
+                  "reps": "15"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              },
+              "alternatives": [
+                {
+                  "id": "extension-triceps",
+                  "name": "Extension triceps au-dessus de la tête (haltère ou élastique)",
+                  "description": "Debout ou assis, dos droit, l'haltère tenue à deux mains au-dessus de la tête (ou l'élastique bloqué sous un pied). Coudes serrés près des oreilles et immobiles, descends le poids derrière la tête puis tends les bras. Une charge qui laisse faire toutes les reps proprement.",
+                  "follows": "dips",
+                  "factor": 1.0
+                }
+              ]
             },
             {
               "name": "Beat Saber",
@@ -1023,7 +1122,7 @@
               "name": "Échauffement",
               "id": "echauffement",
               "duration": "5min",
-              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux.",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux. Puis 5 bird dogs de chaque côté : à quatre pattes, tends le bras et la jambe opposés, tiens 2 s, dos plat.",
               "optional": true
             },
             {
@@ -1213,6 +1312,29 @@
                 "every": 2
               },
               "counter": "Gainage"
+            },
+            {
+              "name": "Hip thrust",
+              "id": "hip-thrust",
+              "description": "Le haut du dos (sous les omoplates) appuyé sur le bord d'un canapé ou d'un banc stable, pieds à plat largeur de hanches, genoux pliés. Monte le bassin en serrant les fessiers jusqu'à l'alignement épaules-genoux, menton rentré, puis redescends sans poser les fesses. Ce sont les fessiers qui poussent, pas le bas du dos. Dernière série : le max possible. Arrivé à 25 : marque une pause de 2 s en haut à chaque rep.",
+              "sets": 3,
+              "reps": "12",
+              "rest": "60s",
+              "amrap": true,
+              "progression": {
+                "every": 2,
+                "reps": 1,
+                "maxReps": 25
+              },
+              "alternatives": [
+                {
+                  "id": "extension-lombaire",
+                  "name": "Extension lombaire sur support haut",
+                  "description": "À plat ventre sur un support haut et stable (banc, table solide), le bassin au bord, le buste dans le vide, les jambes bloquées (sous un meuble, ou tenues). Descends le buste puis remonte jusqu'à l'alignement, sans cambrer plus loin. Mains aux tempes ou croisées sur la poitrine.",
+                  "follows": "hip-thrust",
+                  "factor": 1.0
+                }
+              ]
             },
             {
               "name": "Étirements",
@@ -1414,6 +1536,55 @@
                 "reps": 1
               },
               "counter": "Pompes"
+            },
+            {
+              "name": "Dips sur chaise",
+              "id": "dips",
+              "description": "Dos à une chaise stable (calée contre un mur), mains sur le bord à largeur d'épaules, doigts vers l'avant, jambes tendues devant toi. Descends en pliant les coudes vers l'arrière jusqu'à ce que les bras fassent un angle droit, puis remonte en poussant. Épaules basses, dos près de la chaise. Dernière série : le max possible, proprement.",
+              "rest": "60s",
+              "test": "pompes",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Palier facile : genoux pliés, pieds près de la chaise."
+                },
+                {
+                  "from": 11,
+                  "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 21,
+                  "sets": 3,
+                  "reps": "10"
+                },
+                {
+                  "from": 31,
+                  "sets": 3,
+                  "reps": "12"
+                },
+                {
+                  "from": 41,
+                  "sets": 3,
+                  "reps": "15"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              },
+              "alternatives": [
+                {
+                  "id": "extension-triceps",
+                  "name": "Extension triceps au-dessus de la tête (haltère ou élastique)",
+                  "description": "Debout ou assis, dos droit, l'haltère tenue à deux mains au-dessus de la tête (ou l'élastique bloqué sous un pied). Coudes serrés près des oreilles et immobiles, descends le poids derrière la tête puis tends les bras. Une charge qui laisse faire toutes les reps proprement.",
+                  "follows": "dips",
+                  "factor": 1.0
+                }
+              ]
             },
             {
               "name": "Beat Saber",
@@ -1728,7 +1899,7 @@
               "name": "Échauffement",
               "id": "echauffement",
               "duration": "5min",
-              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux.",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux. Puis 5 bird dogs de chaque côté : à quatre pattes, tends le bras et la jambe opposés, tiens 2 s, dos plat.",
               "optional": true
             },
             {
@@ -1918,6 +2089,29 @@
                 "every": 2
               },
               "counter": "Gainage"
+            },
+            {
+              "name": "Hip thrust",
+              "id": "hip-thrust",
+              "description": "Le haut du dos (sous les omoplates) appuyé sur le bord d'un canapé ou d'un banc stable, pieds à plat largeur de hanches, genoux pliés. Monte le bassin en serrant les fessiers jusqu'à l'alignement épaules-genoux, menton rentré, puis redescends sans poser les fesses. Ce sont les fessiers qui poussent, pas le bas du dos. Dernière série : le max possible. Arrivé à 25 : marque une pause de 2 s en haut à chaque rep.",
+              "sets": 3,
+              "reps": "12",
+              "rest": "60s",
+              "amrap": true,
+              "progression": {
+                "every": 2,
+                "reps": 1,
+                "maxReps": 25
+              },
+              "alternatives": [
+                {
+                  "id": "extension-lombaire",
+                  "name": "Extension lombaire sur support haut",
+                  "description": "À plat ventre sur un support haut et stable (banc, table solide), le bassin au bord, le buste dans le vide, les jambes bloquées (sous un meuble, ou tenues). Descends le buste puis remonte jusqu'à l'alignement, sans cambrer plus loin. Mains aux tempes ou croisées sur la poitrine.",
+                  "follows": "hip-thrust",
+                  "factor": 1.0
+                }
+              ]
             },
             {
               "name": "Étirements",
@@ -2119,6 +2313,55 @@
                 "reps": 1
               },
               "counter": "Pompes"
+            },
+            {
+              "name": "Dips sur chaise",
+              "id": "dips",
+              "description": "Dos à une chaise stable (calée contre un mur), mains sur le bord à largeur d'épaules, doigts vers l'avant, jambes tendues devant toi. Descends en pliant les coudes vers l'arrière jusqu'à ce que les bras fassent un angle droit, puis remonte en poussant. Épaules basses, dos près de la chaise. Dernière série : le max possible, proprement.",
+              "rest": "60s",
+              "test": "pompes",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Palier facile : genoux pliés, pieds près de la chaise."
+                },
+                {
+                  "from": 11,
+                  "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 21,
+                  "sets": 3,
+                  "reps": "10"
+                },
+                {
+                  "from": 31,
+                  "sets": 3,
+                  "reps": "12"
+                },
+                {
+                  "from": 41,
+                  "sets": 3,
+                  "reps": "15"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              },
+              "alternatives": [
+                {
+                  "id": "extension-triceps",
+                  "name": "Extension triceps au-dessus de la tête (haltère ou élastique)",
+                  "description": "Debout ou assis, dos droit, l'haltère tenue à deux mains au-dessus de la tête (ou l'élastique bloqué sous un pied). Coudes serrés près des oreilles et immobiles, descends le poids derrière la tête puis tends les bras. Une charge qui laisse faire toutes les reps proprement.",
+                  "follows": "dips",
+                  "factor": 1.0
+                }
+              ]
             },
             {
               "name": "Beat Saber",
@@ -2441,7 +2684,7 @@
               "name": "Échauffement",
               "id": "echauffement",
               "duration": "5min",
-              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux.",
+              "description": "Du haut vers le bas, 10 fois chaque mouvement : rotations de la tête, des avant-bras et poignets, des bras, des épaules, du buste, du bassin, des genoux et des chevilles. Puis 1 min de cardio léger (montées de genoux, jumping jacks) pour avoir chaud sans s'épuiser. Puis 10 bascules du bassin allongé et 20 s de gainage facile sur les genoux. Puis 5 bird dogs de chaque côté : à quatre pattes, tends le bras et la jambe opposés, tiens 2 s, dos plat.",
               "optional": true
             },
             {
@@ -2647,6 +2890,29 @@
                 "every": 2
               },
               "counter": "Gainage"
+            },
+            {
+              "name": "Hip thrust",
+              "id": "hip-thrust",
+              "description": "Le haut du dos (sous les omoplates) appuyé sur le bord d'un canapé ou d'un banc stable, pieds à plat largeur de hanches, genoux pliés. Monte le bassin en serrant les fessiers jusqu'à l'alignement épaules-genoux, menton rentré, puis redescends sans poser les fesses. Ce sont les fessiers qui poussent, pas le bas du dos. Dernière série : le max possible. Arrivé à 25 : marque une pause de 2 s en haut à chaque rep.",
+              "sets": 3,
+              "reps": "12",
+              "rest": "60s",
+              "amrap": true,
+              "progression": {
+                "every": 2,
+                "reps": 1,
+                "maxReps": 25
+              },
+              "alternatives": [
+                {
+                  "id": "extension-lombaire",
+                  "name": "Extension lombaire sur support haut",
+                  "description": "À plat ventre sur un support haut et stable (banc, table solide), le bassin au bord, le buste dans le vide, les jambes bloquées (sous un meuble, ou tenues). Descends le buste puis remonte jusqu'à l'alignement, sans cambrer plus loin. Mains aux tempes ou croisées sur la poitrine.",
+                  "follows": "hip-thrust",
+                  "factor": 1.0
+                }
+              ]
             },
             {
               "name": "Étirements",
@@ -2856,6 +3122,55 @@
                 "reps": 1
               },
               "counter": "Pompes"
+            },
+            {
+              "name": "Dips sur chaise",
+              "id": "dips",
+              "description": "Dos à une chaise stable (calée contre un mur), mains sur le bord à largeur d'épaules, doigts vers l'avant, jambes tendues devant toi. Descends en pliant les coudes vers l'arrière jusqu'à ce que les bras fassent un angle droit, puis remonte en poussant. Épaules basses, dos près de la chaise. Dernière série : le max possible, proprement.",
+              "rest": "60s",
+              "test": "pompes",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Palier facile : genoux pliés, pieds près de la chaise."
+                },
+                {
+                  "from": 11,
+                  "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 21,
+                  "sets": 3,
+                  "reps": "10"
+                },
+                {
+                  "from": 31,
+                  "sets": 3,
+                  "reps": "12"
+                },
+                {
+                  "from": 41,
+                  "sets": 3,
+                  "reps": "15"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              },
+              "alternatives": [
+                {
+                  "id": "extension-triceps",
+                  "name": "Extension triceps au-dessus de la tête (haltère ou élastique)",
+                  "description": "Debout ou assis, dos droit, l'haltère tenue à deux mains au-dessus de la tête (ou l'élastique bloqué sous un pied). Coudes serrés près des oreilles et immobiles, descends le poids derrière la tête puis tends les bras. Une charge qui laisse faire toutes les reps proprement.",
+                  "follows": "dips",
+                  "factor": 1.0
+                }
+              ]
             },
             {
               "name": "Beat Saber",

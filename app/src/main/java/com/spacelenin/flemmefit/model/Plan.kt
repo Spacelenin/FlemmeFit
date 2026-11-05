@@ -143,12 +143,31 @@ data class Variant(
     val sides: String? = null,
     /** Une série par côté, en alternance : « bras », « jambe » ou « côté » (voir [Exercise.perSide]). */
     val perSide: String? = null,
-    /** Proposée seulement si chacun de ces tests (id → minimum) est atteint. */
+    /**
+     * Proposée seulement si chaque minimum est atteint. La clé est un test (son dernier résultat), sinon une variante
+     * (son meilleur max en vraie version), sinon un exercice de la routine (sa meilleure série notée).
+     */
     val requires: Map<String, Int> = emptyMap(),
     /** Réglages du sur-mesure propres à cette variante. */
     val tuning: Tuning? = null,
+    /**
+     * Progression fixe, sans test ni taux : [VariantParams.sets] séries à [start] (reps ou secondes), + [step] à chaque
+     * bloc validé, jusqu'à [cap] ; au plafond, la dernière série va au max.
+     */
+    val start: Int? = null,
+    val step: Int = 1,
+    val cap: Int? = null,
+    /** Progression fixe : version facile ([easy]) jusqu'à un bloc validé à ce niveau, puis vraie version depuis [start]. */
+    val easyUntil: Int? = null,
+    /** Blocs voulus par cycle (au lieu de 1 à 3 selon le test). */
+    val perCycle: Int? = null,
+    /** À confirmer avant le premier passage, une fois les prérequis atteints (« je touche le mur derrière ma tête »). */
+    val check: String? = null,
+    /** Mise en garde montrée au déblocage et dans la description. */
+    val warning: String? = null,
 ) {
     val isSeconds get() = unit == PlanTest.UNIT_SECONDS
+    val isFixed get() = start != null
 }
 
 /** Un exercice au choix pour un test : [name] pour le test (« Sit-ups »), [short] dans les noms (« sit-up »). */

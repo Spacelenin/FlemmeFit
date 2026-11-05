@@ -17,11 +17,15 @@ et une progression.
   Rythme au choix par programme (🐢 Doux, 🙂 Normal, 🚀 Vif), avec une suggestion quand tout est facile ou dur ;
   réglages fins dans le JSON (`tuning`), et export de la routine ou d'un modèle à modifier.
 - **Changer un exo** 🔄 depuis la page du jour : un remplaçant prévu par la routine (Russian twist à la place des
-  hip dips, dosé comme les abdos, reps × 2) ou un exo de la même famille, juste ce jour-là ou pour la suite.
-- **Mode séance** guidé : série par série, repos décompté, chrono qui continue en temps en plus, ressenti par exo.
+  hip dips, dosé comme les abdos, reps × 2 ; extension triceps à la place des dips ; extension lombaire à la place
+  du hip thrust) ou un exo de la même famille, juste ce jour-là ou pour la suite.
+- **Mode séance** guidé : série par série, 4 s pour se mettre en place avant chaque série au temps, repos décompté,
+  chrono qui continue en temps en plus, ressenti par exo.
 - **Exos d'un côté à la fois** : une série par côté, 🔴 gauche / 🔵 droite. Chaque côté est suivi à part ; un côté en
   retard commence, fait une série de plus et rattrape l'autre (écart dans les stats).
 - **Variantes 🎲** tirées certains jours (diamant, pike, une main, pistol, Perche…), dosées sur le test de leur famille.
+  Le **Pont** se débloque (pompes pike 5, superman 30 s, hip thrust 15, plus un test de souplesse à confirmer) :
+  mains surélevées d'abord, puis au sol, +2 s à chaque séance réussie.
 - **Burst 🚀 et Chill 🛋** : une fois par semaine, renforcer ou alléger la séance du jour.
 - **Jours Boss 💀** aléatoires toutes les 3 à 4 semaines : séance renforcée et série à fond, on note son max.
 - **Tests et paliers 📏** (démarrage objectif, façon 100 pompes) : un test à fond choisit le palier de départ, refait en

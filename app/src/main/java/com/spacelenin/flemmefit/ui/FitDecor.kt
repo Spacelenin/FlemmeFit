@@ -63,14 +63,24 @@ private fun DrawScope.drawFitRoom(tint: Color) {
         size = androidx.compose.ui.geometry.Size(size.width, horizon),
     )
     drawRect(
-        Brush.verticalGradient(listOf(lerp(Color.White, tint, 0.14f), lerp(Color(0xFFF2F4F6), tint, 0.08f)), startY = horizon, endY = size.height),
+        Brush.verticalGradient(listOf(lerp(Color.White, tint, 0.06f), lerp(Color(0xFFF2F4F6), tint, 0.03f)), startY = horizon, endY = size.height),
         topLeft = Offset(0f, horizon),
+    )
+    // Reflet blanc, comme un sol brillant.
+    drawOval(
+        Brush.radialGradient(
+            listOf(Color.White.copy(alpha = 0.9f), Color.White.copy(alpha = 0f)),
+            center = Offset(size.width / 2, horizon + floor * 0.35f),
+            radius = size.width * 0.45f,
+        ),
+        topLeft = Offset(size.width * 0.05f, horizon),
+        size = androidx.compose.ui.geometry.Size(size.width * 0.9f, floor * 0.7f),
     )
     // Plinthe : une bande de la couleur de la salle, avec un liseré clair.
     val plinth = 4.dp.toPx()
     drawRect(lerp(tint, Color.White, 0.55f), topLeft = Offset(0f, horizon - plinth), size = androidx.compose.ui.geometry.Size(size.width, plinth))
     drawLine(lerp(tint, Color.White, 0.8f), Offset(0f, horizon - plinth), Offset(size.width, horizon - plinth), strokeWidth = 2.dp.toPx())
-    val line = lerp(Color(0xFFCBD3DA), tint, 0.25f)
+    val line = lerp(Color(0xFFCBD3DA), tint, 0.12f)
     // Lignes horizontales : de plus en plus serrées vers l'horizon.
     var t = 1f
     while (t > 0.04f) {
@@ -180,7 +190,18 @@ fun PillButton(
     OutlinedButton(
         onClick = onClick,
         // Petite brillance : blanc en haut, gris très clair en bas.
-        modifier = modifier.clip(CircleShape).background(Brush.verticalGradient(listOf(Color.White, Color(0xFFE9EEF2))), CircleShape),
+        modifier = modifier
+            .clip(CircleShape)
+            .background(Brush.verticalGradient(listOf(Color.White, Color(0xFFE9EEF2), Color(0xFFD8E0E6))), CircleShape)
+            .drawBehind {
+                // Reflet nacré sur la moitié haute.
+                drawRoundRect(
+                    Brush.verticalGradient(listOf(Color.White, Color.White.copy(alpha = 0f)), endY = size.height * 0.5f),
+                    topLeft = Offset(size.height * 0.3f, 2.dp.toPx()),
+                    size = androidx.compose.ui.geometry.Size((size.width - size.height * 0.6f).coerceAtLeast(0f), size.height * 0.42f),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(size.height / 2),
+                )
+            },
         enabled = enabled,
         colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent, contentColor = FitPalette.Text),
         border = BorderStroke(3.dp, if (enabled) accent else scheme.outlineVariant),

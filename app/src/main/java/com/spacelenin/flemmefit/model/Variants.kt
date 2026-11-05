@@ -117,6 +117,16 @@ data class VariantInfo(
     fun equivalent(amount: Int): Int? = ratio?.let { (amount * it).roundToInt() }
 }
 
+/** Un prérequis d'une variante ([name] au moins [min]), et ce qui est atteint. */
+data class VariantRequirement(val key: String, val name: String, val min: Int, val reached: Int, val seconds: Boolean) {
+    val met get() = reached >= min
+
+    private fun format(v: Int) = if (seconds) Measures.formatSeconds(v) else "$v"
+
+    /** « Pompes pike 3/5 », « Superman tenu 25s/30s ». */
+    val label get() = "$name ${format(reached)}/${format(min)}"
+}
+
 /** Où en est une variante : ses max notés et le taux qui en sort. */
 data class VariantProgress(
     val variant: Variant,
@@ -128,8 +138,12 @@ data class VariantProgress(
     /** Test de la famille, l'étalon du taux. */
     val testName: String?,
     val testSeconds: Boolean,
+    /** Prérequis ([Variant.requires]) et où on en est. */
+    val requirements: List<VariantRequirement> = emptyList(),
 ) {
     fun format(value: Int): String = if (variant.isSeconds) Measures.formatSeconds(value) else "$value"
+
+    val locked get() = requirements.any { !it.met }
 
     /** « 1 rep ≈ 3,3 pompes », « 30 s ≈ 15 abdos ». */
     fun ratioLabel(r: Double): String {
@@ -183,6 +197,49 @@ object Variants {
     fun learn(previous: Double?, test: Int, max: Int): Double {
         val measured = test.toDouble() / max
         return previous?.let { (it + measured) / 2 } ?: measured
+    }
+
+    /**
+     * Bloc d'une variante à progression fixe ([Variant.start]) : [VariantParams.sets] séries à [per], la dernière au max
+     * une fois le plafond atteint. Moitié moins de séries un jour léger.
+     */
+    fun fixedBlock(v: Variant, family: PlanFamily, base: Exercise, per: Int, full: Boolean, light: Boolean, params: VariantParams = VariantParams()): Prescription {
+        val atCap = v.cap != null && per >= v.cap
+        val sets = if (light) ((params.sets + 1) / 2).coerceAtLeast(1) else params.sets
+        val exercise = Exercise(
+            name = if (full) v.name else "${v.name} (version facile)",
+            id = v.id,
+            description = listOfNotNull(
+                v.description,
+                v.easy?.takeIf { !full }?.let { "Version facile : $it" },
+                if (atCap) "Dernière série : le max possible." else null,
+                v.warning?.let { "⚠️ $it" },
+            ).joinToString("\n\n").ifEmpty { null },
+            sets = sets,
+            reps = per.takeIf { !v.isSeconds }?.toString(),
+            duration = per.takeIf { v.isSeconds }?.let(Measures::formatSeconds),
+            rest = base.rest,
+            amrap = atCap,
+            sides = v.sides.takeIf { v.perSide == null },
+            perSide = v.perSide,
+        )
+        val sided = v.perSide?.let { limb -> SidedPlan(limb, Sides.order(sets, sets), per, per) }
+        return Prescription(
+            exercise,
+            sets = sided?.order?.size ?: sets,
+            reps = per.takeIf { !v.isSeconds },
+            seconds = per.takeIf { v.isSeconds },
+            load = null,
+            allOut = atCap,
+            target = per,
+            secondsMax = v.isSeconds,
+            variant = VariantInfo(
+                id = v.id, name = v.name, familyName = family.name, baseName = base.name, ratio = null, startRatio = null,
+                full = full, isSeconds = v.isSeconds, testSeconds = false, counter = family.counter, custom = false,
+                whole = family.replace,
+            ),
+            sided = sided,
+        )
     }
 
     /**

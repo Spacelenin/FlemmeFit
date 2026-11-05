@@ -174,6 +174,14 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     private val balanceViews = LinkedHashMap<String, SideBalance>()
     private val balancePoints = HashMap<String, MutableList<TestPoint>>()
     private val lastMax = HashMap<String, Int>()
+    // Meilleure série notée de chaque exercice, et meilleur max de chaque variante en vraie version : les prérequis.
+    private val bestMax = HashMap<String, Int>()
+    // Meilleure série de l'exo avant chaque séance (mêmes clés que [StoredProgram.done]) : de quoi fêter un record.
+    private val priorBest = HashMap<String, Int>()
+    private val variantBest = HashMap<String, Int>()
+    // Variantes à progression fixe : blocs validés depuis le début de l'étape, et vraie version atteinte.
+    private val fixedSteps = HashMap<String, Int>()
+    private val fixedFull = HashMap<String, Boolean>()
     private val testResults = HashMap(program.tests)
     // Max refaits en changeant d'exercice de test : appliqués à la première séance qui suit.
     private val appliedChanges = HashSet<Int>()
@@ -259,6 +267,61 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         return null
     }
 
+    /** Valeur atteinte pour un prérequis : test, sinon variante, sinon exercice (voir [Variant.requires]). */
+    private fun reached(key: String): Int = when {
+        plan.test(key) != null -> testResults[key] ?: 0
+        plan.variants.any { it.id == key } -> variantBest[key] ?: 0
+        else -> bestMax[key.trim().lowercase()] ?: 0
+    }
+
+    private fun meets(v: Variant) = v.requires.all { (key, min) -> reached(key) >= min }
+
+    /** Dosage du prochain bloc d'une variante à progression fixe : valeur par série, et vraie version ou non. */
+    private fun fixedLevel(v: Variant): Pair<Int, Boolean> {
+        val full = fixedFull[v.id] ?: (v.easyUntil == null)
+        val per = (v.start ?: 1) + v.step * (fixedSteps[v.id] ?: 0)
+        return (v.cap?.let { minOf(per, it) } ?: per) to full
+    }
+
+    /** Un bloc validé : un pas de plus, ou passage à la vraie version (en repartant du départ). */
+    private fun advanceFixed(v: Variant) {
+        val (per, full) = fixedLevel(v)
+        if (!full && v.easyUntil != null && per >= v.easyUntil) {
+            fixedFull[v.id] = true
+            fixedSteps[v.id] = 0
+        } else {
+            fixedFull[v.id] = full
+            fixedSteps[v.id] = (fixedSteps[v.id] ?: 0) + 1
+        }
+    }
+
+    /** Prérequis de [v] à aujourd'hui. */
+    fun requirements(v: Variant): List<VariantRequirement> {
+        ensure(lastIndexOnOrBefore(today))
+        return requirementsNow(v)
+    }
+
+    private fun requirementsNow(v: Variant): List<VariantRequirement> =
+        v.requires.map { (key, min) ->
+            val test = plan.test(key)
+            val variant = plan.variants.firstOrNull { it.id == key }
+            val name = test?.name ?: variant?.name ?: exerciseName(key.trim().lowercase()) ?: key
+            val seconds = test?.isSeconds ?: variant?.isSeconds ?: (exerciseByKey[key.trim().lowercase()]?.duration != null)
+            VariantRequirement(key, name, min, reached(key), seconds)
+        }
+
+    /** Meilleure série notée de l'exo [e] avant cette séance, null s'il n'a jamais été noté. */
+    fun previousBest(session: Session, e: Int): Int? {
+        ensure(session.index)
+        return priorBest[StoredProgram.doneKey(session.index, e)]
+    }
+
+    /** Variantes débloquées qui attendent une confirmation ([Variant.check]). */
+    fun pendingChecks(): List<Variant> {
+        ensure(lastIndexOnOrBefore(today))
+        return plan.variants.filter { it.check != null && it.id !in program.variantChecks && meets(it) }
+    }
+
     private fun drawVariant(i: Int, day: PlanDay, date: LocalDate): Pair<Variant, CustomExercise?>? {
         val cycle = i / DAYS_PER_WEEK / variantCycleWeeks
         if (cycle != variantCycle) {
@@ -269,12 +332,12 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             familyLeft.clear()
         }
         val end = (cycle + 1) * variantCycleWeeks * DAYS_PER_WEEK
-        fun wanted(v: Variant) = Variants.quota(v, plan.family(v.family)?.test?.let(testResults::get))
+        fun wanted(v: Variant) = v.perCycle ?: Variants.quota(v, plan.family(v.family)?.test?.let(testResults::get))
         val candidates = variants.mapNotNull { pick ->
             val (v, custom) = pick
             if (custom != null && !custom.activeOn(date)) return@mapNotNull null
             if (baseIndex(day, v) == null) return@mapNotNull null
-            if (v.requires.any { (test, min) -> (testResults[test] ?: 0) < min }) return@mapNotNull null
+            if (!meets(v) || !program.variantConfirmed(v.id, v.check, date)) return@mapNotNull null
             val family = plan.family(v.family)!!
             if (family.replace) {
                 val slots = slotsLeft(i, end) { baseIndex(it, v) != null }
@@ -429,7 +492,10 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             val b = baseIndex(day, v)!!
             val family = plan.family(v.family)!!
             val base = prescriptions[b]
-            val block = adaptVariant(
+            val block = if (v.isFixed) {
+                val (per, full) = fixedLevel(v)
+                Variants.fixedBlock(v, family, base.exercise, per, full, light = chill, params = variantParams)
+            } else adaptVariant(
                 Variants.block(
                     v, family, base.exercise, family.test?.let(testResults::get), ratios[v.id] ?: v.ratio, v.ratio,
                     custom = custom != null, testSeconds = plan.test(family.test)?.isSeconds == true, params = variantParams,
@@ -481,6 +547,8 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             if (e == variantIndex) {
                 val v = variantPick!!.first
                 val test = plan.family(v.family)?.test?.let(testResults::get)
+                if (max != null && max > 0 && pr.variant?.full == true) variantBest[v.id] = maxOf(variantBest[v.id] ?: 0, max)
+                if (v.isFixed && program.isDone(i, e)) advanceFixed(v)
                 if (max != null && max > 0) {
                     variantPoints.getOrPut(v.id) { ArrayList() } += TestPoint(date, max)
                     if (pr.variant?.full == true && test != null && test > 0) ratios[v.id] = Variants.learn(ratios[v.id] ?: v.ratio, test, max)
@@ -498,6 +566,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 }
                 return@forEachIndexed
             }
+            bestMax[key]?.let { priorBest[StoredProgram.doneKey(i, e)] = it }
             val done = program.isDone(i, e)
             if (done && !deload && !chill) validated[key] = (validated[key] ?: 0) + 1
             // Le réglage n'est qu'un plus : s'il échoue, la séance reste calculée sans lui (jamais de plantage).
@@ -506,6 +575,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             if (!deload && !chill) runCatching { learn(pr, i, e, done, final = done || date.isBefore(today), extra) }.onFailure(Safety::report)
             if (max == null) return@forEachIndexed
             lastMax[key] = max
+            bestMax[key] = maxOf(bestMax[key] ?: 0, max)
         }
     }
 
@@ -599,6 +669,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             VariantProgress(
                 v, plan.family(v.family)?.name ?: v.family, variantPoints[v.id].orEmpty().toList(), ratios[v.id] ?: v.ratio, v.ratio, c != null,
                 testName = test?.name, testSeconds = test?.isSeconds == true,
+                requirements = if (c == null) requirementsNow(v) else emptyList(),
             )
         }
     }

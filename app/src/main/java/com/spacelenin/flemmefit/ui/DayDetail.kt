@@ -450,6 +450,8 @@ private fun ExerciseRow(
                 textDecoration = if (done) TextDecoration.LineThrough else null,
                 color = if (done) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
             )
+            // Thème fit : le palier en étoiles.
+            if (LocalFitTheme.current) levelStars(prescription.palier, prescription.levelCount)?.let { FitStars(it) }
             val details = listOfNotNull(
                 when {
                     prescription.isTest -> "Une seule série, à fond"

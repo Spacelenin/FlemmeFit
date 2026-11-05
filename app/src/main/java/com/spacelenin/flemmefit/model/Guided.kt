@@ -79,3 +79,19 @@ class GuidedExercise(val prescription: Prescription, restBonus: Int = 0) {
 
 /** Temps en plus au-delà duquel on demande confirmation, au minimum, en secondes. */
 const val MIN_OVERTIME_CAP = 60
+
+/** Ce qui se fête à la fin d'un exo à fond : un exploit, sinon un record battu. */
+object Celebration {
+    const val EXPLOIT = "Exploit !"
+    const val RECORD = "Nouveau record !"
+    const val BOSS = "Boss vaincu !"
+
+    /** [previousBest] : la meilleure série notée de cet exo avant cette séance (null : jamais fait). */
+    fun of(pr: Prescription, log: ExerciseLog, previousBest: Int?): String? {
+        if (!pr.allOut || pr.isTest) return null
+        val max = log.max ?: return null
+        val planned = if (pr.maxIsSeconds) pr.seconds else pr.reps
+        if (planned != null && Exploit.isExploit(max, planned, pr.maxIsSeconds)) return EXPLOIT
+        return if (previousBest != null && previousBest > 0 && max > previousBest) RECORD else null
+    }
+}
