@@ -294,7 +294,7 @@ private fun CustomCard(
                 else progress?.status() ?: "",
                 style = MaterialTheme.typography.bodyMedium,
             )
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (c.isActive) TextButton(onClick = onPause) { Text("Mettre en pause") }
                 else TextButton(onClick = onResume) { Text("Reprendre") }
                 TextButton(onClick = onDelete) { Text("Supprimer") }
@@ -345,7 +345,7 @@ private fun AddExerciseDialog(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Text("Famille", style = MaterialTheme.typography.labelLarge)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     (families.map { it.id to it.name } + (CustomExercise.OTHER to "Autre")).forEach { (id, label) ->
                         FitChip(selected = family == id, onClick = { family = id }, label = { Text(label) })
                     }

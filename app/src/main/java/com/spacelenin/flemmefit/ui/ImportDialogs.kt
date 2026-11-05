@@ -242,16 +242,15 @@ fun TestsDialog(
         val exercises = program.plan.weeks.flatMap { it.days }.flatMap { it.exercises }
         tests.associate { t -> t.id to exercises.firstOrNull { it.test == t.id && it.levels.isNotEmpty() } }
     }
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
-    ) {
-        // Fond opaque : sur le thème fit, les écrans sont transparents et la salle se dessine dessous ; une fenêtre à part
-        // doit la redessiner elle-même, sinon l'accueil se voit au travers.
+    // Plein écran commun : il redessine le fond (opaque) et pose lui-même les marges des barres système, que certains
+    // téléphones (barre à 3 boutons) ne donnent pas à la fenêtre du Dialog : sinon le bas passe sous les boutons.
+    FullScreenDialog(onDismissRequest = onDismiss, dismissOnClickOutside = false) {
         Scaffold(
-            modifier = Modifier.fillMaxSize().screenBackground(),
+            modifier = Modifier.fillMaxSize(),
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
+            contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0),
             topBar = {
-                TopAppBar(colors = fitBarColors(),
+                TopAppBar(colors = fitBarColors(), windowInsets = androidx.compose.foundation.layout.WindowInsets(0),
                     title = { Text("Tests de niveau") },
                     navigationIcon = { IconButton(onClick = onDismiss) { Icon(Icons.Default.Close, "Fermer") } },
                     actions = { TextButton(onClick = { onSave(results.parsedResults()) }) { Text("Enregistrer") } },
@@ -275,7 +274,7 @@ fun TestsDialog(
                 tests.forEachIndexed { i, test ->
                     if (test.options.isNotEmpty()) {
                         val chosen = program.optionOn(test.id, today)
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             test.options.forEach { o ->
                                 FitChip(
                                     selected = chosen == o.id,
