@@ -189,7 +189,12 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
 
     infoKey?.let { key ->
         val info = remember(schedules, infoFor, key) { infoFor?.let(schedules::get)?.let { s -> runCatching { s.exerciseInfo(key) }.getOrNull() } }
-        info?.let { ExerciseInfoSheet(it, MaterialTheme.colorScheme.primary, onDismiss = { infoKey = null }) }
+        // Une variante réglée sur mesure n'est pas un exo de la routine : sa fiche est celle de la variante.
+        val variant = if (info == null) progress.firstOrNull { it.variant.id.trim().lowercase() == key } else null
+        when {
+            info != null -> ExerciseInfoSheet(info, MaterialTheme.colorScheme.primary, onDismiss = { infoKey = null })
+            variant != null -> VariantInfoSheet(variant, MaterialTheme.colorScheme.primary, onDismiss = { infoKey = null })
+        }
     }
     variantInfo?.let { id ->
         progress.firstOrNull { it.variant.id == id }?.let { VariantInfoSheet(it, MaterialTheme.colorScheme.primary, onDismiss = { variantInfo = null }) }
