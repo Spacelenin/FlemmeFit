@@ -102,3 +102,25 @@ class DoseTest {
         assertEquals(listOf(10, 10, 10), log.scaled(1 / 0.7).perSet)
     }
 }
+
+class ExerciseInfoTest {
+    @Test
+    fun `the exercise sheet knows level, dose, days and history`() {
+        val start = LocalDate.of(2026, 11, 2)
+        val routine = (PlanParser.parse(java.io.File("../examples/routine-maison.json").readText()) as ParseResult.Success).plan
+        var p = StoredProgram("p", routine, start.toString(), tests = mapOf("pompes" to 11, "tractions" to 3, "abdos" to 7, "gainage" to 45, "squats" to 20))
+        p = p.saveLog(4, 1, ExerciseLog.ofSets(listOf(7, 7, 9), allOut = true), complete = true)
+        val info = ProgramSchedule(p, start.plusDays(5)).exerciseInfo("pompes")!!
+        assertEquals(listOf("pectoraux", "triceps"), info.muscles)
+        assertEquals(2, info.palier) // 11 au test : palier 3
+        assertEquals(21, info.nextLevelAt)
+        assertEquals(listOf(java.time.DayOfWeek.FRIDAY), info.weekdays)
+        assertEquals(listOf(9), info.history.map { it.value })
+        assertTrue(info.progression!!.startsWith("+1 rep"))
+        assertTrue(info.dose != null && info.nextDate != null)
+        assertTrue(Surprise.due(false, 0, start))
+        assertFalse(Surprise.due(true, 0, start))
+        assertTrue(Surprise.due(true, 2026, LocalDate.of(2027, 4, 1)))
+        assertFalse(Surprise.due(true, 2027, LocalDate.of(2027, 4, 1)))
+    }
+}

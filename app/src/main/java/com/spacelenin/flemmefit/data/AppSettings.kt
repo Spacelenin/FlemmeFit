@@ -36,6 +36,16 @@ class AppSettings(context: Context) {
         _tutorialOffered.value = true
     }
 
+    /** Écran surprise : déjà vu après cette version, et dernière année où il est passé un 1er avril. */
+    fun surpriseDue(today: java.time.LocalDate): Boolean =
+        com.spacelenin.flemmefit.model.Surprise.due(prefs.getBoolean(KEY_SURPRISE, false), prefs.getInt(KEY_SURPRISE_YEAR, 0), today)
+
+    fun markSurpriseSeen(today: java.time.LocalDate) {
+        val editor = prefs.edit().putBoolean(KEY_SURPRISE, true)
+        if (com.spacelenin.flemmefit.model.Surprise.isAprilFirst(today)) editor.putInt(KEY_SURPRISE_YEAR, today.year)
+        editor.apply()
+    }
+
     private val _countersUnlocked = MutableStateFlow(prefs.getBoolean(KEY_COUNTERS, false))
     /** Les compteurs cachés ont été dévoilés (une fois, pour toujours). */
     val countersUnlocked: StateFlow<Boolean> = _countersUnlocked.asStateFlow()
@@ -82,6 +92,8 @@ class AppSettings(context: Context) {
         const val KEY_THEME = "theme"
         const val KEY_FIT_THEME = "theme_fit_beta"
         const val KEY_TUTORIAL = "tutorial_offered"
+        const val KEY_SURPRISE = "surprise_seen"
+        const val KEY_SURPRISE_YEAR = "surprise_year"
         const val KEY_REST_BONUS = "rest_bonus"
         const val KEY_COUNTERS = "counters_unlocked"
         // Mêmes clés que Backup.LOCAL_KEYS : elles ne partent pas dans la sauvegarde.

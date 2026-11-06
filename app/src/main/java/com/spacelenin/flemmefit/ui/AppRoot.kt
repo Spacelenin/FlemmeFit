@@ -331,6 +331,15 @@ fun AppRoot(
         )
     }
     if (showTutorial) TutorialDialog(onClose = { showTutorial = false })
+    // Écran surprise : une fois, quand rien d'autre n'attend (ni séance, ni nouveautés, ni pseudo, ni tuto).
+    val today = remember { LocalDate.now() }
+    var surprise by remember { mutableStateOf(settings.surpriseDue(today)) }
+    if (surprise && calm && !guard.active && !showTutorial && (pseudo != null || pseudoSkipped) && (tutorialOffered || state.programs.isEmpty())) {
+        SurpriseDialog(onClose = {
+            settings.markSurpriseSeen(today)
+            surprise = false
+        })
+    }
 
     restarting?.let { old ->
         PanelDialog(

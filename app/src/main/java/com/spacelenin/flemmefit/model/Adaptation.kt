@@ -171,6 +171,8 @@ data class ExerciseAdaptation(
     val samples: Int,
     val stable: Boolean,
     val calibration: Int = AdaptParams().calibration,
+    /** Clé de l'exercice (fiche de l'onglet Exos). */
+    val key: String = "",
 ) {
     private fun format(v: Int) = if (seconds) Measures.formatSeconds(v) else "$v"
 
