@@ -988,12 +988,80 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             val adapted = Prescription.of(v.exercise, level, false, false, null, weighted = v.weighted)
             val plain = Prescription.of(v.exercise, v.steps, false, false, null, weighted = v.weighted)
             ExerciseAdaptation(
-                v.exercise.name, adapted.perSetPlanned, plain.perSetPlanned, adapted.maxIsSeconds,
-                adapted.sets, plain.sets, state.applied, state.samples, state.isStable(params),
+                key = key,
+                name = v.exercise.name,
+                adapted = adapted.perSetPlanned, base = plain.perSetPlanned, seconds = adapted.maxIsSeconds,
+                adaptedSets = adapted.sets, baseSets = plain.sets, crans = state.applied, samples = state.samples, stable = state.isStable(params),
                 calibration = params.calibration,
             )
         }
     }
+
+    /** La fiche de l'exo [key] de la routine, à ce jour (null s'il n'y est pas). */
+    fun exerciseInfo(key: String): ExerciseInfo? {
+        val base = exerciseByKey[key] ?: return null
+        ensure(lastIndexOnOrBefore(today))
+        val view = adaptViews[key]
+        val test = plan.test(base.test)
+        val result = base.test?.let(testResults::get)
+        val palier = if (base.levels.isEmpty()) null else base.levelIndexFor(result)
+        val shown = named(view?.exercise ?: palier?.let { base.atLevel(it) } ?: base, today)
+        val days = plan.weeks.flatMap { w -> w.days.filter { d -> d.exercises.any { it.key == key && !it.retest } }.map { it.day } }.distinct().sorted()
+        val weekdays = days.map { program.start.dayOfWeek.plus((it - 1).toLong()) }
+        // Tout ce qui se lit à ce jour, avant de regarder les séances à venir (qui font avancer le calcul).
+        val family = plan.families.filter { key in it.exercises }.map { it.id }
+        val adaptation = adaptations().firstOrNull { it.key == key }
+        val balance = balances().firstOrNull { it.name == shown.name || it.name == base.name }
+        val variants = variantProgress().filter { it.variant.family in family }
+        val stats = runCatching { Stats.of(this).exercises.firstOrNull { it.key == key } }.getOrNull()
+        // Meilleure série de chaque séance faite.
+        val history = ArrayList<TestPoint>()
+        for (i in 0..lastIndexOnOrBefore(today)) {
+            val s = sessionAt(i) ?: continue
+            s.day.exercises.forEachIndexed { e, ex ->
+                if (ex.key != key || ex.retest) return@forEachIndexed
+                val log = program.logOf(i, e)
+                val value = log?.perSet?.maxOrNull()?.takeIf { it > 0 } ?: log?.max
+                    ?: if (program.isDone(i, e)) s.prescriptions.getOrNull(e)?.perSetPlanned else null
+                if (value != null) history += TestPoint(s.date, value)
+            }
+        }
+        // Prochaine séance où il est prévu (4 semaines au plus), et sa dose pleine.
+        val from = lastIndexOnOrBefore(today).coerceAtLeast(0)
+        var next: Pair<LocalDate, Prescription>? = null
+        for (i in from until from + 4 * DAYS_PER_WEEK) {
+            val s = sessionAt(i) ?: continue
+            if (s.date.isBefore(today)) continue
+            val e = s.day.exercises.indexOfFirst { it.key == key }.takeIf { it >= 0 } ?: continue
+            next = s.date to s.full[e]
+            break
+        }
+        return ExerciseInfo(
+            key = key,
+            name = shown.name,
+            description = shown.description,
+            muscles = base.muscles,
+            assists = base.assists,
+            palier = palier,
+            levelCount = base.levels.size,
+            testName = test?.let { program.testName(it, today) },
+            testResult = result,
+            nextLevelAt = palier?.let { base.levels.getOrNull(it + 1)?.from },
+            testSeconds = test?.isSeconds == true,
+            dose = next?.second?.summary()?.substringBefore(" · "),
+            progression = base.progression?.describe(),
+            adaptation = adaptation,
+            weekdays = weekdays,
+            nextDate = next?.first,
+            stats = stats,
+            history = history.takeLast(12),
+            seconds = next?.second?.maxIsSeconds ?: (base.reps == null && base.duration != null),
+            balance = balance,
+            alternatives = alternativesByKey[key].orEmpty().map { it.name },
+            variants = variants,
+        )
+    }
+
 
     companion object {
         /**

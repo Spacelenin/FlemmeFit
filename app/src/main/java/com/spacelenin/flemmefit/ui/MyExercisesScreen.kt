@@ -78,6 +78,10 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
         }
     }
     var adding by rememberSaveable { mutableStateOf(false) }
+    // Fiche ouverte : programme et exo, ou variante.
+    var infoFor by rememberSaveable { mutableStateOf<String?>(null) }
+    var infoKey by rememberSaveable { mutableStateOf<String?>(null) }
+    var variantInfo by rememberSaveable { mutableStateOf<String?>(null) }
     var rhythmFor by rememberSaveable { mutableStateOf<String?>(null) }
     var deleting by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -143,7 +147,13 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
                                 modifier = Modifier.clickable { rhythmFor = owner.id }.padding(horizontal = 16.dp, vertical = 8.dp),
                             )
                         }
-                        itemsIndexed(list, key = { i, a -> "adapt-$k-$i-${a.name}" }) { i, a -> FitRowFrame(number = i + 1) { AdaptationRow(a, balances.firstOrNull { it.name == a.name }) } }
+                        itemsIndexed(list, key = { i, a -> "adapt-$k-$i-${a.name}" }) { i, a ->
+                            FitRowFrame(number = i + 1) {
+                                Box(Modifier.clickable(enabled = a.key.isNotEmpty()) { infoFor = owner.id; infoKey = a.key }) {
+                                    AdaptationRow(a, balances.firstOrNull { it.name == a.name })
+                                }
+                            }
+                        }
                     }
                 }
                 if (program == null) return@LazyColumn
@@ -169,12 +179,21 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
                     )
                 }
                 item(key = "routine-title") { SectionTitle("Variantes de la routine 🎲") }
-                itemsIndexed(progress.filter { !it.custom }, key = { _, v -> "routine-${v.variant.id}" }) { i, v -> FitRowFrame(number = i + 1) { VariantRow(v) } }
+                itemsIndexed(progress.filter { !it.custom }, key = { _, v -> "routine-${v.variant.id}" }) { i, v ->
+                    FitRowFrame(number = i + 1) { Box(Modifier.clickable { variantInfo = v.variant.id }) { VariantRow(v) } }
+                }
                 item(key = "end") { Spacer(Modifier.height(96.dp)) }
             }
         }
     }
 
+    infoKey?.let { key ->
+        val info = remember(schedules, infoFor, key) { infoFor?.let(schedules::get)?.let { s -> runCatching { s.exerciseInfo(key) }.getOrNull() } }
+        info?.let { ExerciseInfoSheet(it, MaterialTheme.colorScheme.primary, onDismiss = { infoKey = null }) }
+    }
+    variantInfo?.let { id ->
+        progress.firstOrNull { it.variant.id == id }?.let { VariantInfoSheet(it, MaterialTheme.colorScheme.primary, onDismiss = { variantInfo = null }) }
+    }
     if (adding && program != null) {
         AddExerciseDialog(
             plan = program.plan,
