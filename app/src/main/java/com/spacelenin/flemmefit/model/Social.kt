@@ -153,7 +153,7 @@ object Social {
         fun fmt(v: Int) = if (pr.maxIsSeconds) Measures.formatSeconds(v) else "$v"
         val values = log?.perSet?.takeIf { it.isNotEmpty() }?.joinToString(" · ") { if (it == 0) "–" else fmt(it) }
         val doneLabel = values ?: log?.max?.let { "max ${fmt(it)}" } ?: if (finished) "fait" else null
-        val planned = if (pr.maxIsSeconds) pr.seconds else pr.reps
+        val planned = pr.exploitPlanned
         val max = log?.max
         SharedExercise(
             name = pr.exercise.name.take(40),

@@ -174,7 +174,7 @@ data class Stats(
                     val secPerSet = log?.seconds ?: pr.seconds
                     val maxReps = max?.takeIf { !pr.maxIsSeconds }
                     val maxSec = max?.takeIf { pr.maxIsSeconds }
-                    val planned = if (pr.maxIsSeconds) pr.seconds else pr.reps
+                    val planned = pr.exploitPlanned
                     if (max != null && planned != null && Exploit.isExploit(max, planned, pr.maxIsSeconds)) {
                         exploits += Exploit(pr.exercise.name, max, planned, pr.maxIsSeconds, s.date)
                     }

@@ -143,6 +143,10 @@ class ProgramRepository(dir: File) {
     fun changeStartDate(id: String, date: LocalDate) = updateProgram(id) { it.withStartDate(date) }
 
     /** Nouvelle version de la routine, suivi conservé. */
+    /** Nouvel ordre des exos du jour [dayIndex] (jour [day] de la semaine), ce jour-là ou à partir de [date]. */
+    fun reorder(id: String, dayIndex: Int, day: Int, keys: List<String>, date: LocalDate, keep: Boolean) =
+        updateProgram(id) { it.withOrder(dayIndex, day, keys, date, keep) }
+
     fun replacePlan(id: String, plan: Plan) = updateProgram(id) { it.withPlan(plan) }
 
     /** Valide les exos notés en entier que l'ancienne règle laissait incomplets (voir [ProgramSchedule.revalidated]). */

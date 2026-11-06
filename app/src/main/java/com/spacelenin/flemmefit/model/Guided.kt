@@ -90,7 +90,7 @@ object Celebration {
     fun of(pr: Prescription, log: ExerciseLog, previousBest: Int?): String? {
         if (!pr.allOut || pr.isTest) return null
         val max = log.max ?: return null
-        val planned = if (pr.maxIsSeconds) pr.seconds else pr.reps
+        val planned = pr.exploitPlanned
         if (planned != null && Exploit.isExploit(max, planned, pr.maxIsSeconds)) return EXPLOIT
         return if (previousBest != null && previousBest > 0 && max > previousBest) RECORD else null
     }

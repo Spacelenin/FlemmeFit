@@ -102,11 +102,13 @@ class BridgeTest {
     }
 
     @Test
-    fun `routine has dips with pushups and hip thrust with abs, each with an alternative`() {
+    fun `routine has dips on the pull day and hip thrust with abs, each with an alternative`() {
         val routine = (PlanParser.parse(java.io.File("../examples/routine-maison.json").readText()) as ParseResult.Success).plan
         routine.weeks.forEach { w ->
-            val friday = w.days.first { it.day == 5 }.exercises.map { it.key }
-            assertEquals(friday.indexOf("pompes") + 1, friday.indexOf("dips"))
+            // Les dips le mercredi, avec le rowing et le superman : plus après les pompes et Beat Saber.
+            assertTrue("dips" !in w.days.first { it.day == 5 }.exercises.map { it.key })
+            val wednesday = w.days.first { it.day == 3 }.exercises.map { it.key }
+            assertTrue(wednesday.indexOf("dips") > wednesday.indexOf("superman"))
             val tuesday = w.days.first { it.day == 2 }
             assertTrue(tuesday.exercises.any { it.key == "hip-thrust" })
             assertTrue("bird dog" in tuesday.exercises.first().description!!)

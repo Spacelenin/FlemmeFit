@@ -112,9 +112,12 @@ class DayActions(
     val onSkipVariant: (session: Session) -> Unit,
     /** « Changer un exo » : ouvre le choix des exercices de la séance et de ce qui peut les remplacer. */
     val onReplace: (session: Session) -> Unit = {},
+    /** « Réorganiser » : changer l'ordre des exos de la séance (la fatigue suit). */
+    val onReorder: (session: Session) -> Unit = {},
 )
 
 /** Détail du jour sélectionné, sous forme d'éléments de liste pour s'insérer dans n'importe quelle LazyColumn. */
+@OptIn(ExperimentalLayoutApi::class)
 fun LazyListScope.dayDetailItems(
     schedule: ProgramSchedule,
     date: LocalDate,
@@ -186,13 +189,19 @@ fun LazyListScope.dayDetailItems(
             }
         }
     }
-    // Changer un exo : aujourd'hui ou plus tard, s'il y a de quoi le remplacer.
-    if (!session.date.isBefore(schedule.today) && schedule.replaceable(session).isNotEmpty()) {
+    // Changer un exo, réorganiser la séance : aujourd'hui ou plus tard.
+    val canReplace = schedule.replaceable(session).isNotEmpty()
+    val canReorder = session.day.exercises.count { !it.optional } >= 2
+    if (!session.date.isBefore(schedule.today) && (canReplace || canReorder)) {
         item(key = "replace-${session.index}") {
-            OutlinedButton(
-                onClick = { actions.onReplace(session) },
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            ) { Text("🔄 Changer un exo") }
+            ) {
+                if (canReplace) OutlinedButton(onClick = { actions.onReplace(session) }) { Text("🔄 Changer un exo") }
+                if (canReorder) OutlinedButton(onClick = { actions.onReorder(session) }) { Text("↕ Réorganiser") }
+            }
         }
     }
     extraItems(schedule, date, color, actions)
@@ -470,6 +479,8 @@ private fun ExerciseRow(
             if (details.isNotEmpty()) {
                 Text(details, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+            // Dose du jour réduite : mise en route, ou muscles déjà travaillés plus tôt dans la séance.
+            prescription.dose?.takeIf { it.reduced }?.let { DoseTag(it) }
             tag?.let { Text(it, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, color = BurstColor) }
             prescription.weighted?.let { on -> WeightsChip(on, enabled = !locked && !done, onChange = onWeights) }
             if (prescription.allOut) {

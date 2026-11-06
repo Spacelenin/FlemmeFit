@@ -165,6 +165,9 @@ data class Variant(
     val check: String? = null,
     /** Mise en garde montrée au déblocage et dans la description. */
     val warning: String? = null,
+    /** Muscles de la variante (voir [Exercise.muscles]) ; absents : ceux de l'exercice de base. */
+    val muscles: List<String> = emptyList(),
+    val assists: List<String> = emptyList(),
 ) {
     val isSeconds get() = unit == PlanTest.UNIT_SECONDS
     val isFixed get() = start != null
@@ -246,6 +249,12 @@ data class Exercise(
     val tuning: Tuning? = null,
     /** Exercices à faire à la place, au choix (matériel, envie), depuis la page du jour. */
     val alternatives: List<Alternative> = emptyList(),
+    /** Muscles qui travaillent surtout (« triceps ») : voir [Dose]. */
+    val muscles: List<String> = emptyList(),
+    /** Muscles qui aident (« épaules ») : comptent moitié moins. */
+    val assists: List<String> = emptyList(),
+    /** Dose jamais réduite (mise en route, fatigue) : cardio, durée fixe. Il fatigue quand même ce qui suit. */
+    val steady: Boolean = false,
 ) {
     /** Clé de regroupement : stable entre jours et entre programmes. */
     val key: String get() = (id ?: name).trim().lowercase()
