@@ -17,8 +17,11 @@ et une progression.
   Rythme au choix par programme (🐢 Doux, 🙂 Normal, 🚀 Vif), avec une suggestion quand tout est facile ou dur ;
   réglages fins dans le JSON (`tuning`), et export de la routine ou d'un modèle à modifier.
 - **Changer un exo** 🔄 depuis la page du jour : un remplaçant prévu par la routine (Russian twist à la place des
-  hip dips, dosé comme les abdos, reps × 2 ; extension triceps à la place des dips ; extension lombaire à la place
+  hip dips, dosé comme les abdos, reps × 2 ; extension triceps à la place des dips (le mercredi) ; extension lombaire à la place
   du hip thrust) ou un exo de la même famille, juste ce jour-là ou pour la suite.
+- **Fatigue et mise en route** 💪 : un exo qui passe après d'autres sur les mêmes muscles est réduit (−15 % par
+  muscle principal déjà travaillé, −7 % pour un muscle qui aide, jamais sous 65 %), et un exo qui arrive commence à
+  60 % puis 80 %. « ↕ Réorganiser » change l'ordre des exos du jour par glisser-déposer, en montrant l'effet.
 - **Mode séance** guidé : série par série, 4 s pour se mettre en place avant chaque série au temps, repos décompté,
   chrono qui continue en temps en plus, ressenti par exo.
 - **Exos d'un côté à la fois** : une série par côté, 🔴 gauche / 🔵 droite. Chaque côté est suivi à part ; un côté en

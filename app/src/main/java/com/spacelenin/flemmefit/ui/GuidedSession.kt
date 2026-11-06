@@ -420,6 +420,11 @@ private fun SetContent(
             if (it.whole) "🎲 Variante, à la place de ${it.baseName.lowercase()}" else "🎲 Variante, à la place de ta série max de ${it.baseName.lowercase()}"
         }
             ?: p.replacedBy?.let { "🎲 Pas de série max ici : elle laisse place à ${it.lowercase()}" }
+        // Dose du jour réduite (mise en route, fatigue) : dit avant de commencer.
+        p.dose?.takeIf { it.reduced }?.let {
+            Spacer(Modifier.height(8.dp))
+            DoseTag(it)
+        }
         reminder?.let {
             Spacer(Modifier.height(8.dp))
             Text(it, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = BurstColor, textAlign = TextAlign.Center)

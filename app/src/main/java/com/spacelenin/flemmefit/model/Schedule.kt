@@ -31,7 +31,20 @@ data class Session(
     val otherIndex: Int? = null,
     /** Séance allégée à la demande (Chill). */
     val isChill: Boolean = false,
+    /** Les mêmes exercices à dose pleine (avant mise en route et fatigue). */
+    val full: List<Prescription> = prescriptions,
+    /** Ce que le calcul de dose sait de chaque exercice (mêmes index que [prescriptions]) ; vide : pas de réduction. */
+    val doseItems: List<Dose.Item> = emptyList(),
 ) {
+    /** L'ordre que donneraient ces clés d'exercices de la routine (voir [Dose.arrange]). */
+    fun orderFor(keys: List<String>?): List<Int> = Dose.arrange(day.exercises, keys, variantIndex, variantBaseIndex, otherIndex)
+
+    /** Les doses dans l'ordre [order] (index → dose) : de quoi montrer l'effet d'un autre ordre avant de le garder. */
+    fun dosesFor(order: List<Int>): Map<Int, DoseInfo> {
+        if (doseItems.size != prescriptions.size) return emptyMap()
+        return order.zip(Dose.compute(order.map { doseItems[it] })).toMap()
+    }
+
     /** Exercices de la routine, puis variante et exercice perso du jour. */
     val exerciseCount get() = prescriptions.size
     /** Exercices qui comptent pour finir la séance : tout sauf les facultatifs (échauffement, étirements). */
@@ -176,6 +189,12 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     private val lastMax = HashMap<String, Int>()
     // Meilleure série notée de chaque exercice, et meilleur max de chaque variante en vraie version : les prérequis.
     private val bestMax = HashMap<String, Int>()
+    // Mise en route : séances faites de chaque exo, la première, et la première séance du programme.
+    private val doneCount = HashMap<String, Int>()
+    private val firstDoneOf = HashMap<String, LocalDate>()
+    private var programFirstDone: LocalDate? = null
+    // Saisies ramenées à la dose pleine (mêmes clés que [StoredProgram.done]) : ce que le réglage compare au prévu.
+    private val fullLogs = HashMap<String, ExerciseLog>()
     // Meilleure série de l'exo avant chaque séance (mêmes clés que [StoredProgram.done]) : de quoi fêter un record.
     private val priorBest = HashMap<String, Int>()
     private val variantBest = HashMap<String, Int>()
@@ -265,6 +284,28 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             if (r < acc) return c
         }
         return null
+    }
+
+    /** Saisie à comparer au prévu pleine dose : ramenée si la dose du jour était réduite. */
+    private fun learnLog(i: Int, e: Int): ExerciseLog? = fullLogs[StoredProgram.doneKey(i, e)] ?: program.logOf(i, e)
+
+    /**
+     * Ce que le calcul de dose sait de [pr] à [date]. Mise en route : un exo qui arrive alors que le programme a déjà
+     * des séances faites depuis au moins [Dose.RAMP_AFTER_DAYS] jours commence plus doucement ([Dose.ramp]).
+     */
+    private fun doseItem(pr: Prescription, date: LocalDate): Dose.Item {
+        val ex = pr.exercise
+        // Un bloc variante est déjà dosé à part (une part de son max estimé, ou sa progression douce) : il fatigue ce
+        // qui suit sans être réduit lui-même. Un exo choisi à la place d'un autre suit sa dose, sans mise en route.
+        val reducible = !ex.optional && !pr.isTest && !ex.steady && pr.variant == null
+        val ramp = if (!reducible || pr.replaces != null) 1.0 else {
+            val count = doneCount[pr.key] ?: 0
+            val start = programFirstDone
+            val arrived = if (count == 0) date else firstDoneOf[pr.key]
+            if (count >= Dose.RAMP_SESSIONS || start == null || arrived == null || arrived.isBefore(start.plusDays(Dose.RAMP_AFTER_DAYS))) 1.0
+            else Dose.ramp(count)
+        }
+        return Dose.Item(ex.name, ex.muscles, ex.assists, counts = !ex.optional, reducible = reducible, ramp = ramp)
     }
 
     /** Valeur atteinte pour un prérequis : test, sinon variante, sinon exercice (voir [Variant.requires]). */
@@ -502,10 +543,16 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 ),
                 light = chill,
             )
+            val worked = block.copy(
+                exercise = block.exercise.copy(
+                    muscles = v.muscles.ifEmpty { base.exercise.muscles },
+                    assists = if (v.muscles.isEmpty()) base.exercise.assists else v.assists,
+                ),
+            )
             variantBase = b
             if (family.replace) {
                 // La variante prend la place de l'exercice de base, au même rang.
-                prescriptions[b] = block
+                prescriptions[b] = worked
                 variantIndex = b
             } else {
                 prescriptions[b] = base.copy(
@@ -515,7 +562,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                     replacedBy = v.name,
                 )
                 variantIndex = prescriptions.size
-                prescriptions += block
+                prescriptions += worked
             }
         }
         if (shown && otherPick != null) {
@@ -532,14 +579,32 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             runCatching { replacementPrescription(option, ex, date, deload || chill, boss, burst) }
                 .onFailure(Safety::report).getOrNull()?.let { prescriptions[e] = it }
         }
-        val order = (0 until n).toMutableList()
-        variantIndex?.takeIf { it != variantBase }?.let { order.add(order.indexOf(variantBase!!) + 1, it) }
-        // L'exercice perso passe avant le dernier de la séance (les étirements).
-        otherIndex?.let { if (n >= 2) order.add(order.indexOf(n - 1), it) else order.add(it) }
+        // Ordre choisi (ou celui de la routine) ; la variante suit son exercice de base, l'exo perso passe avant le dernier.
+        val order = Dose.arrange(day.exercises, program.orderOn(i, day.day, date), variantIndex, variantBase, otherIndex, n)
+        // Mise en route et fatigue : jamais en semaine allégée ni un jour Boss.
+        val items = if (deload || boss) emptyList() else prescriptions.map { doseItem(it, date) }
+        val dosed = prescriptions.toMutableList()
+        if (items.isNotEmpty()) {
+            Dose.compute(order.map { items[it] }).forEachIndexed { k, d ->
+                val e = order[k]
+                if (!d.reduced) return@forEachIndexed
+                dosed[e] = prescriptions[e].withDose(d)
+                // Ce qui est noté sur la dose réduite, ramené à la dose pleine : le réglage reste juste.
+                program.logOf(i, e)?.let { fullLogs[StoredProgram.doneKey(i, e)] = it.scaled(1 / d.factor) }
+            }
+        }
         resolved[i] = Session(
-            i, week / plan.weeks.size + 1, cycleWeek + 1, day, planWeek.label, date, boss, deload, prescriptions, burst,
+            i, week / plan.weeks.size + 1, cycleWeek + 1, day, planWeek.label, date, boss, deload, dosed, burst,
             order = order, variantIndex = variantIndex, variantBaseIndex = variantBase, otherIndex = otherIndex, isChill = chill,
+            full = prescriptions.toList(), doseItems = items,
         )
+        prescriptions.forEachIndexed { e, pr ->
+            if (pr.exercise.optional || pr.isTest) return@forEachIndexed
+            if (!program.isDone(i, e) && program.logOf(i, e) == null) return@forEachIndexed
+            doneCount[pr.key] = (doneCount[pr.key] ?: 0) + 1
+            firstDoneOf.putIfAbsent(pr.key, date)
+            if (programFirstDone == null) programFirstDone = date
+        }
 
         prescriptions.forEachIndexed { e, pr ->
             val key = pr.key
@@ -551,7 +616,9 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 if (v.isFixed && program.isDone(i, e)) advanceFixed(v)
                 if (max != null && max > 0) {
                     variantPoints.getOrPut(v.id) { ArrayList() } += TestPoint(date, max)
-                    if (pr.variant?.full == true && test != null && test > 0) ratios[v.id] = Variants.learn(ratios[v.id] ?: v.ratio, test, max)
+                    // Le taux se recale sur le max à dose pleine (un max fait fatigué compte pour plus).
+                    val fullMax = learnLog(i, e)?.max ?: max
+                    if (pr.variant?.full == true && test != null && test > 0) ratios[v.id] = Variants.learn(ratios[v.id] ?: v.ratio, test, fullMax)
                 }
                 // Le dosage suit le taux ; ce qui est noté et ressenti règle la variante par-dessus, comme les autres exos.
                 val done = program.isDone(i, e)
@@ -574,7 +641,8 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             val extra = if (pr.exercise.progression == null) 0 else if (boss) BOSS_STEPS else if (burst) BURST_STEPS else 0
             if (!deload && !chill) runCatching { learn(pr, i, e, done, final = done || date.isBefore(today), extra) }.onFailure(Safety::report)
             if (max == null) return@forEachIndexed
-            lastMax[key] = max
+            // Objectif du prochain Boss (sans réduction) : le max ramené à la dose pleine.
+            lastMax[key] = learnLog(i, e)?.max ?: max
             bestMax[key] = maxOf(bestMax[key] ?: 0, max)
         }
     }
@@ -649,6 +717,9 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             duration = seconds?.let(Measures::formatSeconds),
             rest = f.exercise.rest,
             amrap = f.allOut,
+            // Il remplace l'exercice : mêmes muscles.
+            muscles = original.muscles,
+            assists = original.assists,
         )
         return f.copy(
             exercise = exercise, reps = reps, seconds = seconds, target = scale(f.target),
@@ -753,7 +824,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         val step = (if (pr.maxIsSeconds) Measures.seconds(p.duration)?.toDouble() else p.reps?.toDouble())?.times(factor)
         val params = adaptParams(pr.key, dateOf(i))
         fun signalOf(side: Side?) = Adaptation.signal(
-            pr, program.logOf(i, e), done, final, step,
+            pr, learnLog(i, e), done, final, step,
             exerciseFeeling = program.exerciseFeelingOf(i, e), sessionFeeling = program.feelingOf(i), side = side, extra = extra,
             params = params,
         )
@@ -794,7 +865,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     private fun updateBalance(pr: Prescription, i: Int, e: Int) {
         val view = adaptViews[pr.key] ?: return
         val sided = pr.sided ?: return
-        val log = program.logOf(i, e)
+        val log = learnLog(i, e)
         val done = program.isDone(i, e)
         // Fait de chaque côté : la moyenne de ses séries notées, ou le prévu si c'est simplement coché.
         Side.entries.forEach { side ->

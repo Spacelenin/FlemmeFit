@@ -1,7 +1,7 @@
 {
   "format": "flemmefit",
   "version": 1,
-  "revision": 16,
+  "revision": 17,
   "name": "Routine maison",
   "description": "5 séances par semaine (jours 4 et 7 : repos, ou rien selon la fatigue). Paliers inspirés de 100pompes, 50tractions, musclesabdominaux et musclesdesjambes : un test de départ choisit ton palier, la dernière série va souvent au max, et la 4e semaine allège tout de moitié et refait les tests pour passer au palier suivant. Échauffement et étirements d'après echauffez-vous et etirez-vous.",
   "repeat": "forever",
@@ -117,7 +117,14 @@
       "ratio": 3.3,
       "from": 15,
       "description": "Mains collées sous la poitrine, pouces et index qui forment un losange. Coudes le long du corps, descends jusqu'à toucher les mains avec le sternum.",
-      "easy": "sur les genoux."
+      "easy": "sur les genoux.",
+      "muscles": [
+        "triceps",
+        "pectoraux"
+      ],
+      "assists": [
+        "épaules"
+      ]
     },
     {
       "id": "pompes-pike",
@@ -126,7 +133,14 @@
       "ratio": 10,
       "from": 25,
       "description": "Fesses en l'air, corps en V inversé, jambes tendues, pieds proches des mains. Descends la tête vers le sol devant les mains, coudes vers l'arrière : ce sont les épaules qui bossent.",
-      "easy": "pieds plus loin des mains, le V plus ouvert."
+      "easy": "pieds plus loin des mains, le V plus ouvert.",
+      "muscles": [
+        "épaules",
+        "triceps"
+      ],
+      "assists": [
+        "pectoraux"
+      ]
     },
     {
       "id": "pompes-une-main",
@@ -136,7 +150,15 @@
       "from": 40,
       "description": "Pieds bien écartés, main sous l'épaule, l'autre dans le dos. Le buste reste face au sol sans tourner.",
       "easy": "en inclinaison, la main qui travaille posée sur une table, puis une chaise, puis une marche à mesure que ça devient facile ; l'autre main dans le dos.",
-      "perSide": "bras"
+      "perSide": "bras",
+      "muscles": [
+        "pectoraux",
+        "triceps"
+      ],
+      "assists": [
+        "épaules",
+        "obliques"
+      ]
     },
     {
       "id": "squat-une-jambe",
@@ -146,7 +168,14 @@
       "from": 30,
       "description": "Sur une jambe, l'autre tendue devant toi, descends le bassin dans l'axe le plus bas possible en contrôlant, genou dans l'axe du pied (il ne rentre pas vers l'intérieur), talon au sol, puis remonte.",
       "easy": "tiens-toi à une porte ou une table, et descends jusqu'à t'asseoir sur une chaise.",
-      "perSide": "jambe"
+      "perSide": "jambe",
+      "muscles": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "assists": [
+        "ischios"
+      ]
     },
     {
       "id": "cossack-squat",
@@ -156,7 +185,14 @@
       "description": "Pieds très écartés, descends sur une jambe en gardant l'autre tendue sur le côté, pointe du pied vers le haut, talon au sol. Une rep = un côté puis l'autre.",
       "from": 30,
       "easy": "descends moins bas, une main sur une chaise si besoin.",
-      "sides": "Les deux jambes, en alternant : une rep = un côté puis l'autre."
+      "sides": "Les deux jambes, en alternant : une rep = un côté puis l'autre.",
+      "muscles": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "assists": [
+        "ischios"
+      ]
     },
     {
       "id": "squat-saute",
@@ -165,7 +201,14 @@
       "ratio": 2.5,
       "description": "Squat classique jusqu'aux cuisses parallèles au sol, puis saute le plus haut possible. Réception souple, genoux dans l'axe, et enchaîne.",
       "from": 30,
-      "easy": "petit saut : décolle juste les pieds du sol, réception souple."
+      "easy": "petit saut : décolle juste les pieds du sol, réception souple.",
+      "muscles": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "assists": [
+        "ischios"
+      ]
     },
     {
       "id": "battements",
@@ -173,7 +216,10 @@
       "family": "abdos",
       "ratio": 0.5,
       "unit": "seconds",
-      "description": "Sur le dos, bras tendus au-dessus de la tête, jambes tendues un peu levées : petits battements rythmés comme en nageant, bas du dos collé au sol, tout gainé."
+      "description": "Sur le dos, bras tendus au-dessus de la tête, jambes tendues un peu levées : petits battements rythmés comme en nageant, bas du dos collé au sol, tout gainé.",
+      "muscles": [
+        "abdos"
+      ]
     },
     {
       "id": "gainage-bras-plies",
@@ -183,7 +229,15 @@
       "from": 45,
       "unit": "seconds",
       "description": "En position de pompe, descends à mi-chemin et tiens là, coudes le long du corps, corps droit.",
-      "easy": "sur les genoux."
+      "easy": "sur les genoux.",
+      "muscles": [
+        "abdos",
+        "triceps"
+      ],
+      "assists": [
+        "pectoraux",
+        "épaules"
+      ]
     },
     {
       "id": "perche",
@@ -196,7 +250,14 @@
         "gainage": 60,
         "pompes": 20
       },
-      "description": "Équilibre sur les mains, contre un mur au début. Mains au sol à une main du mur, écartées largeur d'épaules, monte les jambes contre le mur : bras tendus, corps gainé, regard entre les mains. Pour commencer : dos au mur, marche avec les pieds sur le mur, ventre face à lui, et deviens de plus en plus vertical au fil des séances. Redescends doucement, une jambe après l'autre."
+      "description": "Équilibre sur les mains, contre un mur au début. Mains au sol à une main du mur, écartées largeur d'épaules, monte les jambes contre le mur : bras tendus, corps gainé, regard entre les mains. Pour commencer : dos au mur, marche avec les pieds sur le mur, ventre face à lui, et deviens de plus en plus vertical au fil des séances. Redescends doucement, une jambe après l'autre.",
+      "muscles": [
+        "épaules",
+        "triceps"
+      ],
+      "assists": [
+        "abdos"
+      ]
     },
     {
       "id": "pont",
@@ -216,7 +277,15 @@
       "check": "Debout, dos et fesses collés au mur, je lève les bras tendus au-dessus de la tête et je touche le mur avec les mains, sans décoller le bas du dos.",
       "warning": "À faire échauffé, jamais à froid. Douleur aux poignets, aux lombaires ou à la nuque : stop, et reviens à la version d'avant.",
       "description": "Allongé sur le dos, pieds à plat près des fesses, mains au sol de chaque côté de la tête, doigts vers les pieds. Pousse sur les mains et les pieds pour monter tout le corps en arche, bras tendus, tête entre les bras, et tiens en respirant. Pour redescendre, rentre le menton et pose d'abord le haut du dos, jamais la tête. La dernière série va au max une fois 30 s atteintes.",
-      "easy": "mains surélevées sur le bord d'un canapé, d'un lit ou d'une marche, pieds au sol : la même arche, avec moins de souplesse demandée. Tu passes au pont au sol une fois 20 s tenues."
+      "easy": "mains surélevées sur le bord d'un canapé, d'un lit ou d'une marche, pieds au sol : la même arche, avec moins de souplesse demandée. Tu passes au pont au sol une fois 20 s tenues.",
+      "muscles": [
+        "lombaires",
+        "épaules"
+      ],
+      "assists": [
+        "fessiers",
+        "triceps"
+      ]
     }
   ],
   "weeks": [
@@ -308,7 +377,15 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Pompes"
+              "counter": "Pompes",
+              "muscles": [
+                "pectoraux",
+                "triceps"
+              ],
+              "assists": [
+                "épaules",
+                "abdos"
+              ]
             },
             {
               "name": "Shadow boxing léger",
@@ -326,7 +403,12 @@
                 "default": true,
                 "factor": 0.85
               },
-              "counter": "Boxe"
+              "counter": "Boxe",
+              "muscles": [],
+              "assists": [
+                "épaules"
+              ],
+              "steady": true
             },
             {
               "name": "Étirements",
@@ -428,7 +510,10 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Abdos"
+              "counter": "Abdos",
+              "muscles": [
+                "abdos"
+              ]
             },
             {
               "name": "Obliques en planche latérale (hip dips)",
@@ -483,6 +568,13 @@
                   "follows": "abdos",
                   "factor": 2.0
                 }
+              ],
+              "muscles": [
+                "obliques"
+              ],
+              "assists": [
+                "abdos",
+                "épaules"
               ]
             },
             {
@@ -534,7 +626,14 @@
                 "duration": "5s",
                 "every": 2
               },
-              "counter": "Gainage"
+              "counter": "Gainage",
+              "muscles": [
+                "abdos"
+              ],
+              "assists": [
+                "épaules",
+                "lombaires"
+              ]
             },
             {
               "name": "Hip thrust",
@@ -557,6 +656,13 @@
                   "follows": "hip-thrust",
                   "factor": 1.0
                 }
+              ],
+              "muscles": [
+                "fessiers"
+              ],
+              "assists": [
+                "ischios",
+                "lombaires"
               ]
             },
             {
@@ -649,7 +755,14 @@
                 "reps": 1,
                 "every": 2
               },
-              "counter": "Tractions"
+              "counter": "Tractions",
+              "muscles": [
+                "dos",
+                "biceps"
+              ],
+              "assists": [
+                "épaules"
+              ]
             },
             {
               "name": "Superman tenu",
@@ -663,7 +776,70 @@
                 "duration": "5s",
                 "maxDuration": "45s"
               },
-              "amrap": true
+              "amrap": true,
+              "muscles": [
+                "lombaires"
+              ],
+              "assists": [
+                "fessiers",
+                "épaules"
+              ]
+            },
+            {
+              "name": "Dips sur chaise",
+              "id": "dips",
+              "description": "Dos à une chaise stable (calée contre un mur), mains sur le bord à largeur d'épaules, doigts vers l'avant, jambes tendues devant toi. Descends en pliant les coudes vers l'arrière jusqu'à ce que les bras fassent un angle droit, puis remonte en poussant. Épaules basses, dos près de la chaise. Dernière série : le max possible, proprement.",
+              "rest": "60s",
+              "test": "pompes",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Palier facile : genoux pliés, pieds près de la chaise."
+                },
+                {
+                  "from": 11,
+                  "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 21,
+                  "sets": 3,
+                  "reps": "10"
+                },
+                {
+                  "from": 31,
+                  "sets": 3,
+                  "reps": "12"
+                },
+                {
+                  "from": 41,
+                  "sets": 3,
+                  "reps": "15"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              },
+              "alternatives": [
+                {
+                  "id": "extension-triceps",
+                  "name": "Extension triceps au-dessus de la tête (haltère ou élastique)",
+                  "description": "Debout ou assis, dos droit, l'haltère tenue à deux mains au-dessus de la tête (ou l'élastique bloqué sous un pied). Coudes serrés près des oreilles et immobiles, descends le poids derrière la tête puis tends les bras. Une charge qui laisse faire toutes les reps proprement.",
+                  "follows": "dips",
+                  "factor": 1.0
+                }
+              ],
+              "muscles": [
+                "triceps"
+              ],
+              "assists": [
+                "épaules",
+                "pectoraux"
+              ]
             },
             {
               "name": "Étirements",
@@ -758,55 +934,14 @@
               "progression": {
                 "reps": 1
               },
-              "counter": "Pompes"
-            },
-            {
-              "name": "Dips sur chaise",
-              "id": "dips",
-              "description": "Dos à une chaise stable (calée contre un mur), mains sur le bord à largeur d'épaules, doigts vers l'avant, jambes tendues devant toi. Descends en pliant les coudes vers l'arrière jusqu'à ce que les bras fassent un angle droit, puis remonte en poussant. Épaules basses, dos près de la chaise. Dernière série : le max possible, proprement.",
-              "rest": "60s",
-              "test": "pompes",
-              "amrap": true,
-              "levels": [
-                {
-                  "from": 0,
-                  "sets": 3,
-                  "reps": "5",
-                  "note": "Palier facile : genoux pliés, pieds près de la chaise."
-                },
-                {
-                  "from": 11,
-                  "sets": 3,
-                  "reps": "8"
-                },
-                {
-                  "from": 21,
-                  "sets": 3,
-                  "reps": "10"
-                },
-                {
-                  "from": 31,
-                  "sets": 3,
-                  "reps": "12"
-                },
-                {
-                  "from": 41,
-                  "sets": 3,
-                  "reps": "15"
-                }
+              "counter": "Pompes",
+              "muscles": [
+                "pectoraux",
+                "triceps"
               ],
-              "progression": {
-                "every": 2,
-                "reps": 1
-              },
-              "alternatives": [
-                {
-                  "id": "extension-triceps",
-                  "name": "Extension triceps au-dessus de la tête (haltère ou élastique)",
-                  "description": "Debout ou assis, dos droit, l'haltère tenue à deux mains au-dessus de la tête (ou l'élastique bloqué sous un pied). Coudes serrés près des oreilles et immobiles, descends le poids derrière la tête puis tends les bras. Une charge qui laisse faire toutes les reps proprement.",
-                  "follows": "dips",
-                  "factor": 1.0
-                }
+              "assists": [
+                "épaules",
+                "abdos"
               ]
             },
             {
@@ -823,7 +958,13 @@
                 "default": false,
                 "factor": 0.85
               },
-              "counter": "Beat Saber"
+              "counter": "Beat Saber",
+              "muscles": [],
+              "assists": [
+                "épaules",
+                "triceps"
+              ],
+              "steady": true
             },
             {
               "name": "Étirements",
@@ -920,7 +1061,10 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Abdos"
+              "counter": "Abdos",
+              "muscles": [
+                "abdos"
+              ]
             },
             {
               "name": "Squats classiques",
@@ -971,7 +1115,14 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Squats"
+              "counter": "Squats",
+              "muscles": [
+                "quadriceps",
+                "fessiers"
+              ],
+              "assists": [
+                "ischios"
+              ]
             },
             {
               "name": "Battements latéraux à la table",
@@ -984,7 +1135,13 @@
               "progression": {
                 "every": 1,
                 "reps": 1
-              }
+              },
+              "muscles": [
+                "fessiers"
+              ],
+              "assists": [
+                "abdos"
+              ]
             },
             {
               "name": "Étirements",
@@ -1085,7 +1242,15 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Pompes"
+              "counter": "Pompes",
+              "muscles": [
+                "pectoraux",
+                "triceps"
+              ],
+              "assists": [
+                "épaules",
+                "abdos"
+              ]
             },
             {
               "name": "Shadow boxing léger",
@@ -1103,7 +1268,12 @@
                 "default": true,
                 "factor": 0.85
               },
-              "counter": "Boxe"
+              "counter": "Boxe",
+              "muscles": [],
+              "assists": [
+                "épaules"
+              ],
+              "steady": true
             },
             {
               "name": "Étirements",
@@ -1205,7 +1375,10 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Abdos"
+              "counter": "Abdos",
+              "muscles": [
+                "abdos"
+              ]
             },
             {
               "name": "Obliques en planche latérale (hip dips)",
@@ -1260,6 +1433,13 @@
                   "follows": "abdos",
                   "factor": 2.0
                 }
+              ],
+              "muscles": [
+                "obliques"
+              ],
+              "assists": [
+                "abdos",
+                "épaules"
               ]
             },
             {
@@ -1311,7 +1491,14 @@
                 "duration": "5s",
                 "every": 2
               },
-              "counter": "Gainage"
+              "counter": "Gainage",
+              "muscles": [
+                "abdos"
+              ],
+              "assists": [
+                "épaules",
+                "lombaires"
+              ]
             },
             {
               "name": "Hip thrust",
@@ -1334,6 +1521,13 @@
                   "follows": "hip-thrust",
                   "factor": 1.0
                 }
+              ],
+              "muscles": [
+                "fessiers"
+              ],
+              "assists": [
+                "ischios",
+                "lombaires"
               ]
             },
             {
@@ -1426,7 +1620,14 @@
                 "reps": 1,
                 "every": 2
               },
-              "counter": "Tractions"
+              "counter": "Tractions",
+              "muscles": [
+                "dos",
+                "biceps"
+              ],
+              "assists": [
+                "épaules"
+              ]
             },
             {
               "name": "Superman tenu",
@@ -1440,7 +1641,70 @@
                 "duration": "5s",
                 "maxDuration": "45s"
               },
-              "amrap": true
+              "amrap": true,
+              "muscles": [
+                "lombaires"
+              ],
+              "assists": [
+                "fessiers",
+                "épaules"
+              ]
+            },
+            {
+              "name": "Dips sur chaise",
+              "id": "dips",
+              "description": "Dos à une chaise stable (calée contre un mur), mains sur le bord à largeur d'épaules, doigts vers l'avant, jambes tendues devant toi. Descends en pliant les coudes vers l'arrière jusqu'à ce que les bras fassent un angle droit, puis remonte en poussant. Épaules basses, dos près de la chaise. Dernière série : le max possible, proprement.",
+              "rest": "60s",
+              "test": "pompes",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Palier facile : genoux pliés, pieds près de la chaise."
+                },
+                {
+                  "from": 11,
+                  "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 21,
+                  "sets": 3,
+                  "reps": "10"
+                },
+                {
+                  "from": 31,
+                  "sets": 3,
+                  "reps": "12"
+                },
+                {
+                  "from": 41,
+                  "sets": 3,
+                  "reps": "15"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              },
+              "alternatives": [
+                {
+                  "id": "extension-triceps",
+                  "name": "Extension triceps au-dessus de la tête (haltère ou élastique)",
+                  "description": "Debout ou assis, dos droit, l'haltère tenue à deux mains au-dessus de la tête (ou l'élastique bloqué sous un pied). Coudes serrés près des oreilles et immobiles, descends le poids derrière la tête puis tends les bras. Une charge qui laisse faire toutes les reps proprement.",
+                  "follows": "dips",
+                  "factor": 1.0
+                }
+              ],
+              "muscles": [
+                "triceps"
+              ],
+              "assists": [
+                "épaules",
+                "pectoraux"
+              ]
             },
             {
               "name": "Étirements",
@@ -1535,55 +1799,14 @@
               "progression": {
                 "reps": 1
               },
-              "counter": "Pompes"
-            },
-            {
-              "name": "Dips sur chaise",
-              "id": "dips",
-              "description": "Dos à une chaise stable (calée contre un mur), mains sur le bord à largeur d'épaules, doigts vers l'avant, jambes tendues devant toi. Descends en pliant les coudes vers l'arrière jusqu'à ce que les bras fassent un angle droit, puis remonte en poussant. Épaules basses, dos près de la chaise. Dernière série : le max possible, proprement.",
-              "rest": "60s",
-              "test": "pompes",
-              "amrap": true,
-              "levels": [
-                {
-                  "from": 0,
-                  "sets": 3,
-                  "reps": "5",
-                  "note": "Palier facile : genoux pliés, pieds près de la chaise."
-                },
-                {
-                  "from": 11,
-                  "sets": 3,
-                  "reps": "8"
-                },
-                {
-                  "from": 21,
-                  "sets": 3,
-                  "reps": "10"
-                },
-                {
-                  "from": 31,
-                  "sets": 3,
-                  "reps": "12"
-                },
-                {
-                  "from": 41,
-                  "sets": 3,
-                  "reps": "15"
-                }
+              "counter": "Pompes",
+              "muscles": [
+                "pectoraux",
+                "triceps"
               ],
-              "progression": {
-                "every": 2,
-                "reps": 1
-              },
-              "alternatives": [
-                {
-                  "id": "extension-triceps",
-                  "name": "Extension triceps au-dessus de la tête (haltère ou élastique)",
-                  "description": "Debout ou assis, dos droit, l'haltère tenue à deux mains au-dessus de la tête (ou l'élastique bloqué sous un pied). Coudes serrés près des oreilles et immobiles, descends le poids derrière la tête puis tends les bras. Une charge qui laisse faire toutes les reps proprement.",
-                  "follows": "dips",
-                  "factor": 1.0
-                }
+              "assists": [
+                "épaules",
+                "abdos"
               ]
             },
             {
@@ -1600,7 +1823,13 @@
                 "default": false,
                 "factor": 0.85
               },
-              "counter": "Beat Saber"
+              "counter": "Beat Saber",
+              "muscles": [],
+              "assists": [
+                "épaules",
+                "triceps"
+              ],
+              "steady": true
             },
             {
               "name": "Étirements",
@@ -1697,7 +1926,10 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Abdos"
+              "counter": "Abdos",
+              "muscles": [
+                "abdos"
+              ]
             },
             {
               "name": "Squats classiques",
@@ -1748,7 +1980,14 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Squats"
+              "counter": "Squats",
+              "muscles": [
+                "quadriceps",
+                "fessiers"
+              ],
+              "assists": [
+                "ischios"
+              ]
             },
             {
               "name": "Coups de pied latéraux à la table",
@@ -1761,7 +2000,13 @@
               "progression": {
                 "every": 1,
                 "reps": 1
-              }
+              },
+              "muscles": [
+                "fessiers"
+              ],
+              "assists": [
+                "quadriceps"
+              ]
             },
             {
               "name": "Étirements",
@@ -1862,7 +2107,15 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Pompes"
+              "counter": "Pompes",
+              "muscles": [
+                "pectoraux",
+                "triceps"
+              ],
+              "assists": [
+                "épaules",
+                "abdos"
+              ]
             },
             {
               "name": "Shadow boxing léger",
@@ -1880,7 +2133,12 @@
                 "default": true,
                 "factor": 0.85
               },
-              "counter": "Boxe"
+              "counter": "Boxe",
+              "muscles": [],
+              "assists": [
+                "épaules"
+              ],
+              "steady": true
             },
             {
               "name": "Étirements",
@@ -1982,7 +2240,10 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Abdos"
+              "counter": "Abdos",
+              "muscles": [
+                "abdos"
+              ]
             },
             {
               "name": "Obliques en planche latérale (hip dips)",
@@ -2037,6 +2298,13 @@
                   "follows": "abdos",
                   "factor": 2.0
                 }
+              ],
+              "muscles": [
+                "obliques"
+              ],
+              "assists": [
+                "abdos",
+                "épaules"
               ]
             },
             {
@@ -2088,7 +2356,14 @@
                 "duration": "5s",
                 "every": 2
               },
-              "counter": "Gainage"
+              "counter": "Gainage",
+              "muscles": [
+                "abdos"
+              ],
+              "assists": [
+                "épaules",
+                "lombaires"
+              ]
             },
             {
               "name": "Hip thrust",
@@ -2111,6 +2386,13 @@
                   "follows": "hip-thrust",
                   "factor": 1.0
                 }
+              ],
+              "muscles": [
+                "fessiers"
+              ],
+              "assists": [
+                "ischios",
+                "lombaires"
               ]
             },
             {
@@ -2203,7 +2485,14 @@
                 "reps": 1,
                 "every": 2
               },
-              "counter": "Tractions"
+              "counter": "Tractions",
+              "muscles": [
+                "dos",
+                "biceps"
+              ],
+              "assists": [
+                "épaules"
+              ]
             },
             {
               "name": "Superman tenu",
@@ -2217,7 +2506,70 @@
                 "duration": "5s",
                 "maxDuration": "45s"
               },
-              "amrap": true
+              "amrap": true,
+              "muscles": [
+                "lombaires"
+              ],
+              "assists": [
+                "fessiers",
+                "épaules"
+              ]
+            },
+            {
+              "name": "Dips sur chaise",
+              "id": "dips",
+              "description": "Dos à une chaise stable (calée contre un mur), mains sur le bord à largeur d'épaules, doigts vers l'avant, jambes tendues devant toi. Descends en pliant les coudes vers l'arrière jusqu'à ce que les bras fassent un angle droit, puis remonte en poussant. Épaules basses, dos près de la chaise. Dernière série : le max possible, proprement.",
+              "rest": "60s",
+              "test": "pompes",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Palier facile : genoux pliés, pieds près de la chaise."
+                },
+                {
+                  "from": 11,
+                  "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 21,
+                  "sets": 3,
+                  "reps": "10"
+                },
+                {
+                  "from": 31,
+                  "sets": 3,
+                  "reps": "12"
+                },
+                {
+                  "from": 41,
+                  "sets": 3,
+                  "reps": "15"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              },
+              "alternatives": [
+                {
+                  "id": "extension-triceps",
+                  "name": "Extension triceps au-dessus de la tête (haltère ou élastique)",
+                  "description": "Debout ou assis, dos droit, l'haltère tenue à deux mains au-dessus de la tête (ou l'élastique bloqué sous un pied). Coudes serrés près des oreilles et immobiles, descends le poids derrière la tête puis tends les bras. Une charge qui laisse faire toutes les reps proprement.",
+                  "follows": "dips",
+                  "factor": 1.0
+                }
+              ],
+              "muscles": [
+                "triceps"
+              ],
+              "assists": [
+                "épaules",
+                "pectoraux"
+              ]
             },
             {
               "name": "Étirements",
@@ -2312,55 +2664,14 @@
               "progression": {
                 "reps": 1
               },
-              "counter": "Pompes"
-            },
-            {
-              "name": "Dips sur chaise",
-              "id": "dips",
-              "description": "Dos à une chaise stable (calée contre un mur), mains sur le bord à largeur d'épaules, doigts vers l'avant, jambes tendues devant toi. Descends en pliant les coudes vers l'arrière jusqu'à ce que les bras fassent un angle droit, puis remonte en poussant. Épaules basses, dos près de la chaise. Dernière série : le max possible, proprement.",
-              "rest": "60s",
-              "test": "pompes",
-              "amrap": true,
-              "levels": [
-                {
-                  "from": 0,
-                  "sets": 3,
-                  "reps": "5",
-                  "note": "Palier facile : genoux pliés, pieds près de la chaise."
-                },
-                {
-                  "from": 11,
-                  "sets": 3,
-                  "reps": "8"
-                },
-                {
-                  "from": 21,
-                  "sets": 3,
-                  "reps": "10"
-                },
-                {
-                  "from": 31,
-                  "sets": 3,
-                  "reps": "12"
-                },
-                {
-                  "from": 41,
-                  "sets": 3,
-                  "reps": "15"
-                }
+              "counter": "Pompes",
+              "muscles": [
+                "pectoraux",
+                "triceps"
               ],
-              "progression": {
-                "every": 2,
-                "reps": 1
-              },
-              "alternatives": [
-                {
-                  "id": "extension-triceps",
-                  "name": "Extension triceps au-dessus de la tête (haltère ou élastique)",
-                  "description": "Debout ou assis, dos droit, l'haltère tenue à deux mains au-dessus de la tête (ou l'élastique bloqué sous un pied). Coudes serrés près des oreilles et immobiles, descends le poids derrière la tête puis tends les bras. Une charge qui laisse faire toutes les reps proprement.",
-                  "follows": "dips",
-                  "factor": 1.0
-                }
+              "assists": [
+                "épaules",
+                "abdos"
               ]
             },
             {
@@ -2377,7 +2688,13 @@
                 "default": false,
                 "factor": 0.85
               },
-              "counter": "Beat Saber"
+              "counter": "Beat Saber",
+              "muscles": [],
+              "assists": [
+                "épaules",
+                "triceps"
+              ],
+              "steady": true
             },
             {
               "name": "Étirements",
@@ -2474,7 +2791,10 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Abdos"
+              "counter": "Abdos",
+              "muscles": [
+                "abdos"
+              ]
             },
             {
               "name": "Squats classiques",
@@ -2525,7 +2845,14 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Squats"
+              "counter": "Squats",
+              "muscles": [
+                "quadriceps",
+                "fessiers"
+              ],
+              "assists": [
+                "ischios"
+              ]
             },
             {
               "name": "Battements latéraux à la table",
@@ -2538,7 +2865,13 @@
               "progression": {
                 "every": 1,
                 "reps": 1
-              }
+              },
+              "muscles": [
+                "fessiers"
+              ],
+              "assists": [
+                "abdos"
+              ]
             },
             {
               "name": "Étirements",
@@ -2571,7 +2904,15 @@
               "test": "pompes",
               "retest": true,
               "description": "Pompes classiques d'affilée, corps gainé, poitrine à un poing du sol. Arrête dès que la forme casse. Fais-le avant le reste de la séance, bien échauffé.",
-              "counter": "Pompes"
+              "counter": "Pompes",
+              "muscles": [
+                "pectoraux",
+                "triceps"
+              ],
+              "assists": [
+                "épaules",
+                "abdos"
+              ]
             },
             {
               "name": "Pompes lentes (tempo)",
@@ -2647,7 +2988,15 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Pompes"
+              "counter": "Pompes",
+              "muscles": [
+                "pectoraux",
+                "triceps"
+              ],
+              "assists": [
+                "épaules",
+                "abdos"
+              ]
             },
             {
               "name": "Shadow boxing léger",
@@ -2665,7 +3014,12 @@
                 "default": true,
                 "factor": 0.85
               },
-              "counter": "Boxe"
+              "counter": "Boxe",
+              "muscles": [],
+              "assists": [
+                "épaules"
+              ],
+              "steady": true
             },
             {
               "name": "Étirements",
@@ -2693,7 +3047,10 @@
               "test": "abdos",
               "retest": true,
               "description": "Crunchs ou sit-ups : celui que tu préfères, mais toujours le même à chaque test. D'affilée, sans pause en bas.",
-              "counter": "Abdos"
+              "counter": "Abdos",
+              "muscles": [
+                "abdos"
+              ]
             },
             {
               "name": "Test gainage",
@@ -2701,7 +3058,14 @@
               "test": "gainage",
               "retest": true,
               "description": "Planche sur les avant-bras, le plus longtemps possible en restant droit.",
-              "counter": "Gainage"
+              "counter": "Gainage",
+              "muscles": [
+                "abdos"
+              ],
+              "assists": [
+                "épaules",
+                "lombaires"
+              ]
             },
             {
               "name": "Abdos bras tendus (V-up)",
@@ -2783,7 +3147,10 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Abdos"
+              "counter": "Abdos",
+              "muscles": [
+                "abdos"
+              ]
             },
             {
               "name": "Obliques en planche latérale (hip dips)",
@@ -2838,6 +3205,13 @@
                   "follows": "abdos",
                   "factor": 2.0
                 }
+              ],
+              "muscles": [
+                "obliques"
+              ],
+              "assists": [
+                "abdos",
+                "épaules"
               ]
             },
             {
@@ -2889,7 +3263,14 @@
                 "duration": "5s",
                 "every": 2
               },
-              "counter": "Gainage"
+              "counter": "Gainage",
+              "muscles": [
+                "abdos"
+              ],
+              "assists": [
+                "épaules",
+                "lombaires"
+              ]
             },
             {
               "name": "Hip thrust",
@@ -2912,6 +3293,13 @@
                   "follows": "hip-thrust",
                   "factor": 1.0
                 }
+              ],
+              "muscles": [
+                "fessiers"
+              ],
+              "assists": [
+                "ischios",
+                "lombaires"
               ]
             },
             {
@@ -2940,7 +3328,14 @@
               "test": "tractions",
               "retest": true,
               "description": "D'affilée, corps droit, poitrine jusqu'au plateau.",
-              "counter": "Tractions"
+              "counter": "Tractions",
+              "muscles": [
+                "dos",
+                "biceps"
+              ],
+              "assists": [
+                "épaules"
+              ]
             },
             {
               "name": "Tractions sous une table (rowing inversé)",
@@ -3012,7 +3407,14 @@
                 "reps": 1,
                 "every": 2
               },
-              "counter": "Tractions"
+              "counter": "Tractions",
+              "muscles": [
+                "dos",
+                "biceps"
+              ],
+              "assists": [
+                "épaules"
+              ]
             },
             {
               "name": "Superman tenu",
@@ -3026,7 +3428,70 @@
                 "duration": "5s",
                 "maxDuration": "45s"
               },
-              "amrap": true
+              "amrap": true,
+              "muscles": [
+                "lombaires"
+              ],
+              "assists": [
+                "fessiers",
+                "épaules"
+              ]
+            },
+            {
+              "name": "Dips sur chaise",
+              "id": "dips",
+              "description": "Dos à une chaise stable (calée contre un mur), mains sur le bord à largeur d'épaules, doigts vers l'avant, jambes tendues devant toi. Descends en pliant les coudes vers l'arrière jusqu'à ce que les bras fassent un angle droit, puis remonte en poussant. Épaules basses, dos près de la chaise. Dernière série : le max possible, proprement.",
+              "rest": "60s",
+              "test": "pompes",
+              "amrap": true,
+              "levels": [
+                {
+                  "from": 0,
+                  "sets": 3,
+                  "reps": "5",
+                  "note": "Palier facile : genoux pliés, pieds près de la chaise."
+                },
+                {
+                  "from": 11,
+                  "sets": 3,
+                  "reps": "8"
+                },
+                {
+                  "from": 21,
+                  "sets": 3,
+                  "reps": "10"
+                },
+                {
+                  "from": 31,
+                  "sets": 3,
+                  "reps": "12"
+                },
+                {
+                  "from": 41,
+                  "sets": 3,
+                  "reps": "15"
+                }
+              ],
+              "progression": {
+                "every": 2,
+                "reps": 1
+              },
+              "alternatives": [
+                {
+                  "id": "extension-triceps",
+                  "name": "Extension triceps au-dessus de la tête (haltère ou élastique)",
+                  "description": "Debout ou assis, dos droit, l'haltère tenue à deux mains au-dessus de la tête (ou l'élastique bloqué sous un pied). Coudes serrés près des oreilles et immobiles, descends le poids derrière la tête puis tends les bras. Une charge qui laisse faire toutes les reps proprement.",
+                  "follows": "dips",
+                  "factor": 1.0
+                }
+              ],
+              "muscles": [
+                "triceps"
+              ],
+              "assists": [
+                "épaules",
+                "pectoraux"
+              ]
             },
             {
               "name": "Étirements",
@@ -3121,55 +3586,14 @@
               "progression": {
                 "reps": 1
               },
-              "counter": "Pompes"
-            },
-            {
-              "name": "Dips sur chaise",
-              "id": "dips",
-              "description": "Dos à une chaise stable (calée contre un mur), mains sur le bord à largeur d'épaules, doigts vers l'avant, jambes tendues devant toi. Descends en pliant les coudes vers l'arrière jusqu'à ce que les bras fassent un angle droit, puis remonte en poussant. Épaules basses, dos près de la chaise. Dernière série : le max possible, proprement.",
-              "rest": "60s",
-              "test": "pompes",
-              "amrap": true,
-              "levels": [
-                {
-                  "from": 0,
-                  "sets": 3,
-                  "reps": "5",
-                  "note": "Palier facile : genoux pliés, pieds près de la chaise."
-                },
-                {
-                  "from": 11,
-                  "sets": 3,
-                  "reps": "8"
-                },
-                {
-                  "from": 21,
-                  "sets": 3,
-                  "reps": "10"
-                },
-                {
-                  "from": 31,
-                  "sets": 3,
-                  "reps": "12"
-                },
-                {
-                  "from": 41,
-                  "sets": 3,
-                  "reps": "15"
-                }
+              "counter": "Pompes",
+              "muscles": [
+                "pectoraux",
+                "triceps"
               ],
-              "progression": {
-                "every": 2,
-                "reps": 1
-              },
-              "alternatives": [
-                {
-                  "id": "extension-triceps",
-                  "name": "Extension triceps au-dessus de la tête (haltère ou élastique)",
-                  "description": "Debout ou assis, dos droit, l'haltère tenue à deux mains au-dessus de la tête (ou l'élastique bloqué sous un pied). Coudes serrés près des oreilles et immobiles, descends le poids derrière la tête puis tends les bras. Une charge qui laisse faire toutes les reps proprement.",
-                  "follows": "dips",
-                  "factor": 1.0
-                }
+              "assists": [
+                "épaules",
+                "abdos"
               ]
             },
             {
@@ -3186,7 +3610,13 @@
                 "default": false,
                 "factor": 0.85
               },
-              "counter": "Beat Saber"
+              "counter": "Beat Saber",
+              "muscles": [],
+              "assists": [
+                "épaules",
+                "triceps"
+              ],
+              "steady": true
             },
             {
               "name": "Étirements",
@@ -3215,7 +3645,14 @@
               "test": "squats",
               "retest": true,
               "description": "Pieds largeur d'épaules, bras tendus devant toi. Descends jusqu'aux cuisses parallèles au sol, talons au sol, et remonte, d'affilée. Arrête dès que la forme casse.",
-              "counter": "Squats"
+              "counter": "Squats",
+              "muscles": [
+                "quadriceps",
+                "fessiers"
+              ],
+              "assists": [
+                "ischios"
+              ]
             },
             {
               "name": "Abdos ({abdos})",
@@ -3291,7 +3728,10 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Abdos"
+              "counter": "Abdos",
+              "muscles": [
+                "abdos"
+              ]
             },
             {
               "name": "Squats classiques",
@@ -3342,7 +3782,14 @@
                 "every": 2,
                 "reps": 1
               },
-              "counter": "Squats"
+              "counter": "Squats",
+              "muscles": [
+                "quadriceps",
+                "fessiers"
+              ],
+              "assists": [
+                "ischios"
+              ]
             },
             {
               "name": "Coups de pied latéraux à la table",
@@ -3355,7 +3802,13 @@
               "progression": {
                 "every": 1,
                 "reps": 1
-              }
+              },
+              "muscles": [
+                "fessiers"
+              ],
+              "assists": [
+                "quadriceps"
+              ]
             },
             {
               "name": "Étirements",

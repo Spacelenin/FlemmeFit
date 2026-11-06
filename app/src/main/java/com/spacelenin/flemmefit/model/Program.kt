@@ -52,6 +52,10 @@ data class ExerciseLog(
     }
 }
 
+/** Ordre des exos gardé pour un jour de la semaine (1 à 7, comme [PlanDay.day]) à partir de [date] : leurs clés. */
+@Serializable
+data class OrderChange(val day: Int, val date: String, val keys: List<String>)
+
 /** Passage d'un test à un autre exercice au choix, à partir de [date], avec le max refait ce jour-là. */
 @Serializable
 data class TestChange(val test: String, val option: String, val date: String, val result: Int? = null)
@@ -111,6 +115,10 @@ data class StoredProgram(
     val replacements: List<ReplacementChange> = emptyList(),
     /** Variantes à confirmer ([Variant.check]) : id → date de l'accord ; proposées à partir du lendemain. */
     val variantChecks: Map<String, String> = emptyMap(),
+    /** Ordre des exos changé pour une seule séance (index de jour → clés dans l'ordre ; vide : l'ordre prévu). */
+    val dayOrders: Map<String, List<String>> = emptyMap(),
+    /** Ordres gardés d'une séance à l'autre, datés. */
+    val orders: List<OrderChange> = emptyList(),
 ) {
     val start: LocalDate get() = LocalDate.parse(startDate)
 
@@ -124,6 +132,19 @@ data class StoredProgram(
 
     fun withVariantCheck(id: String, today: LocalDate): StoredProgram =
         if (id in variantChecks) this else copy(variantChecks = variantChecks + (id to today.toString()))
+
+    /** L'ordre choisi pour la séance [dayIndex] (jour [day] de la semaine) à [date], null : celui de la routine. */
+    fun orderOn(dayIndex: Int, day: Int, date: LocalDate): List<String>? {
+        dayOrders[dayIndex.toString()]?.let { return it.ifEmpty { null } }
+        return orders.filter { it.day == day && it.date <= date.toString() }.maxByOrNull { it.date }?.keys?.ifEmpty { null }
+    }
+
+    /** Nouvel ordre ([keys] vide : celui de la routine), pour cette séance seulement ou à partir de [date]. */
+    fun withOrder(dayIndex: Int, day: Int, keys: List<String>, date: LocalDate, keep: Boolean): StoredProgram {
+        if (!keep) return copy(dayOrders = dayOrders + (dayIndex.toString() to keys))
+        val kept = orders.filter { it.day != day || it.date < date.toString() }
+        return copy(orders = kept + OrderChange(day, date.toString(), keys), dayOrders = dayOrders - dayIndex.toString())
+    }
 
     /** Cocher / décocher. Décocher efface aussi la saisie. */
     fun toggle(dayIndex: Int, exerciseIndex: Int): StoredProgram {

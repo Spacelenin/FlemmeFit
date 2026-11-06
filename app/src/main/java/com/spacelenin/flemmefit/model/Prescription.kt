@@ -37,7 +37,14 @@ data class Prescription(
     val sided: SidedPlan? = null,
     /** Fait à la place de cet exercice de la routine (remplacement choisi depuis la page du jour). */
     val replaces: String? = null,
+    /** Dose réduite (mise en route, fatigue) : ce qui a été retiré et pourquoi. */
+    val dose: DoseInfo? = null,
+    /** Dose réduite : ce qui était prévu par série avant réduction. */
+    val fullPlanned: Int? = null,
 ) {
+    /** Les exploits se comptent sur la dose pleine : un exo réduit ne rend pas l'exploit plus facile. */
+    val exploitPlanned: Int? get() = fullPlanned ?: perSetPlanned
+
     val key get() = exercise.key
     val repsLabel: String? get() = reps?.toString() ?: exercise.reps
     val durationLabel: String? get() = seconds?.let(Measures::formatSeconds) ?: exercise.duration
