@@ -57,6 +57,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spacelenin.flemmefit.data.AppSettings
 import com.spacelenin.flemmefit.data.BackupManager
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.platform.LocalContext
 import com.spacelenin.flemmefit.model.Counter
 import com.spacelenin.flemmefit.model.Measures
@@ -67,7 +73,7 @@ import com.spacelenin.flemmefit.social.SocialSync
 import com.spacelenin.flemmefit.ui.theme.AppTheme
 import com.spacelenin.flemmefit.update.AppUpdater
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun SettingsScreen(
     settings: AppSettings,
@@ -170,7 +176,21 @@ fun SettingsScreen(
                 Section("MISES À JOUR")
                 UpdateBanner(updater)
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) {
-                    Column(Modifier.weight(1f)) {
+                    val context = LocalContext.current
+                    val scope = rememberCoroutineScope()
+                    Column(
+                        Modifier.weight(1f).combinedClickable(onClick = {}, onLongClick = {
+                            scope.launch {
+                                val at = withContext(Dispatchers.Default) {
+                                    (context.applicationContext as com.spacelenin.flemmefit.FlemmeFitApp).challenges.nextPlanned()
+                                }
+                                val text = at?.let {
+                                    "🎯 " + it.format(java.time.format.DateTimeFormatter.ofPattern("EEE d MMM", java.util.Locale.FRENCH)) + " ~${it.hour} h"
+                                } ?: "🎯 —"
+                                Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
+                            }
+                        }),
+                    ) {
                         Text("Version installée", style = MaterialTheme.typography.bodyLarge)
                         Text("Build ${updater.currentVersion}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }

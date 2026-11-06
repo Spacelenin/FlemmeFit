@@ -244,6 +244,8 @@ fun TestsDialog(
     }
     // Plein écran commun : il redessine le fond (opaque) et pose lui-même les marges des barres système, que certains
     // téléphones (barre à 3 boutons) ne donnent pas à la fenêtre du Dialog : sinon le bas passe sous les boutons.
+    // Saisie des tests : la mise à jour attend.
+    HoldSession()
     FullScreenDialog(onDismissRequest = onDismiss, dismissOnClickOutside = false) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),

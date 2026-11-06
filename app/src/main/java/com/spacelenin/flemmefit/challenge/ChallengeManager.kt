@@ -86,6 +86,14 @@ class ChallengeManager(private val context: Context, private val repository: Pro
             .firstOrNull { (_, at) -> at.isAfter(now) }
     }
 
+    /** Date et heure du prochain défi prévu, null s'il n'y en a pas (ou pas encore assez de séances faites). */
+    fun nextPlanned(): LocalDateTime? = runCatching {
+        val today = LocalDate.now()
+        val programs = repository.state.value.programs
+        val done = Stats.merge(programs.map { Stats.of(ProgramSchedule(it, today)) }, today).sessionsDone
+        if (done < Challenges.SESSIONS_BEFORE) null else nextSlot(LocalDateTime.now())?.second
+    }.getOrNull()
+
     /** Programme l'alarme du prochain créneau (au lancement, au redémarrage, après chaque défi). */
     fun reschedule() {
         try {
