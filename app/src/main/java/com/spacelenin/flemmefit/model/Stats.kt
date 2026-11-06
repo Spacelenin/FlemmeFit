@@ -74,7 +74,7 @@ data class Stats(
 
     companion object {
         const val CHART_WEEKS = 8
-        const val HISTORY_SIZE = 30
+        const val HISTORY_SIZE = 5
 
         /** Additionne les stats de plusieurs programmes ; un même exercice (même clé) est fusionné. */
         fun merge(all: List<Stats>, today: LocalDate): Stats {

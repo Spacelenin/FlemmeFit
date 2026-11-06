@@ -26,6 +26,8 @@ data class ExerciseInfo(
     val stats: ExerciseStats?,
     /** Meilleure série de chaque séance faite, les dernières. */
     val history: List<TestPoint>,
+    /** Séances faites en version excentrique (barres pâles). */
+    val eccentricDates: Set<java.time.LocalDate> = emptySet(),
     val seconds: Boolean,
     val balance: SideBalance?,
     val alternatives: List<String>,

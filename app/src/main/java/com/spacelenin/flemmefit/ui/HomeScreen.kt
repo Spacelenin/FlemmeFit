@@ -342,18 +342,18 @@ private fun HomeContent(
             Row(Modifier.fillMaxSize()) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()).padding(vertical = 8.dp),
+                    modifier = Modifier.weight(1f).fillMaxHeight().scrollIfNeeded().padding(vertical = 8.dp),
                 ) {
                     switcher()
                     todayCard()
                     notices()
                 }
-                Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())) { calendar() }
+                Column(Modifier.weight(1f).fillMaxHeight().scrollIfNeeded()) { calendar() }
             }
         } else {
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 8.dp),
+                modifier = Modifier.fillMaxSize().scrollIfNeeded().padding(vertical = 8.dp),
             ) {
                 switcher()
                 todayCard()
@@ -537,4 +537,14 @@ private fun EmptyHome(importActions: ImportActions, modifier: Modifier = Modifie
             TextButton(onClick = importActions.restore) { Text("Nouveau téléphone ? Restaurer une sauvegarde") }
         }
     }
+}
+
+/**
+ * Défile seulement si le contenu dépasse l'écran : quand tout tient, ni défilement ni étirement au bout
+ * (sinon la page bouge pour rien, sur le Fold plié par exemple).
+ */
+@Composable
+private fun Modifier.scrollIfNeeded(): Modifier {
+    val state = rememberScrollState()
+    return verticalScroll(state, enabled = state.maxValue > 0)
 }

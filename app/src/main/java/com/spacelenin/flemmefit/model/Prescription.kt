@@ -50,6 +50,10 @@ data class Prescription(
     /** La consigne excentrique proposée ce jour-là : ni test, ni Boss, ni variante, ni remplacement. */
     val eccentricOffer: String? get() = exercise.eccentric?.takeIf { !isTest && !isBoss && variant == null && replaces == null }
 
+    /** Version facile : palier facile d'un exo, ou variante pas encore en vraie version. */
+    val isEasy: Boolean get() = variant?.full == false ||
+        listOfNotNull(exercise.name, exercise.description).any { EasyMark.containsMatchIn(it) }
+
     val key get() = exercise.key
     val repsLabel: String? get() = reps?.toString() ?: exercise.reps
     val durationLabel: String? get() = seconds?.let(Measures::formatSeconds) ?: exercise.duration
@@ -245,3 +249,6 @@ data class Prescription(
         }
     }
 }
+
+/** « Palier facile : … », « version facile » : ce qui marque une version allégée dans la routine. */
+private val EasyMark = Regex("(palier|version) facile", RegexOption.IGNORE_CASE)

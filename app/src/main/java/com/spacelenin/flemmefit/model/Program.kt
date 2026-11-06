@@ -282,6 +282,7 @@ data class StoredProgram(
             weights = weights.mapNotNull { (k, v) -> moved[k]?.let { it to v } }.toMap(),
             exerciseFeelings = exerciseFeelings.mapNotNull { (k, v) -> moved[k]?.let { it to v } }.toMap(),
             eccentrics = eccentrics.mapNotNull { moved[it] }.toSet(),
+            dayReplacements = dayReplacements.mapNotNull { (k, v) -> moved[k]?.let { it to v } }.toMap(),
             tests = tests.filterKeys { id -> newPlan.tests.any { it.id == id } },
             excused = excused.mapNotNull { moved[it] }.toSet() + newOnFinishedDays(newPlan),
         )
@@ -307,7 +308,7 @@ data class StoredProgram(
     /** Ancienne clé de suivi → nouvelle clé, pour les exercices retrouvés dans [newPlan]. */
     private fun remap(newPlan: Plan): Map<String, String> {
         val result = HashMap<String, String>()
-        (done + logs.keys + weights.keys + excused + exerciseFeelings.keys + eccentrics).mapNotNull { key ->
+        (done + logs.keys + weights.keys + excused + exerciseFeelings.keys + eccentrics + dayReplacements.keys).mapNotNull { key ->
             val day = key.substringBefore(':').toIntOrNull() ?: return@mapNotNull null
             val ex = key.substringAfter(':').toIntOrNull() ?: return@mapNotNull null
             Triple(key, day, ex)

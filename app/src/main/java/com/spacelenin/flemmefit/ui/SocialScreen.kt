@@ -1,5 +1,6 @@
 package com.spacelenin.flemmefit.ui
 
+import com.spacelenin.flemmefit.model.SharedExercise
 import com.spacelenin.flemmefit.model.StoredProgram
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
@@ -378,6 +379,7 @@ fun PseudoPromptDialog(onSave: (String) -> Unit, onLater: () -> Unit) {
 @Composable
 private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.LocalDate, onDismiss: () -> Unit) {
     val exercises = card.todayExercises.takeIf { card.isToday(today) }
+    val fit = com.spacelenin.flemmefit.ui.theme.LocalFitTheme.current
     PanelDialog(
         onDismissRequest = onDismiss,
         title = { Text(card.pseudo + if (isMe) " (toi)" else "") },
@@ -404,6 +406,24 @@ private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.Lo
                                     style = MaterialTheme.typography.bodyLarge,
                                     fontWeight = FontWeight.SemiBold,
                                 )
+                                val stars = if (fit) e.level?.let { l -> e.levelCount?.let { levelStars(l - 1, it) } } else null
+                                val extras = listOfNotNull(
+                                    when (e.version) {
+                                        SharedExercise.VERSION_ECCENTRIC -> "↘ excentrique"
+                                        SharedExercise.VERSION_EASY -> "facile"
+                                        else -> null
+                                    },
+                                    if (!fit) e.level?.let { l -> e.levelCount?.let { "niv. $l/$it" } } else null,
+                                    e.feeling?.let { StoredProgram.FEELINGS.getOrNull(it) },
+                                    e.dosePercent?.let { "dose $it %" },
+                                    "🏋️".takeIf { e.weighted == true },
+                                ).joinToString(" · ")
+                                if (stars != null || extras.isNotEmpty()) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        stars?.let { FitStars(it) }
+                                        if (extras.isNotEmpty()) Text(extras, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+                                    }
+                                }
                                 Text(
                                     listOfNotNull(e.planned?.let { "Prévu $it" }, e.done?.let { "fait : $it" } ?: "pas encore fait".takeIf { !e.finished })
                                         .joinToString(" · "),

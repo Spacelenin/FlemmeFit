@@ -110,7 +110,7 @@ class LevelsTest {
             return ProgramSchedule(p, start.plusDays(1)).sessionAt(1)!!.prescriptions.first { it.key == "abdos-bras-tendus" }
         }
         tuesday(12, "situp").let {
-            assertEquals("Abdos (sit-up)", it.exercise.name)
+            assertEquals("V-up (en attendant : sit-up)", it.exercise.name)
             assertEquals(5, it.reps) // séries : 4, moins un jour variante
         }
         tuesday(25, "crunch").let {

@@ -189,6 +189,8 @@ data class SideBalance(
     val eta: java.time.LocalDate?,
     /** [left] et [right] en secondes (exercice en durée). */
     val seconds: Boolean = false,
+    /** Clé de l'exercice (deux exos peuvent porter le même nom). */
+    val key: String = "",
 ) {
     fun format(value: Int?): String = value?.let { if (seconds) Measures.formatSeconds(it) else "$it" } ?: "–"
 
