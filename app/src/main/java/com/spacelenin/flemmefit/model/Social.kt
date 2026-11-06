@@ -156,7 +156,7 @@ object Social {
         val planned = pr.exploitPlanned
         val max = log?.max
         SharedExercise(
-            name = pr.exercise.name.take(40),
+            name = (if (pr.eccentric) "${pr.exercise.name} (excentrique)" else pr.exercise.name).take(40),
             planned = pr.summary().ifEmpty { null }?.take(40),
             done = doneLabel?.take(60),
             finished = finished,

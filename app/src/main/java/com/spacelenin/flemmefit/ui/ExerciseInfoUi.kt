@@ -43,7 +43,7 @@ import java.util.Locale
 
 /** Titre d'une partie de fiche : petit libellé coloré, ou petit bandeau rayé sur le thème fit. */
 @Composable
-private fun InfoHeader(text: String, color: Color) {
+internal fun InfoHeader(text: String, color: Color) {
     if (!LocalFitTheme.current) {
         Text(text, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = color, modifier = Modifier.padding(top = 4.dp))
         return

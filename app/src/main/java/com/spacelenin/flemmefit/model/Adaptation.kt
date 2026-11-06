@@ -159,6 +159,9 @@ object Adaptation {
 /** Une prescription de base (palier, crans de la courbe) sur laquelle le réglage s'ajoute. */
 data class AdaptBase(val exercise: Exercise, val steps: Int, val applied: Int, val weighted: Boolean)
 
+/** Un exo de la routine qui se règle sur toi, et les jours de la semaine où il revient. */
+data class RoutineExercise(val key: String, val name: String, val weekdays: List<java.time.DayOfWeek>)
+
 /** Le réglage d'un exercice, de quoi le montrer : par série, avec et sans réglage. */
 data class ExerciseAdaptation(
     val name: String,

@@ -196,11 +196,14 @@ data class Stats(
                     if (!pr.exercise.optional) a.required = true
                     a.sets += sets; a.reps += reps; a.seconds += secs
                     val bestSet = perSet?.maxOrNull()?.takeIf { it > 0 }
-                    listOfNotNull(if (pr.maxIsSeconds) null else bestSet ?: repsPerSet, maxReps).maxOrNull()
-                        ?.let { a.bestReps = maxOf(a.bestReps ?: 0, it) }
-                    listOfNotNull(if (pr.maxIsSeconds) bestSet ?: secPerSet else secPerSet, maxSec).maxOrNull()
-                        ?.let { a.bestSeconds = maxOf(a.bestSeconds ?: 0, it) }
-                    val summary = pr.summary().ifEmpty { null }
+                    // Une version excentrique compte dans les totaux, pas dans les records.
+                    if (!pr.eccentric) {
+                        listOfNotNull(if (pr.maxIsSeconds) null else bestSet ?: repsPerSet, maxReps).maxOrNull()
+                            ?.let { a.bestReps = maxOf(a.bestReps ?: 0, it) }
+                        listOfNotNull(if (pr.maxIsSeconds) bestSet ?: secPerSet else secPerSet, maxSec).maxOrNull()
+                            ?.let { a.bestSeconds = maxOf(a.bestSeconds ?: 0, it) }
+                    }
+                    val summary = pr.summary().ifEmpty { null }?.let { if (pr.eccentric) "$it · excentrique" else it }
                     if (a.first == null) a.first = summary
                     a.last = summary
                     a.lastDate = s.date

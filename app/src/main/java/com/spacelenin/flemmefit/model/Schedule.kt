@@ -579,6 +579,11 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             runCatching { replacementPrescription(option, ex, date, deload || chill, boss, burst) }
                 .onFailure(Safety::report).getOrNull()?.let { prescriptions[e] = it }
         }
+        // Version excentrique choisie (jamais un jour Boss ni sur un test) : faite, mais neutre pour le réglage.
+        if (!boss) for (e in 0 until n) {
+            val pr = prescriptions[e]
+            if (pr.exercise.eccentric != null && !pr.isTest && pr.variant == null && program.isEccentric(i, e)) prescriptions[e] = pr.copy(eccentric = true)
+        }
         // Ordre choisi (ou celui de la routine) ; la variante suit son exercice de base, l'exo perso passe avant le dernier.
         val order = Dose.arrange(day.exercises, program.orderOn(i, day.day, date), variantIndex, variantBase, otherIndex, n)
         // Mise en route et fatigue : jamais en semaine allégée ni un jour Boss.
@@ -634,6 +639,8 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 return@forEachIndexed
             }
             bestMax[key]?.let { priorBest[StoredProgram.doneKey(i, e)] = it }
+            // Excentrique : la séance compte (fatigue, mise en route, validation), le reste ne bouge pas.
+            if (pr.eccentric) return@forEachIndexed
             val done = program.isDone(i, e)
             if (done && !deload && !chill) validated[key] = (validated[key] ?: 0) + 1
             // Le réglage n'est qu'un plus : s'il échoue, la séance reste calculée sans lui (jamais de plantage).
@@ -994,6 +1001,24 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 adaptedSets = adapted.sets, baseSets = plain.sets, crans = state.applied, samples = state.samples, stable = state.isStable(params),
                 calibration = params.calibration,
             )
+        }
+    }
+
+    /**
+     * Les exos de la routine qui se règlent sur toi (ni échauffement, ni test, ni dose fixe), dans l'ordre de la
+     * semaine, avec leurs jours : de quoi montrer aussi ceux qui ne sont pas encore arrivés.
+     */
+    fun routineExercises(): List<RoutineExercise> {
+        val days = plan.weeks.flatMap { it.days }.sortedBy { it.day }
+        val found = LinkedHashMap<String, Exercise>()
+        days.forEach { d ->
+            d.exercises.forEach { ex ->
+                if (!ex.optional && !ex.retest && !ex.steady && (ex.progression != null || ex.levels.isNotEmpty())) found.putIfAbsent(ex.key, ex)
+            }
+        }
+        return found.map { (key, ex) ->
+            val on = days.filter { d -> d.exercises.any { it.key == key && !it.retest } }.map { it.day }.distinct()
+            RoutineExercise(key, runCatching { named(ex, today).name }.getOrDefault(ex.name), on.map { program.start.dayOfWeek.plus((it - 1).toLong()) })
         }
     }
 
