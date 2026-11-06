@@ -140,7 +140,7 @@ fun ReorderDialog(
                     items.forEachIndexed { pos, e ->
                         key(e) {
                             val isDragged = dragged == e
-                            val full = session.full.getOrNull(e) ?: return@key
+                            val full = session.full.getOrNull(e) ?: session.prescriptions[e]
                             val dose = doses[e]
                             val variant = session.variantIndex?.takeIf { session.variantBaseIndex == e && it != e }?.let { session.prescriptions.getOrNull(it) }
                             val shape = RoundedCornerShape(if (fit) 22.dp else 14.dp)
