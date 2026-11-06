@@ -255,6 +255,11 @@ data class Exercise(
     val assists: List<String> = emptyList(),
     /** Dose jamais réduite (mise en route, fatigue) : cardio, durée fixe. Il fatigue quand même ce qui suit. */
     val steady: Boolean = false,
+    /**
+     * Version excentrique, au choix le jour même : la consigne (« descends le plus lentement possible… »).
+     * Faite ainsi, la séance compte, mais le réglage, la progression et les records ne bougent pas.
+     */
+    val eccentric: String? = null,
 ) {
     /** Clé de regroupement : stable entre jours et entre programmes. */
     val key: String get() = (id ?: name).trim().lowercase()

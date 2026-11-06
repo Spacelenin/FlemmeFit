@@ -70,6 +70,7 @@ fun GuidedSession(
     color: Color,
     onSave: (exerciseIndex: Int, log: ExerciseLog, complete: Boolean) -> Unit,
     onWeights: (exerciseIndex: Int, on: Boolean) -> Unit,
+    onEccentric: (exerciseIndex: Int, on: Boolean) -> Unit = { _, _ -> },
     onFeeling: (exerciseIndex: Int, feeling: Int?) -> Unit,
     onClose: () -> Unit,
 ) {
@@ -321,6 +322,7 @@ fun GuidedSession(
                     onSkipSetup = { run = run?.next(SystemClock.elapsedRealtime()) },
                     onSetDone = { finishSet(if (guided.needsValue(set)) value else 0) },
                     onWeights = { on -> exerciseIndex?.let { onWeights(it, on) } },
+                    onEccentric = { on -> exerciseIndex?.let { onEccentric(it, on) } },
                     modifier = Modifier.weight(1f),
                 )
                 TextButton(
@@ -384,6 +386,7 @@ private fun SetContent(
     onSkipSetup: () -> Unit,
     onSetDone: () -> Unit,
     onWeights: (Boolean) -> Unit,
+    onEccentric: (Boolean) -> Unit,
     modifier: Modifier,
 ) {
     val p = guided.prescription
@@ -433,6 +436,11 @@ private fun SetContent(
         p.weighted?.let { on ->
             Spacer(Modifier.height(8.dp))
             WeightsChip(on, enabled = running == null, onChange = onWeights)
+        }
+        // Excentrique : à choisir avant la première série, la consigne s'affiche tout de suite.
+        if (p.eccentricOffer != null) {
+            Spacer(Modifier.height(8.dp))
+            EccentricSection(p, enabled = running == null, onEccentric = onEccentric, center = true)
         }
         if (guided.isAllOut(set)) {
             Text(

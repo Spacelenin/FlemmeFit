@@ -169,6 +169,7 @@ fun rememberDayActions(
                 onDismiss = close,
                 feeling = program.exerciseFeelingOf(dayIndex, logExercise),
                 onFeeling = { repository.setExerciseFeeling(program.id, dayIndex, logExercise, it) },
+                onEccentric = { repository.setEccentric(program.id, dayIndex, logExercise, it) },
             )
         } else {
             LogDialog(
@@ -208,6 +209,7 @@ fun rememberDayActions(
             onWeights = { repository.setWeights(program.id, dayIndex, detailExercise, it) },
             feeling = program.exerciseFeelingOf(dayIndex, detailExercise),
             onFeeling = { repository.setExerciseFeeling(program.id, dayIndex, detailExercise, it) },
+            onEccentric = { repository.setEccentric(program.id, dayIndex, detailExercise, it) },
         )
     }
 
@@ -222,6 +224,7 @@ fun rememberDayActions(
             onSave = { i, log, complete -> repository.saveLog(program.id, dayIndex, i, log, complete) },
             onWeights = { i, on -> repository.setWeights(program.id, dayIndex, i, on) },
             onFeeling = { i, f -> repository.setExerciseFeeling(program.id, dayIndex, i, f) },
+            onEccentric = { i, on -> repository.setEccentric(program.id, dayIndex, i, on) },
             onClose = { guidedDay = null },
         )
     }

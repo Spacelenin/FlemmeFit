@@ -475,6 +475,7 @@ private fun ExerciseRow(
                 // Thème fit : le palier se lit aux étoiles.
                 prescription.palier?.takeIf { !fit }?.let { "niveau ${it + 1}/${prescription.levelCount}" },
                 prescription.beforeDeload?.let { "récup (au lieu de $it)" },
+                "↘ en excentrique".takeIf { prescription.eccentric },
             ).joinToString(" · ")
             if (details.isNotEmpty()) {
                 Text(details, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

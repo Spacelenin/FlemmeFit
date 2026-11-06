@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
@@ -89,60 +90,18 @@ fun ProgramMenuButton(
     }
     fun fileName(suffix: String) = program.plan.name.lowercase().replace(Regex("[^a-z0-9]+"), "-").trim('-').ifEmpty { "routine" } + suffix + "-$today.json"
 
-    Box {
-        IconButton(onClick = { open = true }) { Icon(Icons.Default.MoreVert, "Options de ${program.plan.name}", tint = tint) }
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            DropdownMenuItem(
-                text = { Text("Changer la date de début") },
-                leadingIcon = { Icon(Icons.Default.Edit, null) },
-                onClick = { open = false; dialog = DIALOG_START },
-            )
-            if (program.plan.tests.isNotEmpty()) {
-                DropdownMenuItem(
-                    text = { Text("Tests de niveau") },
-                    leadingIcon = { Icon(Icons.Default.Star, null) },
-                    onClick = { open = false; dialog = DIALOG_TESTS },
-                )
-            }
-            DropdownMenuItem(
-                text = { Text("Rythme d'adaptation · " + program.profileOn(today).let { "${it.emoji} ${it.label}" }) },
-                leadingIcon = { Icon(Icons.Default.Settings, null) },
-                onClick = { open = false; dialog = DIALOG_PROFILE },
-            )
-            DropdownMenuItem(
-                text = { Text("Couleur du programme") },
-                leadingIcon = { Dot(programColor(program.colorIndex), size = 18) },
-                onClick = { open = false; dialog = DIALOG_COLOR },
-            )
-            DropdownMenuItem(
-                text = { Text("Mettre à jour la routine") },
-                leadingIcon = { Icon(Icons.Default.Refresh, null) },
-                onClick = { open = false; onUpdateRoutine() },
-            )
-            DropdownMenuItem(
-                text = { Text("Exporter la routine (JSON)") },
-                leadingIcon = { Icon(Icons.Default.Share, null) },
-                onClick = {
-                    open = false
-                    exportTemplate = false
-                    export.launch(fileName(""))
-                },
-            )
-            DropdownMenuItem(
-                text = { Text("Exporter un modèle à modifier") },
-                leadingIcon = { Icon(Icons.Default.Share, null) },
-                onClick = {
-                    open = false
-                    exportTemplate = true
-                    export.launch(fileName("-modele"))
-                },
-            )
-            DropdownMenuItem(
-                text = { Text("Supprimer le programme", color = MaterialTheme.colorScheme.error) },
-                leadingIcon = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) },
-                onClick = { open = false; dialog = DIALOG_DELETE },
-            )
-        }
+    IconButton(onClick = { open = true }) { Icon(Icons.Default.MoreVert, "Options de ${program.plan.name}", tint = tint) }
+    if (open) {
+        ProgramSheet(
+            program = program,
+            onDismiss = { open = false },
+            onStart = { open = false; dialog = DIALOG_START },
+            onTests = { open = false; dialog = DIALOG_TESTS },
+            onColor = { repository.setColor(program.id, it) },
+            onUpdate = { open = false; onUpdateRoutine() },
+            onExport = { open = false; dialog = DIALOG_EXPORT },
+            onDelete = { open = false; dialog = DIALOG_DELETE },
+        )
     }
 
     when (dialog) {
@@ -152,12 +111,6 @@ fun ProgramMenuButton(
                 repository.changeStartDate(program.id, date)
                 onStartChanged(date)
             },
-            onDismiss = { dialog = null },
-        )
-        DIALOG_PROFILE -> ProfileDialog(
-            current = program.profileOn(today),
-            programName = program.plan.name,
-            onSelect = { repository.setProfile(program.id, it, today) },
             onDismiss = { dialog = null },
         )
         DIALOG_TESTS -> {
@@ -176,29 +129,25 @@ fun ProgramMenuButton(
                 },
             )
         }
-        DIALOG_COLOR -> PanelDialog(
+        DIALOG_EXPORT -> PanelDialog(
             onDismissRequest = { dialog = null },
-            title = { Text("Couleur de « ${program.plan.name} »") },
+            title = { Text("Exporter") },
             text = {
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    (0 until ProgramColorCount).forEach { i ->
-                        val selected = i == Math.floorMod(program.colorIndex, ProgramColorCount)
-                        Box(
-                            Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(programColor(i))
-                                .then(if (selected) Modifier.border(3.dp, MaterialTheme.colorScheme.onSurface, CircleShape) else Modifier)
-                                .clickable {
-                                    repository.setColor(program.id, i)
-                                    dialog = null
-                                }
-                                .semantics { contentDescription = if (i == 0) "Couleur du thème" else "Couleur ${i + 1}" },
-                        )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("La routine telle quelle, ou un modèle avec tous les réglages écrits, à modifier puis à réimporter.", style = MaterialTheme.typography.bodyMedium)
+                    SheetRow("⇪", "La routine (JSON)") {
+                        dialog = null
+                        exportTemplate = false
+                        export.launch(fileName(""))
+                    }
+                    SheetRow("✎", "Un modèle à modifier") {
+                        dialog = null
+                        exportTemplate = true
+                        export.launch(fileName("-modele"))
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { dialog = null }) { Text("Fermer") } },
+            confirmButton = { TextButton(onClick = { dialog = null }) { Text("Annuler") } },
         )
         DIALOG_DELETE -> PanelDialog(
             onDismissRequest = { dialog = null },
@@ -219,5 +168,4 @@ fun ProgramMenuButton(
 private const val DIALOG_START = "start"
 private const val DIALOG_TESTS = "tests"
 private const val DIALOG_DELETE = "delete"
-private const val DIALOG_COLOR = "color"
-private const val DIALOG_PROFILE = "profile"
+private const val DIALOG_EXPORT = "export"

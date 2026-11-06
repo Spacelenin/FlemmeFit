@@ -102,6 +102,7 @@ Ce sont des **textes libres** (tu peux écrire `"12"`, `"8-10"`, `"max"`, `"10 p
 | `muscles`     | tableau | non        | `["triceps"]` | **Muscles qui travaillent surtout.** Plus tard dans la séance, un exercice dont un muscle principal a déjà travaillé perd 15 % de sa dose, 7 % pour un muscle qui aide (`assists`), jamais sous 65 %. Échauffement et étirements ne comptent pas, ni les jours Boss et les semaines allégées. Ce qui est noté est ramené à la dose pleine pour le réglage et les exploits. |
 | `assists`     | tableau | non        | `["épaules"]` | Muscles qui aident : comptent moins (voir `muscles`). |
 | `steady`      | booléen | non        | `false`   | Dose jamais réduite (cardio, durée fixe, ex. Beat Saber) ; il fatigue quand même ce qui suit. |
+| `eccentric`   | texte   | non        | —         | Version excentrique, au choix le jour même (« descends le plus lentement possible… »). Faite ainsi, l'exo compte comme fait, mais le réglage, la progression, les exploits et les records ne bougent pas. Jamais un jour Boss ni sur un test. |
 
 Affichage dans l'app : `sets × reps · load · repos rest`, par ex. **4 × 8-10 · 60 kg · repos 90s**.
 

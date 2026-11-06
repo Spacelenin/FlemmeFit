@@ -41,9 +41,14 @@ data class Prescription(
     val dose: DoseInfo? = null,
     /** Dose réduite : ce qui était prévu par série avant réduction. */
     val fullPlanned: Int? = null,
+    /** Fait en version excentrique ([Exercise.eccentric]) : compte comme fait, sans rien régler ni battre. */
+    val eccentric: Boolean = false,
 ) {
-    /** Les exploits se comptent sur la dose pleine : un exo réduit ne rend pas l'exploit plus facile. */
-    val exploitPlanned: Int? get() = fullPlanned ?: perSetPlanned
+    /** Les exploits se comptent sur la dose pleine : un exo réduit ne rend pas l'exploit plus facile. Jamais en excentrique. */
+    val exploitPlanned: Int? get() = if (eccentric) null else fullPlanned ?: perSetPlanned
+
+    /** La consigne excentrique proposée ce jour-là : ni test, ni Boss, ni variante, ni remplacement. */
+    val eccentricOffer: String? get() = exercise.eccentric?.takeIf { !isTest && !isBoss && variant == null && replaces == null }
 
     val key get() = exercise.key
     val repsLabel: String? get() = reps?.toString() ?: exercise.reps

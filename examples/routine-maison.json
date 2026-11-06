@@ -1,7 +1,7 @@
 {
   "format": "flemmefit",
   "version": 1,
-  "revision": 17,
+  "revision": 18,
   "name": "Routine maison",
   "description": "5 séances par semaine (jours 4 et 7 : repos, ou rien selon la fatigue). Paliers inspirés de 100pompes, 50tractions, musclesabdominaux et musclesdesjambes : un test de départ choisit ton palier, la dernière série va souvent au max, et la 4e semaine allège tout de moitié et refait les tests pour passer au palier suivant. Échauffement et étirements d'après echauffez-vous et etirez-vous.",
   "repeat": "forever",
@@ -307,6 +307,7 @@
               "name": "Pompes lentes (tempo)",
               "id": "pompes-lentes",
               "description": "3 s pour descendre, 1 s de pause poitrine à un poing du sol, 3 s pour remonter. Corps gainé du talon à la tête, coudes à 45° du corps. Si la forme casse, arrête la série : la lenteur compte plus que le nombre.",
+              "eccentric": "Pars en position haute, descends le plus bas et le plus lentement possible, relâche, puis reviens en position haute comme tu peux (genoux au sol) et recommence.",
               "rest": "90s",
               "test": "pompes",
               "levels": [
@@ -434,6 +435,7 @@
               "name": "Abdos bras tendus (V-up)",
               "id": "abdos-bras-tendus",
               "description": "Allongé sur le dos, bras tendus au-dessus de la tête. Remonte buste et bras tendus en même temps que les jambes se ramènent vers toi, mains vers les pieds, puis redescends lentement sans poser complètement. Bas du dos plaqué au sol, souffle en montant.",
+              "eccentric": "Pars en position haute, descends le plus bas possible sans que le haut du dos touche le sol, le plus lentement possible, relâche, puis reviens en position haute (aide-toi des mains) et recommence.",
               "rest": "60s",
               "test": "abdos",
               "amrap": true,
@@ -519,6 +521,7 @@
               "name": "Obliques en planche latérale (hip dips)",
               "id": "obliques",
               "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : une série à gauche, une à droite, en alternance.",
+              "eccentric": "Même mouvement, mais laisse descendre la hanche le plus lentement possible (3 à 5 s), puis remonte normalement.",
               "rest": "45s",
               "test": "abdos",
               "levels": [
@@ -639,6 +642,7 @@
               "name": "Hip thrust",
               "id": "hip-thrust",
               "description": "Le haut du dos (sous les omoplates) appuyé sur le bord d'un canapé ou d'un banc stable, pieds à plat largeur de hanches, genoux pliés. Monte le bassin en serrant les fessiers jusqu'à l'alignement épaules-genoux, menton rentré, puis redescends sans poser les fesses. Ce sont les fessiers qui poussent, pas le bas du dos. Dernière série : le max possible. Arrivé à 25 : marque une pause de 2 s en haut à chaque rep.",
+              "eccentric": "Même mouvement, mais redescends les hanches le plus lentement possible (3 à 5 s), puis remonte normalement.",
               "sets": 3,
               "reps": "12",
               "rest": "60s",
@@ -689,6 +693,7 @@
               "name": "Tractions sous une table (rowing inversé)",
               "id": "tractions-table",
               "description": "Allongé sous une table bien solide (vérifie qu'elle ne bascule pas), mains au bord du plateau. Corps droit, talons au sol, tire la poitrine jusqu'au plateau puis redescends en 2 s. Alterne d'une série à l'autre : mains écartées sur les côtés (dos large), puis mains serrées paumes vers toi (biceps).",
+              "eccentric": "Version négative : pars en haut (poitrine au plateau, monte en t'aidant des jambes), descends en 3 s jusqu'aux bras tendus, repose les fesses et remonte sans tirer.",
               "rest": "2min",
               "test": "tractions",
               "amrap": true,
@@ -697,13 +702,13 @@
                   "from": 0,
                   "sets": 5,
                   "reps": "2",
-                  "note": "Moins de 4 au test : négatives. Pars en haut (poitrine au plateau), descends en 3 s jusqu'aux bras tendus, repose les fesses et remonte sans tirer."
+                  "note": "Moins de 4 au test : version facile. Pieds plus près de la table, genoux pliés, corps plus vertical : tire la poitrine jusqu'au plateau, redescends en 2 s."
                 },
                 {
                   "from": 4,
                   "sets": 5,
                   "reps": "2",
-                  "note": "Encore en négatives si la forme casse : montée avec les jambes, descente en 3 s."
+                  "note": "Si la forme casse : rapproche les pieds et plie les genoux."
                 },
                 {
                   "from": 6,
@@ -789,6 +794,7 @@
               "name": "Dips sur chaise",
               "id": "dips",
               "description": "Dos à une chaise stable (calée contre un mur), mains sur le bord à largeur d'épaules, doigts vers l'avant, jambes tendues devant toi. Descends en pliant les coudes vers l'arrière jusqu'à ce que les bras fassent un angle droit, puis remonte en poussant. Épaules basses, dos près de la chaise. Dernière série : le max possible, proprement.",
+              "eccentric": "Pars bras tendus, descends le plus bas et le plus lentement possible, relâche, puis remonte en poussant sur les pieds et recommence.",
               "rest": "60s",
               "test": "pompes",
               "amrap": true,
@@ -865,6 +871,7 @@
               "name": "Pompes classiques",
               "id": "pompes",
               "description": "Mains un peu plus larges que les épaules, corps gainé, poitrine jusqu'à un poing du sol, rythme normal. Dernière série : le maximum possible, proprement.",
+              "eccentric": "Pars en position haute, descends le plus bas et le plus lentement possible, relâche, puis reviens en position haute comme tu peux (genoux au sol) et recommence.",
               "rest": "60s",
               "test": "pompes",
               "amrap": true,
@@ -991,6 +998,7 @@
               "name": "Abdos ({abdos})",
               "id": "abdos",
               "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
+              "eccentric": "Pars en position haute, descends le plus bas possible sans que le haut du dos touche le sol, le plus lentement possible, relâche, puis reviens en position haute (aide-toi des mains) et recommence.",
               "rest": "60s",
               "test": "abdos",
               "amrap": true,
@@ -1070,6 +1078,7 @@
               "name": "Squats classiques",
               "id": "squats-classiques",
               "description": "Pieds largeur d'épaules, bras tendus devant toi, dos droit. Descends jusqu'aux cuisses parallèles au sol, genoux dans l'axe des pieds, talons au sol, puis remonte.",
+              "eccentric": "Même mouvement, mais descends le plus lentement possible (3 à 5 s), puis remonte normalement.",
               "rest": "90s",
               "test": "squats",
               "amrap": true,
@@ -1128,6 +1137,7 @@
               "name": "Battements latéraux à la table",
               "id": "battements-lateraux",
               "description": "Mains sur une table, dos légèrement cambré, buste et regard vers la table. Lève une jambe tendue sur le côté, comme pour un grand écart, le plus haut possible. Redescends-la à peine puis remonte au max (ou un peu au-dessus) : une rep = un rebond. Le bassin reste face à la table. Ça brûle vite, c'est normal. Trop dur ? Lève moins haut.",
+              "eccentric": "Même mouvement, mais redescends la jambe le plus lentement possible (3 à 5 s), puis remonte normalement.",
               "sets": 3,
               "reps": "5",
               "rest": "45s",
@@ -1172,6 +1182,7 @@
               "name": "Pompes lentes (tempo)",
               "id": "pompes-lentes",
               "description": "3 s pour descendre, 1 s de pause poitrine à un poing du sol, 3 s pour remonter. Corps gainé du talon à la tête, coudes à 45° du corps. Si la forme casse, arrête la série : la lenteur compte plus que le nombre.",
+              "eccentric": "Pars en position haute, descends le plus bas et le plus lentement possible, relâche, puis reviens en position haute comme tu peux (genoux au sol) et recommence.",
               "rest": "90s",
               "test": "pompes",
               "levels": [
@@ -1299,6 +1310,7 @@
               "name": "Abdos bras tendus (V-up)",
               "id": "abdos-bras-tendus",
               "description": "Allongé sur le dos, bras tendus au-dessus de la tête. Remonte buste et bras tendus en même temps que les jambes se ramènent vers toi, mains vers les pieds, puis redescends lentement sans poser complètement. Bas du dos plaqué au sol, souffle en montant.",
+              "eccentric": "Pars en position haute, descends le plus bas possible sans que le haut du dos touche le sol, le plus lentement possible, relâche, puis reviens en position haute (aide-toi des mains) et recommence.",
               "rest": "60s",
               "test": "abdos",
               "amrap": true,
@@ -1384,6 +1396,7 @@
               "name": "Obliques en planche latérale (hip dips)",
               "id": "obliques",
               "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : une série à gauche, une à droite, en alternance.",
+              "eccentric": "Même mouvement, mais laisse descendre la hanche le plus lentement possible (3 à 5 s), puis remonte normalement.",
               "rest": "45s",
               "test": "abdos",
               "levels": [
@@ -1504,6 +1517,7 @@
               "name": "Hip thrust",
               "id": "hip-thrust",
               "description": "Le haut du dos (sous les omoplates) appuyé sur le bord d'un canapé ou d'un banc stable, pieds à plat largeur de hanches, genoux pliés. Monte le bassin en serrant les fessiers jusqu'à l'alignement épaules-genoux, menton rentré, puis redescends sans poser les fesses. Ce sont les fessiers qui poussent, pas le bas du dos. Dernière série : le max possible. Arrivé à 25 : marque une pause de 2 s en haut à chaque rep.",
+              "eccentric": "Même mouvement, mais redescends les hanches le plus lentement possible (3 à 5 s), puis remonte normalement.",
               "sets": 3,
               "reps": "12",
               "rest": "60s",
@@ -1554,6 +1568,7 @@
               "name": "Tractions sous une table (rowing inversé)",
               "id": "tractions-table",
               "description": "Allongé sous une table bien solide (vérifie qu'elle ne bascule pas), mains au bord du plateau. Corps droit, talons au sol, tire la poitrine jusqu'au plateau puis redescends en 2 s. Alterne d'une série à l'autre : mains écartées sur les côtés (dos large), puis mains serrées paumes vers toi (biceps).",
+              "eccentric": "Version négative : pars en haut (poitrine au plateau, monte en t'aidant des jambes), descends en 3 s jusqu'aux bras tendus, repose les fesses et remonte sans tirer.",
               "rest": "2min",
               "test": "tractions",
               "amrap": true,
@@ -1562,13 +1577,13 @@
                   "from": 0,
                   "sets": 5,
                   "reps": "2",
-                  "note": "Moins de 4 au test : négatives. Pars en haut (poitrine au plateau), descends en 3 s jusqu'aux bras tendus, repose les fesses et remonte sans tirer."
+                  "note": "Moins de 4 au test : version facile. Pieds plus près de la table, genoux pliés, corps plus vertical : tire la poitrine jusqu'au plateau, redescends en 2 s."
                 },
                 {
                   "from": 4,
                   "sets": 5,
                   "reps": "2",
-                  "note": "Encore en négatives si la forme casse : montée avec les jambes, descente en 3 s."
+                  "note": "Si la forme casse : rapproche les pieds et plie les genoux."
                 },
                 {
                   "from": 6,
@@ -1654,6 +1669,7 @@
               "name": "Dips sur chaise",
               "id": "dips",
               "description": "Dos à une chaise stable (calée contre un mur), mains sur le bord à largeur d'épaules, doigts vers l'avant, jambes tendues devant toi. Descends en pliant les coudes vers l'arrière jusqu'à ce que les bras fassent un angle droit, puis remonte en poussant. Épaules basses, dos près de la chaise. Dernière série : le max possible, proprement.",
+              "eccentric": "Pars bras tendus, descends le plus bas et le plus lentement possible, relâche, puis remonte en poussant sur les pieds et recommence.",
               "rest": "60s",
               "test": "pompes",
               "amrap": true,
@@ -1730,6 +1746,7 @@
               "name": "Pompes classiques",
               "id": "pompes",
               "description": "Mains un peu plus larges que les épaules, corps gainé, poitrine jusqu'à un poing du sol, rythme normal. Dernière série : le maximum possible, proprement.",
+              "eccentric": "Pars en position haute, descends le plus bas et le plus lentement possible, relâche, puis reviens en position haute comme tu peux (genoux au sol) et recommence.",
               "rest": "60s",
               "test": "pompes",
               "amrap": true,
@@ -1856,6 +1873,7 @@
               "name": "Abdos ({abdos})",
               "id": "abdos",
               "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
+              "eccentric": "Pars en position haute, descends le plus bas possible sans que le haut du dos touche le sol, le plus lentement possible, relâche, puis reviens en position haute (aide-toi des mains) et recommence.",
               "rest": "60s",
               "test": "abdos",
               "amrap": true,
@@ -1935,6 +1953,7 @@
               "name": "Squats classiques",
               "id": "squats-classiques",
               "description": "Pieds largeur d'épaules, bras tendus devant toi, dos droit. Descends jusqu'aux cuisses parallèles au sol, genoux dans l'axe des pieds, talons au sol, puis remonte.",
+              "eccentric": "Même mouvement, mais descends le plus lentement possible (3 à 5 s), puis remonte normalement.",
               "rest": "90s",
               "test": "squats",
               "amrap": true,
@@ -1993,6 +2012,7 @@
               "name": "Coups de pied latéraux à la table",
               "id": "coups-pied-lateraux",
               "description": "Mains sur une table, dos légèrement cambré, buste et regard vers la table. Lève une jambe sur le côté et garde-la en l'air : plie le genou, puis déplie-le d'un coup, comme un coup de pied sur le côté. Une rep = un coup, la jambe ne redescend pas entre les coups. Trop dur ? Garde la jambe moins haut.",
+              "eccentric": "Même mouvement, mais ramène la jambe le plus lentement possible (3 à 5 s), puis relance normalement.",
               "sets": 3,
               "reps": "5",
               "rest": "45s",
@@ -2037,6 +2057,7 @@
               "name": "Pompes lentes (tempo)",
               "id": "pompes-lentes",
               "description": "3 s pour descendre, 1 s de pause poitrine à un poing du sol, 3 s pour remonter. Corps gainé du talon à la tête, coudes à 45° du corps. Si la forme casse, arrête la série : la lenteur compte plus que le nombre.",
+              "eccentric": "Pars en position haute, descends le plus bas et le plus lentement possible, relâche, puis reviens en position haute comme tu peux (genoux au sol) et recommence.",
               "rest": "90s",
               "test": "pompes",
               "levels": [
@@ -2164,6 +2185,7 @@
               "name": "Abdos bras tendus (V-up)",
               "id": "abdos-bras-tendus",
               "description": "Allongé sur le dos, bras tendus au-dessus de la tête. Remonte buste et bras tendus en même temps que les jambes se ramènent vers toi, mains vers les pieds, puis redescends lentement sans poser complètement. Bas du dos plaqué au sol, souffle en montant.",
+              "eccentric": "Pars en position haute, descends le plus bas possible sans que le haut du dos touche le sol, le plus lentement possible, relâche, puis reviens en position haute (aide-toi des mains) et recommence.",
               "rest": "60s",
               "test": "abdos",
               "amrap": true,
@@ -2249,6 +2271,7 @@
               "name": "Obliques en planche latérale (hip dips)",
               "id": "obliques",
               "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : une série à gauche, une à droite, en alternance.",
+              "eccentric": "Même mouvement, mais laisse descendre la hanche le plus lentement possible (3 à 5 s), puis remonte normalement.",
               "rest": "45s",
               "test": "abdos",
               "levels": [
@@ -2369,6 +2392,7 @@
               "name": "Hip thrust",
               "id": "hip-thrust",
               "description": "Le haut du dos (sous les omoplates) appuyé sur le bord d'un canapé ou d'un banc stable, pieds à plat largeur de hanches, genoux pliés. Monte le bassin en serrant les fessiers jusqu'à l'alignement épaules-genoux, menton rentré, puis redescends sans poser les fesses. Ce sont les fessiers qui poussent, pas le bas du dos. Dernière série : le max possible. Arrivé à 25 : marque une pause de 2 s en haut à chaque rep.",
+              "eccentric": "Même mouvement, mais redescends les hanches le plus lentement possible (3 à 5 s), puis remonte normalement.",
               "sets": 3,
               "reps": "12",
               "rest": "60s",
@@ -2419,6 +2443,7 @@
               "name": "Tractions sous une table (rowing inversé)",
               "id": "tractions-table",
               "description": "Allongé sous une table bien solide (vérifie qu'elle ne bascule pas), mains au bord du plateau. Corps droit, talons au sol, tire la poitrine jusqu'au plateau puis redescends en 2 s. Alterne d'une série à l'autre : mains écartées sur les côtés (dos large), puis mains serrées paumes vers toi (biceps).",
+              "eccentric": "Version négative : pars en haut (poitrine au plateau, monte en t'aidant des jambes), descends en 3 s jusqu'aux bras tendus, repose les fesses et remonte sans tirer.",
               "rest": "2min",
               "test": "tractions",
               "amrap": true,
@@ -2427,13 +2452,13 @@
                   "from": 0,
                   "sets": 5,
                   "reps": "2",
-                  "note": "Moins de 4 au test : négatives. Pars en haut (poitrine au plateau), descends en 3 s jusqu'aux bras tendus, repose les fesses et remonte sans tirer."
+                  "note": "Moins de 4 au test : version facile. Pieds plus près de la table, genoux pliés, corps plus vertical : tire la poitrine jusqu'au plateau, redescends en 2 s."
                 },
                 {
                   "from": 4,
                   "sets": 5,
                   "reps": "2",
-                  "note": "Encore en négatives si la forme casse : montée avec les jambes, descente en 3 s."
+                  "note": "Si la forme casse : rapproche les pieds et plie les genoux."
                 },
                 {
                   "from": 6,
@@ -2519,6 +2544,7 @@
               "name": "Dips sur chaise",
               "id": "dips",
               "description": "Dos à une chaise stable (calée contre un mur), mains sur le bord à largeur d'épaules, doigts vers l'avant, jambes tendues devant toi. Descends en pliant les coudes vers l'arrière jusqu'à ce que les bras fassent un angle droit, puis remonte en poussant. Épaules basses, dos près de la chaise. Dernière série : le max possible, proprement.",
+              "eccentric": "Pars bras tendus, descends le plus bas et le plus lentement possible, relâche, puis remonte en poussant sur les pieds et recommence.",
               "rest": "60s",
               "test": "pompes",
               "amrap": true,
@@ -2595,6 +2621,7 @@
               "name": "Pompes classiques",
               "id": "pompes",
               "description": "Mains un peu plus larges que les épaules, corps gainé, poitrine jusqu'à un poing du sol, rythme normal. Dernière série : le maximum possible, proprement.",
+              "eccentric": "Pars en position haute, descends le plus bas et le plus lentement possible, relâche, puis reviens en position haute comme tu peux (genoux au sol) et recommence.",
               "rest": "60s",
               "test": "pompes",
               "amrap": true,
@@ -2721,6 +2748,7 @@
               "name": "Abdos ({abdos})",
               "id": "abdos",
               "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
+              "eccentric": "Pars en position haute, descends le plus bas possible sans que le haut du dos touche le sol, le plus lentement possible, relâche, puis reviens en position haute (aide-toi des mains) et recommence.",
               "rest": "60s",
               "test": "abdos",
               "amrap": true,
@@ -2800,6 +2828,7 @@
               "name": "Squats classiques",
               "id": "squats-classiques",
               "description": "Pieds largeur d'épaules, bras tendus devant toi, dos droit. Descends jusqu'aux cuisses parallèles au sol, genoux dans l'axe des pieds, talons au sol, puis remonte.",
+              "eccentric": "Même mouvement, mais descends le plus lentement possible (3 à 5 s), puis remonte normalement.",
               "rest": "90s",
               "test": "squats",
               "amrap": true,
@@ -2858,6 +2887,7 @@
               "name": "Battements latéraux à la table",
               "id": "battements-lateraux",
               "description": "Mains sur une table, dos légèrement cambré, buste et regard vers la table. Lève une jambe tendue sur le côté, comme pour un grand écart, le plus haut possible. Redescends-la à peine puis remonte au max (ou un peu au-dessus) : une rep = un rebond. Le bassin reste face à la table. Ça brûle vite, c'est normal. Trop dur ? Lève moins haut.",
+              "eccentric": "Même mouvement, mais redescends la jambe le plus lentement possible (3 à 5 s), puis remonte normalement.",
               "sets": 3,
               "reps": "5",
               "rest": "45s",
@@ -2918,6 +2948,7 @@
               "name": "Pompes lentes (tempo)",
               "id": "pompes-lentes",
               "description": "3 s pour descendre, 1 s de pause poitrine à un poing du sol, 3 s pour remonter. Corps gainé du talon à la tête, coudes à 45° du corps. Si la forme casse, arrête la série : la lenteur compte plus que le nombre.",
+              "eccentric": "Pars en position haute, descends le plus bas et le plus lentement possible, relâche, puis reviens en position haute comme tu peux (genoux au sol) et recommence.",
               "rest": "90s",
               "test": "pompes",
               "levels": [
@@ -3071,6 +3102,7 @@
               "name": "Abdos bras tendus (V-up)",
               "id": "abdos-bras-tendus",
               "description": "Allongé sur le dos, bras tendus au-dessus de la tête. Remonte buste et bras tendus en même temps que les jambes se ramènent vers toi, mains vers les pieds, puis redescends lentement sans poser complètement. Bas du dos plaqué au sol, souffle en montant.",
+              "eccentric": "Pars en position haute, descends le plus bas possible sans que le haut du dos touche le sol, le plus lentement possible, relâche, puis reviens en position haute (aide-toi des mains) et recommence.",
               "rest": "60s",
               "test": "abdos",
               "amrap": true,
@@ -3156,6 +3188,7 @@
               "name": "Obliques en planche latérale (hip dips)",
               "id": "obliques",
               "description": "Sur un coude, totalement de côté, corps aligné, l'autre bras tendu vers le plafond. Descends le bassin jusqu'à frôler le sol puis remonte-le plus haut que l'alignement. Les reps sont par côté : une série à gauche, une à droite, en alternance.",
+              "eccentric": "Même mouvement, mais laisse descendre la hanche le plus lentement possible (3 à 5 s), puis remonte normalement.",
               "rest": "45s",
               "test": "abdos",
               "levels": [
@@ -3276,6 +3309,7 @@
               "name": "Hip thrust",
               "id": "hip-thrust",
               "description": "Le haut du dos (sous les omoplates) appuyé sur le bord d'un canapé ou d'un banc stable, pieds à plat largeur de hanches, genoux pliés. Monte le bassin en serrant les fessiers jusqu'à l'alignement épaules-genoux, menton rentré, puis redescends sans poser les fesses. Ce sont les fessiers qui poussent, pas le bas du dos. Dernière série : le max possible. Arrivé à 25 : marque une pause de 2 s en haut à chaque rep.",
+              "eccentric": "Même mouvement, mais redescends les hanches le plus lentement possible (3 à 5 s), puis remonte normalement.",
               "sets": 3,
               "reps": "12",
               "rest": "60s",
@@ -3341,6 +3375,7 @@
               "name": "Tractions sous une table (rowing inversé)",
               "id": "tractions-table",
               "description": "Allongé sous une table bien solide (vérifie qu'elle ne bascule pas), mains au bord du plateau. Corps droit, talons au sol, tire la poitrine jusqu'au plateau puis redescends en 2 s. Alterne d'une série à l'autre : mains écartées sur les côtés (dos large), puis mains serrées paumes vers toi (biceps).",
+              "eccentric": "Version négative : pars en haut (poitrine au plateau, monte en t'aidant des jambes), descends en 3 s jusqu'aux bras tendus, repose les fesses et remonte sans tirer.",
               "rest": "2min",
               "test": "tractions",
               "amrap": true,
@@ -3349,13 +3384,13 @@
                   "from": 0,
                   "sets": 5,
                   "reps": "2",
-                  "note": "Moins de 4 au test : négatives. Pars en haut (poitrine au plateau), descends en 3 s jusqu'aux bras tendus, repose les fesses et remonte sans tirer."
+                  "note": "Moins de 4 au test : version facile. Pieds plus près de la table, genoux pliés, corps plus vertical : tire la poitrine jusqu'au plateau, redescends en 2 s."
                 },
                 {
                   "from": 4,
                   "sets": 5,
                   "reps": "2",
-                  "note": "Encore en négatives si la forme casse : montée avec les jambes, descente en 3 s."
+                  "note": "Si la forme casse : rapproche les pieds et plie les genoux."
                 },
                 {
                   "from": 6,
@@ -3441,6 +3476,7 @@
               "name": "Dips sur chaise",
               "id": "dips",
               "description": "Dos à une chaise stable (calée contre un mur), mains sur le bord à largeur d'épaules, doigts vers l'avant, jambes tendues devant toi. Descends en pliant les coudes vers l'arrière jusqu'à ce que les bras fassent un angle droit, puis remonte en poussant. Épaules basses, dos près de la chaise. Dernière série : le max possible, proprement.",
+              "eccentric": "Pars bras tendus, descends le plus bas et le plus lentement possible, relâche, puis remonte en poussant sur les pieds et recommence.",
               "rest": "60s",
               "test": "pompes",
               "amrap": true,
@@ -3517,6 +3553,7 @@
               "name": "Pompes classiques",
               "id": "pompes",
               "description": "Mains un peu plus larges que les épaules, corps gainé, poitrine jusqu'à un poing du sol, rythme normal. Dernière série : le maximum possible, proprement.",
+              "eccentric": "Pars en position haute, descends le plus bas et le plus lentement possible, relâche, puis reviens en position haute comme tu peux (genoux au sol) et recommence.",
               "rest": "60s",
               "test": "pompes",
               "amrap": true,
@@ -3658,6 +3695,7 @@
               "name": "Abdos ({abdos})",
               "id": "abdos",
               "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
+              "eccentric": "Pars en position haute, descends le plus bas possible sans que le haut du dos touche le sol, le plus lentement possible, relâche, puis reviens en position haute (aide-toi des mains) et recommence.",
               "rest": "60s",
               "test": "abdos",
               "amrap": true,
@@ -3737,6 +3775,7 @@
               "name": "Squats classiques",
               "id": "squats-classiques",
               "description": "Pieds largeur d'épaules, bras tendus devant toi, dos droit. Descends jusqu'aux cuisses parallèles au sol, genoux dans l'axe des pieds, talons au sol, puis remonte.",
+              "eccentric": "Même mouvement, mais descends le plus lentement possible (3 à 5 s), puis remonte normalement.",
               "rest": "90s",
               "test": "squats",
               "amrap": true,
@@ -3795,6 +3834,7 @@
               "name": "Coups de pied latéraux à la table",
               "id": "coups-pied-lateraux",
               "description": "Mains sur une table, dos légèrement cambré, buste et regard vers la table. Lève une jambe sur le côté et garde-la en l'air : plie le genou, puis déplie-le d'un coup, comme un coup de pied sur le côté. Une rep = un coup, la jambe ne redescend pas entre les coups. Trop dur ? Garde la jambe moins haut.",
+              "eccentric": "Même mouvement, mais ramène la jambe le plus lentement possible (3 à 5 s), puis relance normalement.",
               "sets": 3,
               "reps": "5",
               "rest": "45s",

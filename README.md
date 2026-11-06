@@ -22,6 +22,9 @@ et une progression.
 - **Fatigue et mise en route** 💪 : un exo qui passe après d'autres sur les mêmes muscles est réduit (−15 % par
   muscle principal déjà travaillé, −7 % pour un muscle qui aide, jamais sous 65 %), et un exo qui arrive commence à
   60 % puis 80 %. « ↕ Réorganiser » change l'ordre des exos du jour par glisser-déposer, en montrant l'effet.
+- **Excentrique ↘** sur les exos en reps (pompes, dips, abdos, tractions, squats…) : quand c'est trop dur, on ne
+  travaille que la descente, le plus lentement possible. L'exo compte comme fait, mais le réglage, la progression et les
+  records ne bougent pas (jamais un jour Boss ni sur un test).
 - **Mode séance** guidé : série par série, 4 s pour se mettre en place avant chaque série au temps, repos décompté,
   chrono qui continue en temps en plus, ressenti par exo.
 - **Exos d'un côté à la fois** : une série par côté, 🔴 gauche / 🔵 droite. Chaque côté est suivi à part ; un côté en

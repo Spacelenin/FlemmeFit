@@ -52,6 +52,7 @@ import com.spacelenin.flemmefit.model.CustomExercise
 import com.spacelenin.flemmefit.model.ExerciseAdaptation
 import com.spacelenin.flemmefit.model.Plan
 import com.spacelenin.flemmefit.model.ProgramSchedule
+import com.spacelenin.flemmefit.model.RoutineExercise
 import com.spacelenin.flemmefit.model.SideBalance
 import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.model.VariantProgress
@@ -70,11 +71,13 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
     val schedules = remember(programs, today) { programs.associate { it.id to ProgramSchedule(it, today) } }
     val schedule = program?.let { schedules[it.id] }
     val progress = remember(schedule) { schedule?.variantProgress().orEmpty() }
-    // Par programme : son nom, ses exos réglés et leur équilibre gauche / droite.
+    // Par programme : son nom, ses exos réglés et leur équilibre gauche / droite, puis ceux pas encore faits.
     val adapted = remember(schedules) {
         programs.mapNotNull { p ->
             val s = schedules.getValue(p.id)
-            s.adaptations().filter { it.samples > 0 }.takeIf { it.isNotEmpty() }?.let { Triple(p, it, s.balances()) }
+            val list = s.adaptations().filter { it.samples > 0 }
+            val pending = runCatching { s.routineExercises() }.getOrDefault(emptyList()).filter { r -> list.none { it.key == r.key } }
+            if (list.isEmpty() && pending.isEmpty()) null else AdaptedProgram(p, list, s.balances(), pending)
         }
     }
     var adding by rememberSaveable { mutableStateOf(false) }
@@ -132,7 +135,7 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
                             modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     }
-                    adapted.forEachIndexed { k, (owner, list, balances) ->
+                    adapted.forEachIndexed { k, (owner, list, balances, pending) ->
                         if (adapted.size > 1) {
                             item(key = "adapt-program-$k") {
                                 Text(owner.plan.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp, top = 12.dp))
@@ -152,6 +155,12 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
                                 Box(Modifier.clickable(enabled = a.key.isNotEmpty()) { infoFor = owner.id; infoKey = a.key }) {
                                     AdaptationRow(a, balances.firstOrNull { it.name == a.name })
                                 }
+                            }
+                        }
+                        // Pas encore fait : en gris, avec ses jours ; la fiche s'ouvre quand même.
+                        itemsIndexed(pending, key = { _, r -> "adapt-$k-todo-${r.key}" }) { i, r ->
+                            FitRowFrame(number = list.size + i + 1) {
+                                Box(Modifier.clickable { infoFor = owner.id; infoKey = r.key }) { PendingRow(r) }
                             }
                         }
                     }
@@ -274,6 +283,26 @@ private fun AdaptationRow(a: ExerciseAdaptation, balance: SideBalance?) {
         }
     }
 }
+
+@Composable
+private fun PendingRow(r: RoutineExercise) {
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)) {
+        Text(r.name, style = MaterialTheme.typography.titleMedium, color = muted.copy(alpha = 0.8f))
+        Text(
+            "Pas encore fait" + if (r.weekdays.isEmpty()) "" else " · " + r.weekdays.joinToString(", ") { it.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.FRENCH) },
+            style = MaterialTheme.typography.bodySmall,
+            color = muted,
+        )
+    }
+}
+
+private data class AdaptedProgram(
+    val program: StoredProgram,
+    val list: List<ExerciseAdaptation>,
+    val balances: List<SideBalance>,
+    val pending: List<RoutineExercise>,
+)
 
 @Composable
 private fun VariantRow(v: VariantProgress) {

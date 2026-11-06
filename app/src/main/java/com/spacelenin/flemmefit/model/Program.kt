@@ -119,6 +119,8 @@ data class StoredProgram(
     val dayOrders: Map<String, List<String>> = emptyMap(),
     /** Ordres gardés d'une séance à l'autre, datés. */
     val orders: List<OrderChange> = emptyList(),
+    /** Exercices faits en version excentrique, mêmes clés que [done]. */
+    val eccentrics: Set<String> = emptySet(),
 ) {
     val start: LocalDate get() = LocalDate.parse(startDate)
 
@@ -185,8 +187,16 @@ data class StoredProgram(
             done = done.filterNot(::mine).toSet(),
             logs = logs.filterKeys { !mine(it) },
             exerciseFeelings = exerciseFeelings.filterKeys { !mine(it) },
+            eccentrics = eccentrics.filterNot(::mine).toSet(),
             feelings = feelings - dayIndex.toString(),
         )
+    }
+
+    fun isEccentric(dayIndex: Int, exerciseIndex: Int) = doneKey(dayIndex, exerciseIndex) in eccentrics
+
+    fun withEccentric(dayIndex: Int, exerciseIndex: Int, on: Boolean): StoredProgram {
+        val key = doneKey(dayIndex, exerciseIndex)
+        return copy(eccentrics = if (on) eccentrics + key else eccentrics - key)
     }
 
     fun exerciseFeelingOf(dayIndex: Int, exerciseIndex: Int): Int? = exerciseFeelings[doneKey(dayIndex, exerciseIndex)]
@@ -226,7 +236,7 @@ data class StoredProgram(
      */
     fun withReplacement(dayIndex: Int, exerciseIndex: Int, key: String, option: String?, date: LocalDate, keep: Boolean): StoredProgram {
         val k = doneKey(dayIndex, exerciseIndex)
-        val cleared = copy(done = done - k, logs = logs - k, exerciseFeelings = exerciseFeelings - k)
+        val cleared = copy(done = done - k, logs = logs - k, exerciseFeelings = exerciseFeelings - k, eccentrics = eccentrics - k)
         if (!keep) return cleared.copy(dayReplacements = dayReplacements + (k to (option ?: "")))
         val kept = replacements.filterNot { it.exercise == key && it.date >= date.toString() }
         return cleared.copy(dayReplacements = dayReplacements - k, replacements = kept + ReplacementChange(key, option, date.toString()))
@@ -271,6 +281,7 @@ data class StoredProgram(
             logs = logs.mapNotNull { (k, v) -> moved[k]?.let { it to v } }.toMap(),
             weights = weights.mapNotNull { (k, v) -> moved[k]?.let { it to v } }.toMap(),
             exerciseFeelings = exerciseFeelings.mapNotNull { (k, v) -> moved[k]?.let { it to v } }.toMap(),
+            eccentrics = eccentrics.mapNotNull { moved[it] }.toSet(),
             tests = tests.filterKeys { id -> newPlan.tests.any { it.id == id } },
             excused = excused.mapNotNull { moved[it] }.toSet() + newOnFinishedDays(newPlan),
         )
@@ -296,7 +307,7 @@ data class StoredProgram(
     /** Ancienne clé de suivi → nouvelle clé, pour les exercices retrouvés dans [newPlan]. */
     private fun remap(newPlan: Plan): Map<String, String> {
         val result = HashMap<String, String>()
-        (done + logs.keys + weights.keys + excused + exerciseFeelings.keys).mapNotNull { key ->
+        (done + logs.keys + weights.keys + excused + exerciseFeelings.keys + eccentrics).mapNotNull { key ->
             val day = key.substringBefore(':').toIntOrNull() ?: return@mapNotNull null
             val ex = key.substringAfter(':').toIntOrNull() ?: return@mapNotNull null
             Triple(key, day, ex)

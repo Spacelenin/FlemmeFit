@@ -38,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -77,6 +78,8 @@ fun ExerciseDetailSheet(
     /** Ressenti de l'exo ce jour-là (null : rien dit), et de quoi le changer. */
     feeling: Int? = null,
     onFeeling: ((Int?) -> Unit)? = null,
+    /** Version excentrique du jour, si l'exo en a une. */
+    onEccentric: ((Boolean) -> Unit)? = null,
 ) {
     val exercise = prescription.exercise
     val restBonus = LocalRestBonus.current
@@ -190,6 +193,7 @@ fun ExerciseDetailSheet(
                     }
                 }
             }
+            if (!locked) EccentricSection(prescription, enabled = true, onEccentric = onEccentric)
             if (!locked) FeelingSection(prescription, feeling, onFeeling)
             Spacer(Modifier.height(4.dp))
             if (locked) {
@@ -243,6 +247,7 @@ fun SetsLogSheet(
     onDismiss: () -> Unit,
     feeling: Int? = null,
     onFeeling: ((Int?) -> Unit)? = null,
+    onEccentric: ((Boolean) -> Unit)? = null,
 ) {
     val planned = prescription.perSetPlanned ?: 0
     val count = prescription.sets ?: 1
@@ -363,6 +368,7 @@ fun SetsLogSheet(
                     )
                 }
             }
+            EccentricSection(prescription, enabled = true, onEccentric = onEccentric)
             FeelingSection(prescription, feeling, onFeeling)
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (existing != null) TextButton(onClick = onClear) { Text("Effacer") }
@@ -384,10 +390,39 @@ fun ExerciseFeelingChips(current: Int?, onPick: (Int?) -> Unit) {
     }
 }
 
+/**
+ * Bouton « Excentrique » d'un exo qui en a une version : quand c'est trop dur, on la fait à la place.
+ * L'exo compte comme fait, le réglage ne bouge pas. Allumé, la consigne s'affiche.
+ */
+@Composable
+fun EccentricSection(prescription: Prescription, enabled: Boolean, onEccentric: ((Boolean) -> Unit)?, center: Boolean = false) {
+    val text = prescription.eccentricOffer ?: return
+    if (onEccentric == null) return
+    val on = prescription.eccentric
+    Column(
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalAlignment = if (center) Alignment.CenterHorizontally else Alignment.Start,
+    ) {
+        FitChip(
+            selected = on,
+            enabled = enabled,
+            onClick = { onEccentric(!on) },
+            label = { Text(if (on) "↘ En excentrique" else "↘ Excentrique") },
+        )
+        Text(
+            if (on) "Compte comme fait, ton réglage ne bouge pas." else "Trop dur aujourd'hui ? La descente seule compte comme fait, sans toucher à ton réglage.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = if (center) TextAlign.Center else TextAlign.Start,
+        )
+        if (on) InstructionBubble(text)
+    }
+}
+
 /** « Ton ressenti » sous un exo, quand il se règle sur toi. */
 @Composable
 private fun FeelingSection(prescription: Prescription, feeling: Int?, onFeeling: ((Int?) -> Unit)?) {
-    if (onFeeling == null || prescription.exercise.progression == null || prescription.exercise.optional || prescription.isTest) return
+    if (onFeeling == null || prescription.exercise.progression == null || prescription.exercise.optional || prescription.isTest || prescription.eccentric) return
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text("Ton ressenti", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         ExerciseFeelingChips(feeling, onFeeling)
