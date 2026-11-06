@@ -1,6 +1,7 @@
 package com.spacelenin.flemmefit.model
 
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.SerializationException
@@ -68,7 +69,26 @@ data class SharedExercise(
     val exploit: Boolean = false,
     /** Fait à la place d'un exercice de la routine. */
     val replaced: Boolean = false,
-)
+    /** Version faite : [VERSION_EASY] ou [VERSION_ECCENTRIC] ; null : normale. Noms courts, la carte doit rester petite. */
+    @SerialName("v") val version: String? = null,
+    /** Palier (à partir de 1) et nombre de paliers. */
+    @SerialName("lv") val level: Int? = null,
+    @SerialName("lc") val levelCount: Int? = null,
+    /** Ressenti de l'exo (index de [StoredProgram.FEELINGS]). */
+    @SerialName("fe") val feeling: Int? = null,
+    /** Dose réduite (mise en route, fatigue), en %. */
+    @SerialName("pc") val dosePercent: Int? = null,
+    /** Fait avec des poids. */
+    @SerialName("w") val weighted: Boolean? = null,
+) {
+    /** Sans les détails en plus : ce qui saute d'abord quand la carte est trop grosse. */
+    fun bare() = copy(version = null, level = null, levelCount = null, feeling = null, dosePercent = null, weighted = null)
+
+    companion object {
+        const val VERSION_EASY = "f"
+        const val VERSION_ECCENTRIC = "x"
+    }
+}
 
 object Social {
     /** De quoi rester bien sous les 4 Ko d'un message ntfy. */
@@ -156,18 +176,30 @@ object Social {
         val planned = pr.exploitPlanned
         val max = log?.max
         SharedExercise(
-            name = (if (pr.eccentric) "${pr.exercise.name} (excentrique)" else pr.exercise.name).take(40),
+            name = pr.exercise.name.take(40),
             planned = pr.summary().ifEmpty { null }?.take(40),
             done = doneLabel?.take(60),
             finished = finished,
             exploit = max != null && planned != null && Exploit.isExploit(max, planned, pr.maxIsSeconds),
             replaced = pr.replaces != null,
+            version = when {
+                pr.eccentric -> SharedExercise.VERSION_ECCENTRIC
+                pr.isEasy -> SharedExercise.VERSION_EASY
+                else -> null
+            },
+            level = pr.palier?.plus(1)?.takeIf { pr.levelCount > 1 },
+            levelCount = pr.levelCount.takeIf { pr.palier != null && it > 1 },
+            feeling = schedule.program.exerciseFeelingOf(s.index, e),
+            dosePercent = pr.dose?.takeIf { it.reduced }?.percent,
+            weighted = true.takeIf { pr.weighted == true },
         )
     }
 
     /** Une carte trop grosse pour ntfy perd son détail, exercice par exercice en partant de la fin. */
     private fun FriendCard.fitted(): FriendCard {
         var card = this
+        // Trop gros : les détails en plus sautent d'abord, puis les exos un par un en partant de la fin.
+        if (encode(card).toByteArray().size > MAX_CARD_BYTES) card = card.copy(todayExercises = card.todayExercises?.map { it.bare() })
         while (encode(card).toByteArray().size > MAX_CARD_BYTES && !card.todayExercises.isNullOrEmpty()) {
             card = card.copy(todayExercises = card.todayExercises!!.dropLast(1))
         }

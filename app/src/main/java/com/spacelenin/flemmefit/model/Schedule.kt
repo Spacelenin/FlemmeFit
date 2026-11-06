@@ -639,8 +639,9 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 return@forEachIndexed
             }
             bestMax[key]?.let { priorBest[StoredProgram.doneKey(i, e)] = it }
-            // Excentrique : la séance compte (fatigue, mise en route, validation), le reste ne bouge pas.
-            if (pr.eccentric) return@forEachIndexed
+            // Excentrique fait : la séance compte (fatigue, mise en route, validation), le reste ne bouge pas.
+            // Coché mais rien fait : un oubli comme un autre, le réglage le voit.
+            if (pr.eccentric && (program.isDone(i, e) || program.logOf(i, e) != null)) return@forEachIndexed
             val done = program.isDone(i, e)
             if (done && !deload && !chill) validated[key] = (validated[key] ?: 0) + 1
             // Le réglage n'est qu'un plus : s'il échoue, la séance reste calculée sans lui (jamais de plantage).
@@ -926,7 +927,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         val points = balancePoints.getOrPut(key) { ArrayList() }
         if (points.lastOrNull()?.date == date) points.removeAt(points.lastIndex)
         points += TestPoint(date, Math.round(gap * 100).toInt())
-        balanceViews[key] = SideBalance(name, limb, left, right, gap, mode, weak, points.toList(), eta, seconds)
+        balanceViews[key] = SideBalance(name, limb, left, right, gap, mode, weak, points.toList(), eta, seconds, key = key)
     }
 
     /**
@@ -1036,11 +1037,12 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         // Tout ce qui se lit à ce jour, avant de regarder les séances à venir (qui font avancer le calcul).
         val family = plan.families.filter { key in it.exercises }.map { it.id }
         val adaptation = adaptations().firstOrNull { it.key == key }
-        val balance = balances().firstOrNull { it.name == shown.name || it.name == base.name }
+        val balance = balances().firstOrNull { it.key == key }
         val variants = variantProgress().filter { it.variant.family in family }
         val stats = runCatching { Stats.of(this).exercises.firstOrNull { it.key == key } }.getOrNull()
         // Meilleure série de chaque séance faite.
         val history = ArrayList<TestPoint>()
+        val eccentricDates = HashSet<LocalDate>()
         for (i in 0..lastIndexOnOrBefore(today)) {
             val s = sessionAt(i) ?: continue
             s.day.exercises.forEachIndexed { e, ex ->
@@ -1049,6 +1051,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 val value = log?.perSet?.maxOrNull()?.takeIf { it > 0 } ?: log?.max
                     ?: if (program.isDone(i, e)) s.prescriptions.getOrNull(e)?.perSetPlanned else null
                 if (value != null) history += TestPoint(s.date, value)
+                if (value != null && s.prescriptions.getOrNull(e)?.eccentric == true) eccentricDates += s.date
             }
         }
         // Prochaine séance où il est prévu (4 semaines au plus), et sa dose pleine.
@@ -1080,6 +1083,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             nextDate = next?.first,
             stats = stats,
             history = history.takeLast(12),
+            eccentricDates = eccentricDates,
             seconds = next?.second?.maxIsSeconds ?: (base.reps == null && base.duration != null),
             balance = balance,
             alternatives = alternativesByKey[key].orEmpty().map { it.name },

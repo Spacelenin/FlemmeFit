@@ -153,7 +153,7 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
                         itemsIndexed(list, key = { i, a -> "adapt-$k-$i-${a.name}" }) { i, a ->
                             FitRowFrame(number = i + 1) {
                                 Box(Modifier.clickable(enabled = a.key.isNotEmpty()) { infoFor = owner.id; infoKey = a.key }) {
-                                    AdaptationRow(a, balances.firstOrNull { it.name == a.name })
+                                    AdaptationRow(a, balances.firstOrNull { it.key == a.key })
                                 }
                             }
                         }

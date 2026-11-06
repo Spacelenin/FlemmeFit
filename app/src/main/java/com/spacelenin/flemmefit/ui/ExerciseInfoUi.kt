@@ -69,7 +69,7 @@ private fun Line(text: String, strong: Boolean = false) {
 
 /** Petites barres des dernières séances (meilleure série de chacune). */
 @Composable
-private fun HistoryBars(points: List<TestPoint>, color: Color, format: (Int) -> String) {
+private fun HistoryBars(points: List<TestPoint>, color: Color, format: (Int) -> String, eccentric: Set<java.time.LocalDate> = emptySet()) {
     if (points.size < 2) return
     val top = points.maxOf { it.value }.coerceAtLeast(1)
     Column {
@@ -77,14 +77,18 @@ private fun HistoryBars(points: List<TestPoint>, color: Color, format: (Int) -> 
             Modifier
                 .fillMaxWidth()
                 .height(64.dp)
-                .semantics { contentDescription = points.joinToString { "${it.date.format(DayMonth)} : ${format(it.value)}" } },
+                .semantics { contentDescription = points.joinToString { "${it.date.format(DayMonth)} : ${format(it.value)}" + if (it.date in eccentric) " en excentrique" else "" } },
         ) {
             val gap = 4.dp.toPx()
             val w = (size.width - gap * (points.size - 1)) / points.size
             points.forEachIndexed { i, p ->
                 val h = (p.value.toFloat() / top) * size.height
                 drawRoundRect(
-                    if (i == points.lastIndex) color else color.copy(alpha = 0.45f),
+                    when {
+                        p.date in eccentric -> color.copy(alpha = 0.2f)
+                        i == points.lastIndex -> color
+                        else -> color.copy(alpha = 0.45f)
+                    },
                     topLeft = Offset(i * (w + gap), size.height - h),
                     size = Size(w, h),
                     cornerRadius = CornerRadius(4.dp.toPx()),
@@ -92,7 +96,8 @@ private fun HistoryBars(points: List<TestPoint>, color: Color, format: (Int) -> 
             }
         }
         Text(
-            "${points.first().date.format(DayMonth)} → ${points.last().date.format(DayMonth)} · max ${format(top)}",
+            "${points.first().date.format(DayMonth)} → ${points.last().date.format(DayMonth)} · max ${format(top)}" +
+                if (points.any { it.date in eccentric }) " · pâle : ↘ excentrique" else "",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -161,7 +166,7 @@ fun ExerciseInfoSheet(info: ExerciseInfo, color: Color, onDismiss: () -> Unit) {
                 ).joinToString(" · "),
             )
             st.lastDate?.let { Line("Dernière fois le ${it.format(DayMonth)}" + (st.lastSummary?.let { s -> " : $s" } ?: "")) }
-            HistoryBars(info.history, color, info::format)
+            HistoryBars(info.history, color, info::format, info.eccentricDates)
         }
 
         info.balance?.let { b ->

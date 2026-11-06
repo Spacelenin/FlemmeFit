@@ -94,3 +94,49 @@ class RoutineExercisesTest {
         assertEquals(keys.distinct(), keys)
     }
 }
+
+class EccentricFollowUpTest {
+    private val start = LocalDate.of(2026, 10, 19)
+    private val pushups = Exercise("Pompes", sets = 3, reps = "8", progression = Progression(reps = 1, every = 2), eccentric = "Lentement.")
+    private val abs = Exercise("Abdos", sets = 3, reps = "10", progression = Progression(reps = 1, every = 2), eccentric = "Lentement.")
+    private fun plan(vararg ex: Exercise) = Plan(
+        version = 1, name = "P", repeat = REPEAT_FOREVER, deloadEvery = 0, boss = false,
+        weeks = listOf(PlanWeek(days = listOf(PlanDay(1, exercises = ex.toList())))),
+    )
+
+    @Test
+    fun `eccentric marks and one-day replacements follow their exercise when the routine changes order`() {
+        val before = StoredProgram("p", plan(pushups, abs), start.toString())
+            .toggle(0, 1).withEccentric(0, 1, true)
+            .copy(dayReplacements = mapOf(StoredProgram.doneKey(0, 1) to "x"))
+        val after = before.withPlan(plan(abs, pushups))
+        assertTrue(after.isEccentric(0, 0))
+        assertFalse(after.isEccentric(0, 1))
+        assertEquals(setOf(StoredProgram.doneKey(0, 0)), after.dayReplacements.keys)
+    }
+
+    @Test
+    fun `an eccentric exercise left undone counts as missed, like any other`() {
+        val p = plan(pushups)
+        fun reps(program: StoredProgram) = ProgramSchedule(program, start.plusDays(60)).sessionAt(28)!!.prescriptions[0].reps
+        var missed = StoredProgram("p", p, start.toString())
+        var flagged = missed
+        for (w in 0 until 4) {
+            missed = missed.saveLog(w * 7, 0, ExerciseLog.ofSets(listOf(3, 0, 0), false), complete = false)
+            flagged = flagged.saveLog(w * 7, 0, ExerciseLog.ofSets(listOf(3, 0, 0), false), complete = false)
+        }
+        // Rien noté du tout sur une séance cochée excentrique : le réglage la voit comme ratée.
+        val idle = StoredProgram("p", p, start.toString())
+        val idleFlagged = (0 until 4).fold(idle) { acc, w -> acc.withEccentric(w * 7, 0, true) }
+        assertEquals(reps(idle), reps(idleFlagged))
+        assertTrue(reps(missed)!! <= 8)
+    }
+
+    @Test
+    fun `friend card extras are short and dropped first`() {
+        val e = SharedExercise("Pompes", version = SharedExercise.VERSION_ECCENTRIC, level = 2, levelCount = 7, feeling = 0, dosePercent = 80, weighted = true)
+        val json = kotlinx.serialization.json.Json.encodeToString(SharedExercise.serializer(), e)
+        assertTrue(json, "\"v\":\"x\"" in json && "\"lv\":2" in json)
+        assertEquals(SharedExercise("Pompes"), e.bare())
+    }
+}

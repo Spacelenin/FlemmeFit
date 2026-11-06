@@ -40,7 +40,7 @@ et une progression.
 - **Repousser** une séance d'un jour : tout le reste du programme est décalé (annulable).
 - **Stats** par programme et globales : reps, séries, temps, records, évolution par exercice, volume par semaine,
   Boss vaincus, historique.
-- **Rappels** (⋮ → Rappels), ton terriblement taquin : rappel du jour (18 h par défaut) les jours de séance,
+- **Rappels** (⚙ Réglages → Rappels), ton terriblement taquin : rappel du jour (18 h par défaut) les jours de séance,
   relance du soir désactivable (21 h) si la séance n'est pas finie, annonce du Boss la veille, bouton « Plus tard ».
 - **Les potes 👥** : pseudo, avancée du jour de chacun, série, Boss vaincus et **exploits 🏆** (un max au moins
   2× supérieur à la série prévue), classement à points (Boss 5, exploit 3, séance 1). Sans serveur à nous :
@@ -60,7 +60,7 @@ Chaque push sur `main` construit l'APK via GitHub Actions et le publie dans les
 `FlemmeFit-N.apk` et installe-le (autoriser « sources inconnues » la première fois).
 
 **Mises à jour dans l'app** : une fois FlemmeFit installé, plus besoin de revenir sur GitHub. L'app vérifie
-les Releases au lancement (toutes les 6 h au plus, ou via *⋮ → Vérifier les mises à jour*), affiche un bandeau
+les Releases au lancement (toutes les 6 h au plus, ou via *⚙ Réglages → Vérifier*), affiche un bandeau
 « Nouvelle version disponible », télécharge l'APK (empreinte SHA-256 vérifiée) et lance l'installeur Android.
 La première fois, Android demande d'autoriser FlemmeFit à installer des applications.
 

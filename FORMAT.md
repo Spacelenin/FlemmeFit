@@ -197,7 +197,7 @@ et le test refait plus tard fait passer au palier suivant.
 ```
 
 - **Test** (`tests[]`) : `id` et `name` obligatoires, `description` (consigne), `unit` = `"reps"` (défaut) ou `"seconds"`.
-- À l'import, l'app demande le résultat de chaque test (facultatif, modifiable ensuite par *⋮ → Tests de départ*).
+- À l'import, l'app demande le résultat de chaque test (facultatif, modifiable ensuite par *⋮ → Tests de niveau*).
   Sans résultat : palier le plus facile.
 - **Palier** (`levels[]`) : le palier retenu est le dernier dont `from` ≤ résultat du test (`from` croissants).
   Ses champs `sets`, `reps`, `duration`, `load`, `rest` remplacent ceux de l'exercice ; `note` s'ajoute à la description.
@@ -309,11 +309,11 @@ jours où il revient. Chaque champ est facultatif ; une valeur hors bornes est r
 | `variants.cycleWeeks` | 4 | 1–12 | Cycle des variantes quand la routine n'a pas de semaine allégée. |
 | `variants.otherPerWeek` | 2 | 0–7 | Passages par semaine d'un exo perso « Autre ». |
 
-**Rythme d'adaptation** (dans l'app, menu ⋮ du programme) : Doux, Normal ou Vif agit **par-dessus** ces réglages
+**Rythme d'adaptation** (dans l'app, Exos › Adapté à toi › Rythme) : Doux, Normal ou Vif agit **par-dessus** ces réglages
 (Vif : calibrage ×⅔, rattrapage plus fort, ressenti ×9/7, garde-fou du test +5 points, côté faible en ⅔ du temps ;
 Doux : l'inverse). La baisse quand ça ne passe pas ne change jamais. Un changement vaut à partir du jour où il est fait.
 
-**Export** (menu ⋮) : « Exporter la routine » donne le JSON tel quel ; « Exporter un modèle à modifier » l'écrit avec
+**Export** (⋮ → Exporter) : « La routine (JSON) » la donne telle quelle ; « Un modèle à modifier » l'écrit avec
 tous les réglages en entier et une aide (`"aide"`, ignorée à l'import). Modifie, puis « Mettre à jour la routine ».
 
 ## Mise en route et ordre des exos 🌱

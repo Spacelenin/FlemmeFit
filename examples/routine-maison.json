@@ -1,7 +1,7 @@
 {
   "format": "flemmefit",
   "version": 1,
-  "revision": 18,
+  "revision": 19,
   "name": "Routine maison",
   "description": "5 séances par semaine (jours 4 et 7 : repos, ou rien selon la fatigue). Paliers inspirés de 100pompes, 50tractions, musclesabdominaux et musclesdesjambes : un test de départ choisit ton palier, la dernière série va souvent au max, et la 4e semaine allège tout de moitié et refait les tests pour passer au palier suivant. Échauffement et étirements d'après echauffez-vous et etirez-vous.",
   "repeat": "forever",
@@ -444,7 +444,7 @@
                   "from": 0,
                   "sets": 4,
                   "reps": "3",
-                  "name": "Abdos ({abdos})",
+                  "name": "V-up (en attendant : {abdos})",
                   "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
                   "note": "Le V-up arrive à partir de 20 au test d'abdos : en attendant, ton exercice du test."
                 },
@@ -452,7 +452,7 @@
                   "from": 11,
                   "sets": 4,
                   "reps": "5",
-                  "name": "Abdos ({abdos})",
+                  "name": "V-up (en attendant : {abdos})",
                   "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
                   "note": "Le V-up arrive à partir de 20 au test d'abdos : en attendant, ton exercice du test."
                 },
@@ -1319,7 +1319,7 @@
                   "from": 0,
                   "sets": 4,
                   "reps": "3",
-                  "name": "Abdos ({abdos})",
+                  "name": "V-up (en attendant : {abdos})",
                   "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
                   "note": "Le V-up arrive à partir de 20 au test d'abdos : en attendant, ton exercice du test."
                 },
@@ -1327,7 +1327,7 @@
                   "from": 11,
                   "sets": 4,
                   "reps": "5",
-                  "name": "Abdos ({abdos})",
+                  "name": "V-up (en attendant : {abdos})",
                   "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
                   "note": "Le V-up arrive à partir de 20 au test d'abdos : en attendant, ton exercice du test."
                 },
@@ -2194,7 +2194,7 @@
                   "from": 0,
                   "sets": 4,
                   "reps": "3",
-                  "name": "Abdos ({abdos})",
+                  "name": "V-up (en attendant : {abdos})",
                   "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
                   "note": "Le V-up arrive à partir de 20 au test d'abdos : en attendant, ton exercice du test."
                 },
@@ -2202,7 +2202,7 @@
                   "from": 11,
                   "sets": 4,
                   "reps": "5",
-                  "name": "Abdos ({abdos})",
+                  "name": "V-up (en attendant : {abdos})",
                   "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
                   "note": "Le V-up arrive à partir de 20 au test d'abdos : en attendant, ton exercice du test."
                 },
@@ -3111,7 +3111,7 @@
                   "from": 0,
                   "sets": 4,
                   "reps": "3",
-                  "name": "Abdos ({abdos})",
+                  "name": "V-up (en attendant : {abdos})",
                   "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
                   "note": "Le V-up arrive à partir de 20 au test d'abdos : en attendant, ton exercice du test."
                 },
@@ -3119,7 +3119,7 @@
                   "from": 11,
                   "sets": 4,
                   "reps": "5",
-                  "name": "Abdos ({abdos})",
+                  "name": "V-up (en attendant : {abdos})",
                   "description": "Crunchs ou sit-ups, au choix (le même que pour ton test) : allongé, genoux pliés, mains aux tempes sans tirer sur la nuque. Crunch : décolle les omoplates ; sit-up : remonte le buste jusqu'aux genoux. Souffle en montant, redescends lentement. Dernière série : le max possible.",
                   "note": "Le V-up arrive à partir de 20 au test d'abdos : en attendant, ton exercice du test."
                 },
