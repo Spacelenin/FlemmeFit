@@ -137,6 +137,8 @@ fun rememberDayActions(
     }
 
     logDay?.let { dayIndex ->
+        // Saisie en cours : la mise à jour attend (comme pendant une séance).
+        HoldSession()
         val session = schedule.sessionAt(dayIndex)
         val prescription = session?.prescriptions?.getOrNull(logExercise) ?: return@let
         val close = { logDay = null }
@@ -235,6 +237,8 @@ fun rememberDayActions(
     }
 
     feelingFor?.takeIf { guidedDay == null }?.let { index ->
+        // Fin de séance (ressenti, puis ce qui change) : la mise à jour attend qu'elle soit finie.
+        HoldSession()
         FeelingDialog(
             onPick = { f ->
                 repository.setFeeling(program.id, index, f)
@@ -249,6 +253,7 @@ fun rememberDayActions(
     }
 
     changesFor?.takeIf { guidedDay == null && feelingFor == null }?.let { index ->
+        HoldSession()
         // Recalculé quand le ressenti tout juste donné arrive dans le programme : il compte aussi.
         val changes = remember(program, index) { runCatching { ProgramSchedule.adaptationChanges(program, index, today) }.getOrDefault(emptyList()) }
         if (changes.isEmpty()) {
