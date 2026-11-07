@@ -210,6 +210,7 @@ fun rememberDayActions(
             feeling = program.exerciseFeelingOf(dayIndex, detailExercise),
             onFeeling = { repository.setExerciseFeeling(program.id, dayIndex, detailExercise, it) },
             onEccentric = { repository.setEccentric(program.id, dayIndex, detailExercise, it) },
+            onTired = { repository.setTired(program.id, dayIndex, detailExercise, it) },
         )
     }
 
@@ -225,6 +226,7 @@ fun rememberDayActions(
             onWeights = { i, on -> repository.setWeights(program.id, dayIndex, i, on) },
             onFeeling = { i, f -> repository.setExerciseFeeling(program.id, dayIndex, i, f) },
             onEccentric = { i, on -> repository.setEccentric(program.id, dayIndex, i, on) },
+            onTired = { i, on -> repository.setTired(program.id, dayIndex, i, on) },
             onClose = { guidedDay = null },
         )
     }

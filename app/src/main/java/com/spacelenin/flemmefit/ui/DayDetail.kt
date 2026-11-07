@@ -476,12 +476,11 @@ private fun ExerciseRow(
                 prescription.palier?.takeIf { !fit }?.let { "niveau ${it + 1}/${prescription.levelCount}" },
                 prescription.beforeDeload?.let { "récup (au lieu de $it)" },
                 "↘ en excentrique".takeIf { prescription.eccentric },
+                "🥵 crevé (−${prescription.exercise.tired} %)".takeIf { prescription.tired },
             ).joinToString(" · ")
             if (details.isNotEmpty()) {
                 Text(details, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            // Dose du jour réduite : mise en route, ou muscles déjà travaillés plus tôt dans la séance.
-            prescription.dose?.takeIf { it.reduced }?.let { DoseTag(it) }
             tag?.let { Text(it, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, color = BurstColor) }
             prescription.weighted?.let { on -> WeightsChip(on, enabled = !locked && !done, onChange = onWeights) }
             if (prescription.allOut) {

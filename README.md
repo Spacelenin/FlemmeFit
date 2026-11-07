@@ -19,9 +19,9 @@ et une progression.
 - **Changer un exo** 🔄 depuis la page du jour : un remplaçant prévu par la routine (Russian twist à la place des
   hip dips, dosé comme les abdos, reps × 2 ; extension triceps à la place des dips (le mercredi) ; extension lombaire à la place
   du hip thrust) ou un exo de la même famille, juste ce jour-là ou pour la suite.
-- **Fatigue et mise en route** 💪 : un exo qui passe après d'autres sur les mêmes muscles est réduit (−15 % par
-  muscle principal déjà travaillé, −7 % pour un muscle qui aide, jamais sous 65 %), et un exo qui arrive commence à
-  60 % puis 80 %. « ↕ Réorganiser » change l'ordre des exos du jour par glisser-déposer, en montrant l'effet.
+- **Dose pleine, toujours** : 3 × 8 reste 3 × 8, en début comme en fin de séance, et un nouvel exo démarre à sa
+  dose ; les tests et le réglage sur mesure corrigent. « ↕ Réorganiser » change l'ordre des exos du jour par
+  glisser-déposer. « 🥵 Crevé » sur Beat Saber : −20 % de temps ce jour-là, et ça compte comme fait.
 - **Excentrique ↘** sur les exos en reps (pompes, dips, abdos, tractions, squats…) : quand c'est trop dur, on ne
   travaille que la descente, le plus lentement possible. L'exo compte comme fait, mais le réglage, la progression et les
   records ne bougent pas (jamais un jour Boss ni sur un test).

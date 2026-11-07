@@ -9,44 +9,6 @@ import java.time.LocalDate
 
 class DoseTest {
 
-    private fun item(name: String, muscles: List<String>, assists: List<String> = emptyList(), ramp: Double = 1.0, optional: Boolean = false, steady: Boolean = false) =
-        Dose.Item(name, muscles, assists, counts = !optional, reducible = !optional && !steady, ramp = ramp)
-
-    @Test
-    fun `fatigue counts each muscle already worked, with a floor`() {
-        val d = Dose.compute(
-            listOf(
-                item("Pompes", listOf("pectoraux", "triceps"), listOf("épaules")),
-                item("Dips", listOf("triceps"), listOf("épaules", "pectoraux")),
-                item("Squats", listOf("quadriceps")),
-                item("Pompes diamant", listOf("triceps", "pectoraux"), listOf("épaules")),
-            ),
-        )
-        assertFalse(d[0].reduced)
-        // Triceps (principal) −15 %, épaules et pectoraux (aide) −7 % chacun.
-        assertEquals(0.71, d[1].factor, 1e-9)
-        assertEquals(listOf("Pompes"), d[1].after)
-        assertFalse(d[2].reduced)
-        // Deux principaux et une aide déjà travaillés : −37 %.
-        assertEquals(0.65, d[3].factor, 1e-9)
-        assertEquals(listOf("Pompes", "Dips"), d[3].after)
-    }
-
-    @Test
-    fun `warm-up does not tire, steady exercises are never reduced, ramp multiplies`() {
-        val d = Dose.compute(
-            listOf(
-                item("Échauffement", listOf("triceps"), optional = true),
-                item("Beat Saber", emptyList(), listOf("épaules"), steady = true),
-                item("Dips", listOf("triceps"), listOf("épaules"), ramp = 0.6),
-            ),
-        )
-        assertFalse(d[1].reduced)
-        assertEquals(0.93 * 0.6, d[2].factor, 1e-9)
-        assertEquals(listOf("Beat Saber"), d[2].after)
-        assertEquals(Dose.FLOOR, DoseInfo(fatigue = 0.65, ramp = 0.6).factor, 1e-9)
-    }
-
     @Test
     fun `order follows the chosen keys, warm-up and stretches stay in place`() {
         val day = listOf(
@@ -69,37 +31,39 @@ class DoseTest {
     )
 
     @Test
-    fun `an exercise that arrives later starts softly, then a reorder changes the fatigue`() {
-        // Trois semaines de pompes, puis la routine gagne les dips.
+    fun `no more ramp nor fatigue, whatever the order or when the exercise arrives`() {
+        // Trois semaines de pompes, puis la routine gagne les dips : ils arrivent à leur dose pleine.
         var p = StoredProgram("p", plan(false), start.toString())
         for (w in 0 until 3) p = p.toggle(w * 7, 0)
         p = p.copy(plan = plan(true))
-        fun dipsAt(week: Int, program: StoredProgram = p) = ProgramSchedule(program, start.plusDays(week * 7L)).sessionAt(week * 7)!!.prescriptions[1]
-        // 10 reps × 0,6 (mise en route) × 0,71 (triceps, épaules et pectoraux après les pompes) = 0,43 → plancher 0,5.
-        val first = dipsAt(3)
-        assertEquals(0.6, first.dose!!.ramp, 1e-9)
-        assertEquals(5, first.reps)
-        assertEquals(10, first.exploitPlanned)
-        p = p.toggle(21, 0).toggle(21, 1).toggle(28, 0).toggle(28, 1)
-        assertEquals(0.8, dipsAt(5).dose!!.ramp, 1e-9)
-        p = p.toggle(35, 0).toggle(35, 1).toggle(42, 0).toggle(42, 1)
-        assertEquals(1.0, dipsAt(7).dose!!.ramp, 1e-9)
-        assertEquals(7, dipsAt(7).reps)
-
-        // Dips d'abord, à partir de cette semaine : ce sont les pompes qui sont réduites.
-        val reordered = p.withOrder(49, 1, listOf("dips", "pompes"), start.plusDays(49), keep = true)
-        val s = ProgramSchedule(reordered, start.plusDays(56)).sessionAt(56)!!
-        assertEquals(listOf(1, 0), s.order)
-        assertNull(s.prescriptions[1].dose)
-        assertTrue(s.prescriptions[0].dose!!.reduced)
-        // Aperçu d'un autre ordre, sans rien garder.
-        assertTrue(s.dosesFor(listOf(0, 1)).getValue(1).reduced)
+        val s = ProgramSchedule(p, start.plusDays(21)).sessionAt(21)!!
+        assertEquals(listOf(10, 10), s.prescriptions.map { it.reps })
+        // Dips d'abord : rien n'est réduit non plus, seul l'ordre change.
+        val reordered = p.withOrder(21, 1, listOf("dips", "pompes"), start.plusDays(21), keep = true)
+        val r = ProgramSchedule(reordered, start.plusDays(21)).sessionAt(21)!!
+        assertEquals(listOf(1, 0), r.order)
+        assertEquals(listOf(10, 10), r.prescriptions.map { it.reps })
     }
 
     @Test
-    fun `a reduced day that is done as planned teaches nothing wrong`() {
-        val log = ExerciseLog.ofSets(listOf(7, 7, 7), allOut = false)
-        assertEquals(listOf(10, 10, 10), log.scaled(1 / 0.7).perSet)
+    fun `tired cuts the dose of the day, counts as done and shows on the friend card`() {
+        val saber = Exercise("Beat Saber", id = "beatsaber", duration = "40min", steady = true, tired = 20)
+        val plan = Plan(
+            version = 1, name = "R", repeat = REPEAT_FOREVER, deloadEvery = 0, boss = false,
+            weeks = listOf(PlanWeek(days = listOf(PlanDay(1, exercises = listOf(saber))))),
+        )
+        val p = StoredProgram("p", plan, start.toString())
+        val normal = ProgramSchedule(p, start).sessionAt(0)!!.prescriptions[0]
+        assertEquals(2400, normal.seconds)
+        assertEquals(20, normal.tiredOffer)
+        val tired = p.withTired(0, 0, true).toggle(0, 0)
+        val sched = ProgramSchedule(tired, start)
+        val pr = sched.sessionAt(0)!!.prescriptions[0]
+        assertTrue(pr.tired)
+        assertEquals(1920, pr.seconds) // 32 min
+        assertTrue(sched.isComplete(sched.sessionAt(0)!!))
+        // Changement de routine : la marque suit son exo.
+        assertTrue(tired.withPlan(plan).isTired(0, 0))
     }
 }
 

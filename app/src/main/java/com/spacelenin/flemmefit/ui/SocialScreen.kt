@@ -411,6 +411,7 @@ private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.Lo
                                     when (e.version) {
                                         SharedExercise.VERSION_ECCENTRIC -> "↘ excentrique"
                                         SharedExercise.VERSION_EASY -> "facile"
+                                        SharedExercise.VERSION_TIRED -> "🥵 crevé"
                                         else -> null
                                     },
                                     if (!fit) e.level?.let { l -> e.levelCount?.let { "niv. $l/$it" } } else null,
