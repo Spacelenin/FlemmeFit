@@ -80,6 +80,8 @@ fun ExerciseDetailSheet(
     onFeeling: ((Int?) -> Unit)? = null,
     /** Version excentrique du jour, si l'exo en a une. */
     onEccentric: ((Boolean) -> Unit)? = null,
+    /** « Crevé » du jour, si l'exo le propose. */
+    onTired: ((Boolean) -> Unit)? = null,
 ) {
     val exercise = prescription.exercise
     val restBonus = LocalRestBonus.current
@@ -194,6 +196,7 @@ fun ExerciseDetailSheet(
                 }
             }
             if (!locked) EccentricSection(prescription, enabled = true, onEccentric = onEccentric)
+            if (!locked) TiredSection(prescription, enabled = !done, onTired = onTired)
             if (!locked) FeelingSection(prescription, feeling, onFeeling)
             Spacer(Modifier.height(4.dp))
             if (locked) {
@@ -387,6 +390,31 @@ fun ExerciseFeelingChips(current: Int?, onPick: (Int?) -> Unit) {
         StoredProgram.FEELINGS.forEachIndexed { i, emoji ->
             FitChip(selected = current == i, onClick = { onPick(if (current == i) null else i) }, label = { Text("$emoji ${StoredProgram.FEELING_LABELS[i]}") })
         }
+    }
+}
+
+/** Bouton « 🥵 Crevé » (Beat Saber) : la dose du jour réduite, l'exo compte comme fait. */
+@Composable
+fun TiredSection(prescription: Prescription, enabled: Boolean, onTired: ((Boolean) -> Unit)?, center: Boolean = false) {
+    val cut = prescription.tiredOffer ?: return
+    if (onTired == null) return
+    val on = prescription.tired
+    Column(
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalAlignment = if (center) Alignment.CenterHorizontally else Alignment.Start,
+    ) {
+        FitChip(
+            selected = on,
+            enabled = enabled,
+            onClick = { onTired(!on) },
+            label = { Text(if (on) "🥵 Crevé · −$cut %" else "🥵 Crevé ?") },
+        )
+        Text(
+            if (on) "Dose du jour réduite de $cut %, ça compte comme fait." else "Sur les rotules ? $cut % de moins aujourd'hui, et ça compte quand même.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = if (center) TextAlign.Center else TextAlign.Start,
+        )
     }
 }
 

@@ -99,9 +99,10 @@ Ce sont des **textes libres** (tu peux écrire `"12"`, `"8-10"`, `"max"`, `"10 p
 | `sides`       | texte  | non         | `"Bras droit, puis bras gauche."` | Exercice d'**un côté à la fois** : quels membres travaillent. Affiché en évidence en séance et dans le détail. |
 | `perSide`     | texte  | non         | `"jambe"` | **Une série par côté**, en alternance 🔴 gauche / 🔵 droite : ce qui travaille (`"bras"`, `"jambe"`, `"côté"`). `sets` compte alors les séries **de chaque côté**. Repos court (20 s) entre les deux côtés d'une paire. Chaque côté se règle sur ses propres séries ; si l'écart dépasse 10 % sur 3 séances, le côté faible commence chaque paire, fait une série de plus et rattrape en environ 6 semaines ; au-delà de 20 %, le côté fort ne monte plus. |
 | `alternatives` | tableau | non       | —         | **Exercices de remplacement**, au choix depuis la page du jour (« 🔄 Changer un exo ») : `id`, `name`, `description`, `follows` (id de l'exercice dont il suit le dosage : même niveau, mêmes séries) et `factor` (reps ou secondes × factor, défaut 1). Ex. Russian twist : `"follows": "abdos", "factor": 2` (2 twists = 1 rep d'abdos). Il ne progresse pas seul, il suit l'autre. Les autres exercices de la même famille sont aussi proposés, avec leur propre niveau. |
-| `muscles`     | tableau | non        | `["triceps"]` | **Muscles qui travaillent surtout.** Plus tard dans la séance, un exercice dont un muscle principal a déjà travaillé perd 15 % de sa dose, 7 % pour un muscle qui aide (`assists`), jamais sous 65 %. Échauffement et étirements ne comptent pas, ni les jours Boss et les semaines allégées. Ce qui est noté est ramené à la dose pleine pour le réglage et les exploits. |
-| `assists`     | tableau | non        | `["épaules"]` | Muscles qui aident : comptent moins (voir `muscles`). |
-| `steady`      | booléen | non        | `false`   | Dose jamais réduite (cardio, durée fixe, ex. Beat Saber) ; il fatigue quand même ce qui suit. |
+| `muscles`     | tableau | non        | `["triceps"]` | **Muscles qui travaillent surtout**, affichés dans la fiche de l'exo (ne changent pas la dose). |
+| `assists`     | tableau | non        | `["épaules"]` | Muscles qui aident, affichés dans la fiche de l'exo. |
+| `steady`      | booléen | non        | `false`   | Dose fixe (cardio, durée fixe, ex. Beat Saber) : pas de réglage sur mesure. |
+| `tired`       | nombre  | non        | —         | Bouton « 🥵 Crevé », au choix le jour même : la dose réduite de tant de % (ex. `20` sur Beat Saber). L'exo compte comme fait. Jamais un jour Boss ni sur un test. |
 | `eccentric`   | texte   | non        | —         | Version excentrique, au choix le jour même (« descends le plus lentement possible… »). Faite ainsi, l'exo compte comme fait, mais le réglage, la progression, les exploits et les records ne bougent pas. Jamais un jour Boss ni sur un test. |
 
 Affichage dans l'app : `sets × reps · load · repos rest`, par ex. **4 × 8-10 · 60 kg · repos 90s**.
@@ -255,7 +256,7 @@ Une famille regroupe des exercices de base et le test qui leur sert d'étalon :
 | `perCycle`       | Blocs voulus par cycle, au lieu de 1 à 3 selon le test (réduit si la famille n'a pas assez de séances). |
 | `check`          | Phrase à confirmer avant le premier passage, une fois les prérequis atteints (« je touche le mur derrière ma tête ») : l'accueil la propose, et la variante arrive à partir du lendemain. |
 | `warning`        | Mise en garde montrée au déblocage et dans la consigne. |
-| `muscles`, `assists` | Muscles de la variante (voir ceux des exercices) ; absents : ceux de l'exercice de base. Un bloc variante n'est pas réduit, mais il fatigue ce qui suit. |
+| `muscles`, `assists` | Muscles de la variante, affichés dans sa fiche ; absents : ceux de l'exercice de base. |
 
 - **Jours variante** : tirés au sort séance par séance, seulement les jours où un exercice de base est prévu, au plus
   un par séance, jamais en semaine de décharge, et dévoilés le jour même. Sur un cycle (`deloadEvery` semaines, 4 sinon),
@@ -316,14 +317,12 @@ Doux : l'inverse). La baisse quand ça ne passe pas ne change jamais. Un changem
 **Export** (⋮ → Exporter) : « La routine (JSON) » la donne telle quelle ; « Un modèle à modifier » l'écrit avec
 tous les réglages en entier et une aide (`"aide"`, ignorée à l'import). Modifie, puis « Mettre à jour la routine ».
 
-## Mise en route et ordre des exos 🌱
+## Ordre des exos ↕
 
-- **Mise en route** : un exercice qui arrive dans un programme déjà commencé (au moins une semaine après la première
-  séance faite : nouvelle version de la routine, exo perso) se fait à 60 % de sa dose aux 2 premières séances, puis
-  80 % aux 2 suivantes. Fatigue et mise en route se multiplient, jamais sous 50 %.
-- **Ordre** : « ↕ Réorganiser » sur la page du jour change l'ordre des exercices (échauffement et étirements restent
-  en place, la variante suit son exercice de base), pour ce jour ou à partir de ce jour, et montre l'effet sur la
-  fatigue de chacun avant de valider.
+« ↕ Réorganiser » sur la page du jour change l'ordre des exercices (échauffement et étirements restent en place, la
+variante suit son exercice de base), pour ce jour ou à partir de ce jour. L'ordre ne change pas les doses : un exo
+garde sa dose pleine, en début comme en fin de séance, et un exo qui arrive dans un programme commencé démarre lui
+aussi à sa dose pleine.
 
 ## Semaine de décharge 🌿
 

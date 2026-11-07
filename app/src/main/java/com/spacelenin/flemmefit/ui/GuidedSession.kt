@@ -71,6 +71,7 @@ fun GuidedSession(
     onSave: (exerciseIndex: Int, log: ExerciseLog, complete: Boolean) -> Unit,
     onWeights: (exerciseIndex: Int, on: Boolean) -> Unit,
     onEccentric: (exerciseIndex: Int, on: Boolean) -> Unit = { _, _ -> },
+    onTired: (exerciseIndex: Int, on: Boolean) -> Unit = { _, _ -> },
     onFeeling: (exerciseIndex: Int, feeling: Int?) -> Unit,
     onClose: () -> Unit,
 ) {
@@ -323,6 +324,7 @@ fun GuidedSession(
                     onSetDone = { finishSet(if (guided.needsValue(set)) value else 0) },
                     onWeights = { on -> exerciseIndex?.let { onWeights(it, on) } },
                     onEccentric = { on -> exerciseIndex?.let { onEccentric(it, on) } },
+                    onTired = { on -> exerciseIndex?.let { onTired(it, on) } },
                     modifier = Modifier.weight(1f),
                 )
                 TextButton(
@@ -387,6 +389,7 @@ private fun SetContent(
     onSetDone: () -> Unit,
     onWeights: (Boolean) -> Unit,
     onEccentric: (Boolean) -> Unit,
+    onTired: (Boolean) -> Unit,
     modifier: Modifier,
 ) {
     val p = guided.prescription
@@ -423,11 +426,6 @@ private fun SetContent(
             if (it.whole) "🎲 Variante, à la place de ${it.baseName.lowercase()}" else "🎲 Variante, à la place de ta série max de ${it.baseName.lowercase()}"
         }
             ?: p.replacedBy?.let { "🎲 Pas de série max ici : elle laisse place à ${it.lowercase()}" }
-        // Dose du jour réduite (mise en route, fatigue) : dit avant de commencer.
-        p.dose?.takeIf { it.reduced }?.let {
-            Spacer(Modifier.height(8.dp))
-            DoseTag(it)
-        }
         reminder?.let {
             Spacer(Modifier.height(8.dp))
             Text(it, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = BurstColor, textAlign = TextAlign.Center)
@@ -441,6 +439,11 @@ private fun SetContent(
         if (p.eccentricOffer != null) {
             Spacer(Modifier.height(8.dp))
             EccentricSection(p, enabled = running == null, onEccentric = onEccentric, center = true)
+        }
+        // Crevé : avant de lancer le chrono, la dose du jour réduite.
+        if (p.tiredOffer != null) {
+            Spacer(Modifier.height(8.dp))
+            TiredSection(p, enabled = running == null && set == 0, onTired = onTired, center = true)
         }
         if (guided.isAllOut(set)) {
             Text(

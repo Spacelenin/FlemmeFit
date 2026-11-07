@@ -43,10 +43,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.spacelenin.flemmefit.model.DoseInfo
 import com.spacelenin.flemmefit.model.Prescription
 import com.spacelenin.flemmefit.model.Session
-import com.spacelenin.flemmefit.model.withDose
 import com.spacelenin.flemmefit.ui.theme.LocalFitTheme
 
 private val RowHeight = 84.dp
@@ -54,40 +52,9 @@ private val RowHeight = 84.dp
 /** « 3 × 12 », sans le repos ni le reste. */
 private fun Prescription.doseLabel(): String = summary().substringBefore(" · ").ifEmpty { "—" }
 
-/** Pourquoi la dose est réduite, en une ligne : « 🌱 mise en route · 💪 triceps déjà travaillés ». */
-fun DoseInfo.reasons(): String = listOfNotNull(
-    "🌱 mise en route".takeIf { ramp < 0.995 },
-    tired.takeIf { fatigue < 0.995 && it.isNotEmpty() }?.let { "💪 ${it.joinToString(", ")} déjà travaillés" },
-).joinToString(" · ")
-
-/** La dose réduite d'un exo : petite ligne, ou étiquette pâle de la couleur de la salle sur le thème fit. */
-@Composable
-fun DoseTag(dose: DoseInfo, modifier: Modifier = Modifier) {
-    val text = "${dose.reasons()} · ${dose.percent} %"
-    if (!LocalFitTheme.current) {
-        Text(text, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, color = DeloadColor, modifier = modifier)
-        return
-    }
-    val room = LocalFitRoom.current
-    val shape = RoundedCornerShape(10.dp)
-    Text(
-        text,
-        style = MaterialTheme.typography.labelMedium,
-        fontWeight = FontWeight.Bold,
-        color = lerp(room, Color.Black, 0.3f),
-        modifier = modifier
-            .padding(top = 2.dp)
-            .clip(shape)
-            .background(lerp(room, Color.White, 0.85f))
-            .border(1.5.dp, lerp(room, Color.White, 0.4f), shape)
-            .padding(horizontal = 8.dp, vertical = 2.dp),
-    )
-}
-
 /**
- * « Réorganiser » : les exos de la séance à glisser par leur poignée. La fatigue de chacun se recalcule à chaque
- * déplacement, avec la dose qui en sort. L'échauffement et les étirements restent à leur place, la variante suit son
- * exercice de base.
+ * « Réorganiser » : les exos de la séance à glisser par leur poignée. L'échauffement et les étirements restent à leur
+ * place, la variante suit son exercice de base. L'ordre ne change pas les doses.
  */
 @Composable
 fun ReorderDialog(
@@ -105,8 +72,6 @@ fun ReorderDialog(
     var offset by remember { mutableFloatStateOf(0f) }
     val rowPx = with(LocalDensity.current) { RowHeight.toPx() }
     fun keys() = items.map { session.day.exercises[it].key }
-    val order = session.orderFor(keys())
-    val doses = session.dosesFor(order)
     val fit = LocalFitTheme.current
     val room = LocalFitRoom.current
 
@@ -124,24 +89,15 @@ fun ReorderDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    "Fais glisser ≡ pour changer l'ordre. Un exo qui passe après d'autres sur les mêmes muscles est réduit d'autant. " +
-                        "L'échauffement et les étirements restent à leur place.",
+                    "Fais glisser ≡ pour changer l'ordre. L'échauffement et les étirements restent à leur place.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                if (session.isDeload || session.isBoss) {
-                    Text(
-                        if (session.isBoss) "Jour Boss : rien n'est réduit, seul l'ordre change." else "Semaine allégée : rien n'est réduit, seul l'ordre change.",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                }
                 Column {
                     items.forEachIndexed { pos, e ->
                         key(e) {
                             val isDragged = dragged == e
                             val full = session.full.getOrNull(e) ?: session.prescriptions[e]
-                            val dose = doses[e]
                             val variant = session.variantIndex?.takeIf { session.variantBaseIndex == e && it != e }?.let { session.prescriptions.getOrNull(it) }
                             val shape = RoundedCornerShape(if (fit) 22.dp else 14.dp)
                             Row(
@@ -178,16 +134,14 @@ fun ReorderDialog(
                                 }
                                 Column(Modifier.weight(1f).padding(start = 12.dp, end = 4.dp)) {
                                     Text(full.exercise.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                    val shown = dose?.let { full.withDose(it) } ?: full
                                     Text(
-                                        if (dose?.reduced == true) "${full.doseLabel()} → ${shown.doseLabel()} · ${dose.percent} %" else "${full.doseLabel()} · dose pleine",
+                                        full.doseLabel(),
                                         style = MaterialTheme.typography.bodySmall,
-                                        fontWeight = if (dose?.reduced == true) FontWeight.Bold else FontWeight.Normal,
-                                        color = if (dose?.reduced == true) DeloadColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
                                     )
-                                    val why = listOfNotNull(dose?.takeIf { it.reduced }?.reasons(), variant?.let { "🎲 puis ${it.exercise.name}" }).joinToString(" · ")
+                                    val why = listOfNotNull(variant?.let { "🎲 puis ${it.exercise.name}" }).joinToString(" · ")
                                     if (why.isNotEmpty()) {
                                         Text(why, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                     }

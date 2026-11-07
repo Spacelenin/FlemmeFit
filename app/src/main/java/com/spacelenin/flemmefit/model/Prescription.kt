@@ -37,8 +37,8 @@ data class Prescription(
     val sided: SidedPlan? = null,
     /** Fait à la place de cet exercice de la routine (remplacement choisi depuis la page du jour). */
     val replaces: String? = null,
-    /** Dose réduite (mise en route, fatigue) : ce qui a été retiré et pourquoi. */
-    val dose: DoseInfo? = null,
+    /** Fait « crevé » ([Exercise.tired]) : dose du jour réduite. */
+    val tired: Boolean = false,
     /** Dose réduite : ce qui était prévu par série avant réduction. */
     val fullPlanned: Int? = null,
     /** Fait en version excentrique ([Exercise.eccentric]) : compte comme fait, sans rien régler ni battre. */
@@ -53,6 +53,9 @@ data class Prescription(
     /** Version facile : palier facile d'un exo, ou variante pas encore en vraie version. */
     val isEasy: Boolean get() = variant?.full == false ||
         listOfNotNull(exercise.name, exercise.description).any { EasyMark.containsMatchIn(it) }
+
+    /** Le « Crevé » proposé ce jour-là (en %), s'il existe : ni test, ni Boss, ni variante, ni remplacement. */
+    val tiredOffer: Int? get() = exercise.tired?.takeIf { !isTest && !isBoss && variant == null && replaces == null }
 
     val key get() = exercise.key
     val repsLabel: String? get() = reps?.toString() ?: exercise.reps

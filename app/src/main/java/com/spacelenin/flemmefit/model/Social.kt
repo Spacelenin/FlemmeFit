@@ -87,6 +87,7 @@ data class SharedExercise(
     companion object {
         const val VERSION_EASY = "f"
         const val VERSION_ECCENTRIC = "x"
+        const val VERSION_TIRED = "c"
     }
 }
 
@@ -184,13 +185,14 @@ object Social {
             replaced = pr.replaces != null,
             version = when {
                 pr.eccentric -> SharedExercise.VERSION_ECCENTRIC
+                pr.tired -> SharedExercise.VERSION_TIRED
                 pr.isEasy -> SharedExercise.VERSION_EASY
                 else -> null
             },
             level = pr.palier?.plus(1)?.takeIf { pr.levelCount > 1 },
             levelCount = pr.levelCount.takeIf { pr.palier != null && it > 1 },
             feeling = schedule.program.exerciseFeelingOf(s.index, e),
-            dosePercent = pr.dose?.takeIf { it.reduced }?.percent,
+            dosePercent = pr.exercise.tired?.takeIf { pr.tired }?.let { 100 - it },
             weighted = true.takeIf { pr.weighted == true },
         )
     }

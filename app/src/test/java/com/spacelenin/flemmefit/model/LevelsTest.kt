@@ -97,10 +97,9 @@ class LevelsTest {
         assertEquals("4 × 2 · repos 90s", day1[1].summary())
         val gainage = s.sessionAt(1)!!.full.first { it.key == "gainage" }
         assertEquals(25, gainage.seconds)
-        // Après les abdos et les obliques, le gainage du jour est réduit (abdos déjà travaillés).
+        // Plus de réduction de fatigue : après les abdos et les obliques, le gainage garde sa dose.
         val tuesdayPlank = s.sessionAt(1)!!.prescriptions.first { it.key == "gainage" }
-        assertTrue(tuesdayPlank.dose!!.tired.contains("abdos"))
-        assertTrue(tuesdayPlank.seconds!! < 25)
+        assertEquals(25, tuesdayPlank.seconds)
         assertTrue(gainage.maxIsSeconds)
 
         // Sous 20 au test d'abdos, pas de V-up : l'exercice choisi au test, sous son nom.
