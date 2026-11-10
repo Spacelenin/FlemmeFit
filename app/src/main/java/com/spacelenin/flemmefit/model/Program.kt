@@ -348,7 +348,15 @@ data class StoredProgram(
 
     /** Nom d'exercice tel qu'affiché à [date] : `{id du test}` remplacé par le choix en cours (« crunch »). */
     fun exerciseName(name: String, date: LocalDate): String =
-        plan.tests.filter { it.options.isNotEmpty() }.fold(name) { acc, t -> acc.replace("{${t.id}}", t.optionLabel(optionOn(t.id, date))) }
+        plan.tests.filter { it.options.isNotEmpty() }.fold(name) { acc, t ->
+            val chosen = optionOn(t.id, date)
+            val label = t.optionLabel(chosen)
+            // `{id.how}` : le geste du choix en cours, ou celui de chaque choix tant que rien n'est choisi.
+            val how = t.option(chosen)?.how ?: t.options.mapNotNull { o -> o.how?.let { "${o.short} : $it" } }.joinToString(" ; ")
+            acc.replace("{${t.id}.how}", how)
+                .replace("{${t.id.replaceFirstChar { it.uppercase() }}}", label.replaceFirstChar { it.uppercase() })
+                .replace("{${t.id}}", label)
+        }
 
     /** Nom du test tel qu'affiché à [date] : celui du choix en cours, sinon celui de la routine. */
     fun testName(test: PlanTest, date: LocalDate): String = test.option(optionOn(test.id, date))?.name ?: test.name

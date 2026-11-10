@@ -435,13 +435,12 @@ private fun SetContent(
             Spacer(Modifier.height(8.dp))
             WeightsChip(on, enabled = running == null, onChange = onWeights)
         }
-        // Excentrique : à choisir avant la première série, la consigne s'affiche tout de suite.
-        if (p.eccentricOffer != null) {
+        // Excentrique ou Crevé activés : en haut, bien visibles, avec leur consigne.
+        if (p.eccentric) {
             Spacer(Modifier.height(8.dp))
             EccentricSection(p, enabled = running == null, onEccentric = onEccentric, center = true)
         }
-        // Crevé : avant de lancer le chrono, la dose du jour réduite.
-        if (p.tiredOffer != null) {
+        if (p.tired) {
             Spacer(Modifier.height(8.dp))
             TiredSection(p, enabled = running == null && set == 0, onTired = onTired, center = true)
         }
@@ -525,6 +524,15 @@ private fun SetContent(
         p.exercise.description?.let {
             Spacer(Modifier.height(28.dp))
             InstructionBubble(it)
+        }
+        // Éteints : une petite ligne discrète, sous la consigne.
+        if (p.eccentricOffer != null && !p.eccentric) {
+            Spacer(Modifier.height(8.dp))
+            EccentricSection(p, enabled = running == null, onEccentric = onEccentric, center = true)
+        }
+        if (p.tiredOffer != null && !p.tired) {
+            Spacer(Modifier.height(8.dp))
+            TiredSection(p, enabled = running == null && set == 0, onTired = onTired, center = true)
         }
     }
 }

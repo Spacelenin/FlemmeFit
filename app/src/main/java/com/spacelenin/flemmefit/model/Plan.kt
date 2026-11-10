@@ -175,7 +175,13 @@ data class Variant(
 
 /** Un exercice au choix pour un test : [name] pour le test (« Sit-ups »), [short] dans les noms (« sit-up »). */
 @Serializable
-data class TestOption(val id: String, val name: String, val short: String)
+data class TestOption(
+    val id: String,
+    val name: String,
+    val short: String,
+    /** Le geste en quelques mots (« remonte le buste jusqu'aux genoux ») : `{id.how}` dans les consignes. */
+    val how: String? = null,
+)
 
 /**
  * Palier d'un exercice, choisi d'après le dernier résultat du test : le palier retenu est le dernier

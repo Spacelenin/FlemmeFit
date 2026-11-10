@@ -693,8 +693,8 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     }
 
     private fun named(ex: Exercise, date: LocalDate): Exercise {
-        if (optionTests.isEmpty() || '{' !in ex.name) return ex
-        return ex.copy(name = program.exerciseName(ex.name, date))
+        if (optionTests.isEmpty() || ('{' !in ex.name && ex.description?.contains('{') != true)) return ex
+        return ex.copy(name = program.exerciseName(ex.name, date), description = ex.description?.let { program.exerciseName(it, date) })
     }
 
     /** Variantes (de la routine et perso) : leurs max notés et leur taux. */

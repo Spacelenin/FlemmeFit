@@ -215,7 +215,8 @@ et le test refait plus tard fait passer au palier suivant.
 
 Un test peut se faire au choix (`"options": [{ "id": "crunch", "name": "Crunchs", "short": "crunch" }, …]`).
 Dans les noms d'exercices, `{id du test}` est remplacé par le choix en cours (« Abdos ({abdos}) » → « Abdos (crunch) »),
-ou par tous les choix tant que rien n'est dit. Le premier choix vaut depuis le début ; changer ensuite propose de refaire
+ou par tous les choix tant que rien n'est dit ; `{Abdos}` (majuscule) donne « Crunch ». Dans les noms et les consignes,
+`{abdos.how}` est remplacé par le geste du choix (champ `how` de l'option, « décolle juste les omoplates »). Le premier choix vaut depuis le début ; changer ensuite propose de refaire
 le test : ce max devient la référence dès la séance suivante. La courbe du test garde les deux, séparées, et départ et
 record ne comparent que le choix en cours.
 
