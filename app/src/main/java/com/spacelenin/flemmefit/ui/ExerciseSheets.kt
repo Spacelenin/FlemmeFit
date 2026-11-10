@@ -393,58 +393,71 @@ fun ExerciseFeelingChips(current: Int?, onPick: (Int?) -> Unit) {
     }
 }
 
-/** Bouton « 🥵 Crevé » (Beat Saber) : la dose du jour réduite, l'exo compte comme fait. */
+/**
+ * Un choix du jour discret : éteint, une petite ligne à toucher ; allumé, un badge coloré (à toucher pour revenir
+ * en normal), son explication et, s'il y en a une, sa consigne.
+ */
 @Composable
-fun TiredSection(prescription: Prescription, enabled: Boolean, onTired: ((Boolean) -> Unit)?, center: Boolean = false) {
-    val cut = prescription.tiredOffer ?: return
-    if (onTired == null) return
-    val on = prescription.tired
+private fun DayOption(
+    on: Boolean,
+    enabled: Boolean,
+    offLabel: String,
+    onLabel: String,
+    onText: String,
+    instruction: String?,
+    center: Boolean,
+    onChange: (Boolean) -> Unit,
+) {
+    if (!on) {
+        TextButton(onClick = { onChange(true) }, enabled = enabled) {
+            Text(offLabel, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+        }
+        return
+    }
     Column(
         verticalArrangement = Arrangement.spacedBy(6.dp),
         horizontalAlignment = if (center) Alignment.CenterHorizontally else Alignment.Start,
     ) {
-        FitChip(
-            selected = on,
-            enabled = enabled,
-            onClick = { onTired(!on) },
-            label = { Text(if (on) "🥵 Crevé · −$cut %" else "🥵 Crevé ?") },
-        )
+        FitChip(selected = true, enabled = enabled, onClick = { onChange(false) }, label = { Text("$onLabel  ✕") })
         Text(
-            if (on) "Dose du jour réduite de $cut %, ça compte comme fait." else "Sur les rotules ? $cut % de moins aujourd'hui, et ça compte quand même.",
+            onText,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = if (center) TextAlign.Center else TextAlign.Start,
         )
+        instruction?.let { InstructionBubble(it) }
     }
 }
 
+/** « 🥵 Crevé » (Beat Saber) : la dose du jour réduite, l'exo compte comme fait. */
+@Composable
+fun TiredSection(prescription: Prescription, enabled: Boolean, onTired: ((Boolean) -> Unit)?, center: Boolean = false) {
+    val cut = prescription.tiredOffer ?: return
+    if (onTired == null) return
+    DayOption(
+        on = prescription.tired, enabled = enabled,
+        offLabel = "🥵 Crevé ? $cut % de moins aujourd'hui",
+        onLabel = "🥵 Crevé · −$cut %",
+        onText = "Dose du jour réduite de $cut %, ça compte comme fait.",
+        instruction = null, center = center, onChange = onTired,
+    )
+}
+
 /**
- * Bouton « Excentrique » d'un exo qui en a une version : quand c'est trop dur, on la fait à la place.
+ * « Excentrique » d'un exo qui en a une version : quand c'est trop dur, on la fait à la place.
  * L'exo compte comme fait, le réglage ne bouge pas. Allumé, la consigne s'affiche.
  */
 @Composable
 fun EccentricSection(prescription: Prescription, enabled: Boolean, onEccentric: ((Boolean) -> Unit)?, center: Boolean = false) {
     val text = prescription.eccentricOffer ?: return
     if (onEccentric == null) return
-    val on = prescription.eccentric
-    Column(
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-        horizontalAlignment = if (center) Alignment.CenterHorizontally else Alignment.Start,
-    ) {
-        FitChip(
-            selected = on,
-            enabled = enabled,
-            onClick = { onEccentric(!on) },
-            label = { Text(if (on) "↘ En excentrique" else "↘ Excentrique") },
-        )
-        Text(
-            if (on) "Compte comme fait, ton réglage ne bouge pas." else "Trop dur aujourd'hui ? La descente seule compte comme fait, sans toucher à ton réglage.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = if (center) TextAlign.Center else TextAlign.Start,
-        )
-        if (on) InstructionBubble(text)
-    }
+    DayOption(
+        on = prescription.eccentric, enabled = enabled,
+        offLabel = "↘ Trop dur ? Passer en excentrique",
+        onLabel = "↘ En excentrique",
+        onText = "Compte comme fait, ton réglage ne bouge pas.",
+        instruction = text, center = center, onChange = onEccentric,
+    )
 }
 
 /** « Ton ressenti » sous un exo, quand il se règle sur toi. */
