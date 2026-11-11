@@ -7,18 +7,18 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
 
-class DoseTest {
+class SessionOrderTest {
 
     @Test
     fun `order follows the chosen keys, warm-up and stretches stay in place`() {
         val day = listOf(
             Exercise("Échauffement", optional = true), Exercise("A"), Exercise("B"), Exercise("C"), Exercise("Étirements", optional = true),
         )
-        assertEquals(listOf(0, 3, 1, 2, 4), Dose.arrange(day, listOf("c", "a", "b"), null, null, null))
+        assertEquals(listOf(0, 3, 1, 2, 4), SessionOrder.arrange(day, listOf("c", "a", "b"), null, null, null))
         // Clé inconnue ou manquante : le reste garde son ordre.
-        assertEquals(listOf(0, 2, 1, 3, 4), Dose.arrange(day, listOf("b"), null, null, null))
+        assertEquals(listOf(0, 2, 1, 3, 4), SessionOrder.arrange(day, listOf("b"), null, null, null))
         // La variante (index 5) reste juste après son exercice de base.
-        assertEquals(listOf(0, 2, 5, 1, 3, 4), Dose.arrange(day, listOf("b", "a", "c"), 5, 2, null))
+        assertEquals(listOf(0, 2, 5, 1, 3, 4), SessionOrder.arrange(day, listOf("b", "a", "c"), 5, 2, null))
     }
 
     private val start = LocalDate.of(2026, 11, 2) // lundi
@@ -86,5 +86,50 @@ class ExerciseInfoTest {
         assertFalse(Surprise.due(true, 0, start))
         assertTrue(Surprise.due(true, 2026, LocalDate.of(2027, 4, 1)))
         assertFalse(Surprise.due(true, 2027, LocalDate.of(2027, 4, 1)))
+    }
+}
+
+class BossAndFriendsTest {
+    private val start = LocalDate.of(2026, 11, 2)
+
+    @Test
+    fun `winning a Boss raises the next session by one notch at most`() {
+        val pushups = Exercise("Pompes", sets = 3, reps = "3", amrap = true, progression = Progression(reps = 1, every = 100))
+        val plan = Plan(
+            version = 1, name = "R", repeat = REPEAT_FOREVER, deloadEvery = 0, boss = true,
+            weeks = listOf(PlanWeek(days = listOf(PlanDay(1, exercises = listOf(pushups))))),
+        )
+        val p0 = StoredProgram("p", plan, start.toString())
+        val s0 = ProgramSchedule(p0, start.plusDays(60))
+        val boss = (0 until 60).mapNotNull { s0.sessionAt(it) }.first { it.isBoss }
+        val pr = boss.prescriptions[0]
+        val normal = s0.sessionAt(boss.index - 7)?.prescriptions?.get(0)?.reps ?: 3
+        assertTrue(pr.reps!! > normal)
+        // Boss fait pile, bien au-dessus du prévu normal.
+        val p = p0.saveLog(boss.index, 0, ExerciseLog.ofSets(List(3) { pr.reps!! }.toMutableList().also { it[2] = pr.target ?: pr.reps!! }, true), complete = true)
+        val next = ProgramSchedule(p, start.plusDays(120)).sessionAt(boss.index + 7)!!.prescriptions[0].reps!!
+        assertTrue("$normal → $next", next - normal <= 1)
+    }
+
+    @Test
+    fun `the Boss objective is never below the dose needed to win it`() {
+        val dips = Exercise("Dips", sets = 3, reps = "8")
+        val pr = Prescription.of(dips, 0, false, boss = true, lastMax = 5)
+        assertEquals(pr.perSetPlanned, pr.target) // 5 + 1 = 6 < dose du jour : l'objectif suit la dose
+        val need = pr.perSetPlanned!!
+        assertTrue(pr.isMetBy(ExerciseLog.ofSets(List(3) { need }, true)))
+        assertFalse(pr.isMetBy(ExerciseLog.ofSets(listOf(need, need, need - 1), true)))
+        // Dernier max plus haut : il faut le battre sur la série à fond.
+        val high = Prescription.of(dips, 0, false, boss = true, lastMax = 20)
+        assertEquals(21, high.target)
+        assertFalse(high.isMetBy(ExerciseLog.ofSets(List(3) { high.perSetPlanned!! }, true)))
+        assertTrue(high.isMetBy(ExerciseLog.ofSets(listOf(high.perSetPlanned!!, high.perSetPlanned!!, 21), true)))
+    }
+
+    @Test
+    fun `long names are cut on a word, short ones stay whole`() {
+        assertEquals("Battements de jambes gainés (flutter kicks)", shareName("Battements de jambes gainés (flutter kicks)"))
+        val long = shareName("Un nom d'exercice vraiment beaucoup trop long pour tenir sur la carte des potes")
+        assertTrue(long, long.length <= 60 && long.endsWith("…") && !long.endsWith(" …"))
     }
 }

@@ -1,5 +1,6 @@
 package com.spacelenin.flemmefit.ui
 
+import com.spacelenin.flemmefit.model.SharedDefi
 import com.spacelenin.flemmefit.model.SharedExercise
 import com.spacelenin.flemmefit.model.StoredProgram
 import androidx.compose.foundation.verticalScroll
@@ -13,6 +14,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,8 +30,6 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -376,6 +377,7 @@ fun PseudoPromptDialog(onSave: (String) -> Unit, onLater: () -> Unit) {
 }
 
 /** La séance du jour d'un pote : ses exos (prévu, fait, exploits) et son ressenti, s'il les partage. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.LocalDate, onDismiss: () -> Unit) {
     val exercises = card.todayExercises.takeIf { card.isToday(today) }
@@ -385,6 +387,33 @@ private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.Lo
         title = { Text(card.pseudo + if (isMe) " (toi)" else "") },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Jour Boss et défis du jour : en tête, même sans le détail des exos.
+                if (card.isToday(today)) {
+                    card.todayBoss?.let { b ->
+                        Text(
+                            "💀 Jour Boss · " + when (b) {
+                                FriendCard.BOSS_WON -> "vaincu ✅"
+                                FriendCard.BOSS_LOST -> "raté ❌"
+                                else -> "en cours"
+                            },
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Black,
+                            color = BossColor,
+                        )
+                    }
+                    card.todayDefis?.forEach { d ->
+                        Text(
+                            "🎯 ${d.label} · " + when (d.result) {
+                                SharedDefi.WON -> "✅ réussi"
+                                SharedDefi.LOST -> "❌ raté"
+                                SharedDefi.REFUSED -> "refusé"
+                                else -> "en cours"
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                }
                 when {
                     !card.isToday(today) -> Text("Pas de nouvelles aujourd'hui 👀")
                     card.todayTotal == 0 -> Text("Repos aujourd'hui 😴")
@@ -402,12 +431,16 @@ private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.Lo
                         exercises.forEach { e ->
                             Column {
                                 Text(
-                                    (if (e.finished) "✅ " else "⏳ ") + e.name + (if (e.exploit) " 🏆" else "") + (if (e.replaced) " 🔄" else ""),
+                                    (if (e.finished) "✅ " else "⏳ ") + e.name,
                                     style = MaterialTheme.typography.bodyLarge,
                                     fontWeight = FontWeight.SemiBold,
                                 )
                                 val stars = if (fit) e.level?.let { l -> e.levelCount?.let { levelStars(l - 1, it) } } else null
+                                // Chaque info à part : la ligne se replie entre deux infos, jamais au milieu d'une.
                                 val extras = listOfNotNull(
+                                    "🏆 exploit".takeIf { e.exploit },
+                                    "🔄 remplacé".takeIf { e.replaced },
+                                    e.target?.let { "💀 objectif $it" },
                                     when (e.version) {
                                         SharedExercise.VERSION_ECCENTRIC -> "↘ excentrique"
                                         SharedExercise.VERSION_EASY -> "facile"
@@ -418,11 +451,14 @@ private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.Lo
                                     e.feeling?.let { StoredProgram.FEELINGS.getOrNull(it) },
                                     e.dosePercent?.let { "dose $it %" },
                                     "🏋️".takeIf { e.weighted == true },
-                                ).joinToString(" · ")
+                                )
                                 if (stars != null || extras.isNotEmpty()) {
-                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                                    ) {
                                         stars?.let { FitStars(it) }
-                                        if (extras.isNotEmpty()) Text(extras, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+                                        extras.forEach { Text(it, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold) }
                                     }
                                 }
                                 Text(

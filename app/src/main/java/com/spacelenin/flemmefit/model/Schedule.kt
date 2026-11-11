@@ -31,12 +31,12 @@ data class Session(
     val otherIndex: Int? = null,
     /** Séance allégée à la demande (Chill). */
     val isChill: Boolean = false,
-    /** Les mêmes exercices à dose pleine (avant mise en route et fatigue). */
+    /** Les mêmes exercices à dose pleine (avant « Crevé »). */
     val full: List<Prescription> = prescriptions,
     /** Ce que le calcul de dose sait de chaque exercice (mêmes index que [prescriptions]) ; vide : pas de réduction. */
 ) {
-    /** L'ordre que donneraient ces clés d'exercices de la routine (voir [Dose.arrange]). */
-    fun orderFor(keys: List<String>?): List<Int> = Dose.arrange(day.exercises, keys, variantIndex, variantBaseIndex, otherIndex)
+    /** L'ordre que donneraient ces clés d'exercices de la routine (voir [SessionOrder.arrange]). */
+    fun orderFor(keys: List<String>?): List<Int> = SessionOrder.arrange(day.exercises, keys, variantIndex, variantBaseIndex, otherIndex)
 
     /** Exercices de la routine, puis variante et exercice perso du jour. */
     val exerciseCount get() = prescriptions.size
@@ -182,8 +182,6 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     private val lastMax = HashMap<String, Int>()
     // Meilleure série notée de chaque exercice, et meilleur max de chaque variante en vraie version : les prérequis.
     private val bestMax = HashMap<String, Int>()
-    // Mise en route : séances faites de chaque exo, la première, et la première séance du programme.
-    // Saisies ramenées à la dose pleine (mêmes clés que [StoredProgram.done]) : ce que le réglage compare au prévu.
     // Meilleure série de l'exo avant chaque séance (mêmes clés que [StoredProgram.done]) : de quoi fêter un record.
     private val priorBest = HashMap<String, Int>()
     private val variantBest = HashMap<String, Int>()
@@ -274,8 +272,6 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         }
         return null
     }
-
-    private fun learnLog(i: Int, e: Int): ExerciseLog? = program.logOf(i, e)
 
     /** Valeur atteinte pour un prérequis : test, sinon variante, sinon exercice (voir [Variant.requires]). */
     private fun reached(key: String): Int = when {
@@ -554,7 +550,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             if (pr.exercise.eccentric != null && !pr.isTest && pr.variant == null && program.isEccentric(i, e)) prescriptions[e] = pr.copy(eccentric = true)
         }
         // Ordre choisi (ou celui de la routine) ; la variante suit son exercice de base, l'exo perso passe avant le dernier.
-        val order = Dose.arrange(day.exercises, program.orderOn(i, day.day, date), variantIndex, variantBase, otherIndex, n)
+        val order = SessionOrder.arrange(day.exercises, program.orderOn(i, day.day, date), variantIndex, variantBase, otherIndex, n)
         // « Crevé » (Beat Saber) : la dose du jour réduite, jamais un jour Boss ni sur un test.
         val dosed = prescriptions.toMutableList()
         if (!boss) for (e in 0 until n) {
@@ -578,9 +574,8 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 if (v.isFixed && program.isDone(i, e)) advanceFixed(v)
                 if (max != null && max > 0) {
                     variantPoints.getOrPut(v.id) { ArrayList() } += TestPoint(date, max)
-                    // Le taux se recale sur le max à dose pleine (un max fait fatigué compte pour plus).
-                    val fullMax = learnLog(i, e)?.max ?: max
-                    if (pr.variant?.full == true && test != null && test > 0) ratios[v.id] = Variants.learn(ratios[v.id] ?: v.ratio, test, fullMax)
+                    // Le taux se recale sur le max noté.
+                    if (pr.variant?.full == true && test != null && test > 0) ratios[v.id] = Variants.learn(ratios[v.id] ?: v.ratio, test, max)
                 }
                 // Le dosage suit le taux ; ce qui est noté et ressenti règle la variante par-dessus, comme les autres exos.
                 val done = program.isDone(i, e)
@@ -596,7 +591,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 return@forEachIndexed
             }
             bestMax[key]?.let { priorBest[StoredProgram.doneKey(i, e)] = it }
-            // Excentrique fait : la séance compte (fatigue, mise en route, validation), le reste ne bouge pas.
+            // Excentrique fait : la séance compte (validation, série), le reste ne bouge pas.
             // Coché mais rien fait : un oubli comme un autre, le réglage le voit.
             if (pr.eccentric && (program.isDone(i, e) || program.logOf(i, e) != null)) return@forEachIndexed
             val done = program.isDone(i, e)
@@ -607,7 +602,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             if (!deload && !chill) runCatching { learn(pr, i, e, done, final = done || date.isBefore(today), extra) }.onFailure(Safety::report)
             if (max == null) return@forEachIndexed
             // Objectif du prochain Boss (sans réduction) : le max ramené à la dose pleine.
-            lastMax[key] = learnLog(i, e)?.max ?: max
+            lastMax[key] = max
             bestMax[key] = maxOf(bestMax[key] ?: 0, max)
         }
     }
@@ -788,11 +783,13 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         val factor = if (pr.weighted == true) pr.exercise.weights?.factor ?: WeightsOption.DEFAULT_FACTOR else 1.0
         val step = (if (pr.maxIsSeconds) Measures.seconds(p.duration)?.toDouble() else p.reps?.toDouble())?.times(factor)
         val params = adaptParams(pr.key, dateOf(i))
+        // Jour Boss : comparé au prévu normal, mais réussir le Boss ne fait monter que d'un cran au plus
+        // (on ne tient pas un Boss tous les jours). En dessous du normal, ça baisse comme un autre jour.
         fun signalOf(side: Side?) = Adaptation.signal(
-            pr, learnLog(i, e), done, final, step,
+            pr, program.logOf(i, e), done, final, step,
             exerciseFeeling = program.exerciseFeelingOf(i, e), sessionFeeling = program.feelingOf(i), side = side, extra = extra,
             params = params,
-        )
+        )?.let { if (pr.isBoss) it.coerceAtMost(Adaptation.BOSS_MAX_SIGNAL) else it }
         val view = adaptViews[pr.key]
         // Jamais sous le départ du palier, ni au-delà du plafond de l'exercice (le réglage n'y servirait à rien).
         val minimum = -(view?.steps ?: 0)
@@ -830,7 +827,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     private fun updateBalance(pr: Prescription, i: Int, e: Int) {
         val view = adaptViews[pr.key] ?: return
         val sided = pr.sided ?: return
-        val log = learnLog(i, e)
+        val log = program.logOf(i, e)
         val done = program.isDone(i, e)
         // Fait de chaque côté : la moyenne de ses séries notées, ou le prévu si c'est simplement coché.
         Side.entries.forEach { side ->

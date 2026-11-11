@@ -22,6 +22,8 @@ data class AdaptState(
 object Adaptation {
     /** Une séance ne pèse jamais plus que ça, en crans : une faute de frappe ne fait pas tout exploser. */
     const val MAX_SIGNAL = 5.0
+    /** Un jour Boss réussi ne pousse pas plus fort que ça (en crans). */
+    const val BOSS_MAX_SIGNAL = 1.0
     /** Écart (en crans) avant de bouger pendant le calibrage. */
     private const val CALIBRATION_THRESHOLD = 0.5
 

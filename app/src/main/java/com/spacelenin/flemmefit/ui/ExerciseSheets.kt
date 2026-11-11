@@ -17,13 +17,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -488,12 +485,6 @@ fun exerciseInitials(name: String): String =
     name.split(' ', '-', '\'').filter { it.isNotBlank() && it.first().isLetter() && it.length > 2 }
         .take(2).joinToString("") { it.first().uppercase() }
         .ifEmpty { name.take(1).uppercase() }
-
-/** Petite pastille ronde de couleur. */
-@Composable
-fun Dot(color: Color, size: Int = 8) {
-    Box(Modifier.size(size.dp).clip(CircleShape).background(color))
-}
 
 /** Confirmation avant de passer la séance du jour en Burst. */
 @Composable
