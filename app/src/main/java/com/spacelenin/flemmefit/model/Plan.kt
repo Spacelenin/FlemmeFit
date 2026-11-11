@@ -255,11 +255,11 @@ data class Exercise(
     val tuning: Tuning? = null,
     /** Exercices à faire à la place, au choix (matériel, envie), depuis la page du jour. */
     val alternatives: List<Alternative> = emptyList(),
-    /** Muscles qui travaillent surtout (« triceps ») : voir [Dose]. */
+    /** Muscles qui travaillent surtout (« triceps »), affichés dans la fiche de l'exo. */
     val muscles: List<String> = emptyList(),
     /** Muscles qui aident (« épaules ») : comptent moitié moins. */
     val assists: List<String> = emptyList(),
-    /** Dose jamais réduite (mise en route, fatigue) : cardio, durée fixe. Il fatigue quand même ce qui suit. */
+    /** Dose fixe (cardio, durée fixe) : pas de réglage sur mesure. */
     val steady: Boolean = false,
     /**
      * Version excentrique, au choix le jour même : la consigne (« descends le plus lentement possible… »).

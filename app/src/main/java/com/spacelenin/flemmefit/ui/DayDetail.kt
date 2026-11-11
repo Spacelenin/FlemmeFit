@@ -39,12 +39,10 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -112,7 +110,7 @@ class DayActions(
     val onSkipVariant: (session: Session) -> Unit,
     /** « Changer un exo » : ouvre le choix des exercices de la séance et de ce qui peut les remplacer. */
     val onReplace: (session: Session) -> Unit = {},
-    /** « Réorganiser » : changer l'ordre des exos de la séance (la fatigue suit). */
+    /** « Réorganiser » : changer l'ordre des exos de la séance. */
     val onReorder: (session: Session) -> Unit = {},
 )
 

@@ -39,6 +39,10 @@ data class FriendCard(
     val todayExercises: List<SharedExercise>? = null,
     /** Ressenti de la séance du jour : 0 dur, 1 bien, 2 en forme. */
     val todayFeeling: Int? = null,
+    /** Jour Boss : [BOSS_WON], [BOSS_LOST] ou [BOSS_ONGOING] ; null un jour normal. */
+    @SerialName("tb") val todayBoss: String? = null,
+    /** Défis surprise proposés aujourd'hui (une fois proposés seulement). */
+    @SerialName("td") val todayDefis: List<SharedDefi>? = null,
 ) {
     /** Points du concours : un Boss vaut plus qu'un exploit, qui vaut plus qu'un Burst, qui vaut plus qu'une séance. */
     val score: Int get() = bossDefeated * BOSS_POINTS + exploits * EXPLOIT_POINTS + bursts * BURST_POINTS + defis * Challenges.POINTS + sessionsDone
@@ -50,6 +54,9 @@ data class FriendCard(
 
     companion object {
         const val BOSS_POINTS = 5
+        const val BOSS_WON = "w"
+        const val BOSS_LOST = "l"
+        const val BOSS_ONGOING = "o"
         const val EXPLOIT_POINTS = 3
         /** En plus du point de la séance. */
         const val BURST_POINTS = 2
@@ -76,19 +83,55 @@ data class SharedExercise(
     @SerialName("lc") val levelCount: Int? = null,
     /** Ressenti de l'exo (index de [StoredProgram.FEELINGS]). */
     @SerialName("fe") val feeling: Int? = null,
-    /** Dose réduite (mise en route, fatigue), en %. */
+    /** Dose du jour réduite (« Crevé »), en % de la dose pleine. Anciennes versions : mise en route et fatigue. */
     @SerialName("pc") val dosePercent: Int? = null,
     /** Fait avec des poids. */
     @SerialName("w") val weighted: Boolean? = null,
+    /** Jour Boss : l'objectif de la série à fond. */
+    @SerialName("tg") val target: Int? = null,
 ) {
     /** Sans les détails en plus : ce qui saute d'abord quand la carte est trop grosse. */
-    fun bare() = copy(version = null, level = null, levelCount = null, feeling = null, dosePercent = null, weighted = null)
+    fun bare() = copy(version = null, level = null, levelCount = null, feeling = null, dosePercent = null, weighted = null, target = null)
 
     companion object {
         const val VERSION_EASY = "f"
         const val VERSION_ECCENTRIC = "x"
         const val VERSION_TIRED = "c"
     }
+}
+
+/** Un défi surprise du jour, tel que les potes le voient : « 30 squats classiques » et son issue. */
+@Serializable
+data class SharedDefi(
+    @SerialName("l") val label: String,
+    /** [WON], [LOST], [REFUSED], ou null : encore en jeu. */
+    @SerialName("r") val result: String? = null,
+) {
+    companion object {
+        const val WON = "w"
+        const val LOST = "l"
+        const val REFUSED = "r"
+        /** Pas plus de défis par jour sur une carte. */
+        const val MAX = 2
+
+        fun of(c: Challenge, now: Long) = SharedDefi(
+            label = c.label.take(60),
+            result = when (c.status(now)) {
+                Challenge.Status.WON -> WON
+                Challenge.Status.LOST, Challenge.Status.EXPIRED -> LOST
+                Challenge.Status.REFUSED -> REFUSED
+                else -> null
+            },
+        )
+    }
+}
+
+/** Un nom tel qu'envoyé aux potes : entier jusqu'à [max] caractères, sinon coupé au dernier mot avec « … ». */
+fun shareName(name: String, max: Int = 60): String {
+    if (name.length <= max) return name
+    val cut = name.take(max - 1)
+    val space = cut.lastIndexOf(' ')
+    return (if (space > max / 2) cut.take(space) else cut).trimEnd(' ', '(', ',', '·') + "…"
 }
 
 object Social {
@@ -125,11 +168,14 @@ object Social {
         challengesWon: Int = 0,
         /** Partager le détail de la séance du jour (exos, prévu, fait, ressenti). */
         details: Boolean = true,
+        /** Défis surprise connus (ceux d'aujourd'hui partent sur la carte). */
+        challenges: List<Challenge> = emptyList(),
     ): FriendCard {
         var done = 0
         var total = 0
         var title: String? = null
         var feeling: Int? = null
+        var boss: String? = null
         val shared = ArrayList<SharedExercise>()
         val stats = programs.map { p ->
             val schedule = ProgramSchedule(p, today)
@@ -138,6 +184,11 @@ object Social {
                 total += s.requiredCount
                 if (title == null) title = s.day.title ?: p.plan.name
                 if (feeling == null) feeling = p.feelingOf(s.index)
+                if (s.isBoss && boss == null) boss = when {
+                    schedule.isComplete(s) -> FriendCard.BOSS_WON
+                    s.required.all { schedule.exerciseState(s, it) != ExerciseState.TODO } -> FriendCard.BOSS_LOST
+                    else -> FriendCard.BOSS_ONGOING
+                }
                 if (details) runCatching { shared += sharedExercises(schedule, s) }.onFailure(Safety::report)
             }
             Stats.of(schedule)
@@ -162,6 +213,9 @@ object Social {
             build = build,
             todayExercises = shared.take(MAX_SHARED).takeIf { details },
             todayFeeling = feeling.takeIf { details },
+            todayBoss = boss,
+            todayDefis = challenges.filter { it.date == today.toString() && !(it.acceptedAt == null && it.open(now)) }
+                .takeLast(SharedDefi.MAX).map { SharedDefi.of(it, now) }.ifEmpty { null },
         ).fitted()
     }
 
@@ -177,7 +231,7 @@ object Social {
         val planned = pr.exploitPlanned
         val max = log?.max
         SharedExercise(
-            name = pr.exercise.name.take(40),
+            name = shareName(pr.exercise.name),
             planned = pr.summary().ifEmpty { null }?.take(40),
             done = doneLabel?.take(60),
             finished = finished,
@@ -194,6 +248,7 @@ object Social {
             feeling = schedule.program.exerciseFeelingOf(s.index, e),
             dosePercent = pr.exercise.tired?.takeIf { pr.tired }?.let { 100 - it },
             weighted = true.takeIf { pr.weighted == true },
+            target = pr.target.takeIf { pr.isBoss && pr.allOut },
         )
     }
 
@@ -201,7 +256,7 @@ object Social {
     private fun FriendCard.fitted(): FriendCard {
         var card = this
         // Trop gros : les détails en plus sautent d'abord, puis les exos un par un en partant de la fin.
-        if (encode(card).toByteArray().size > MAX_CARD_BYTES) card = card.copy(todayExercises = card.todayExercises?.map { it.bare() })
+        if (encode(card).toByteArray().size > MAX_CARD_BYTES) card = card.copy(todayExercises = card.todayExercises?.map { it.bare() }, todayDefis = null)
         while (encode(card).toByteArray().size > MAX_CARD_BYTES && !card.todayExercises.isNullOrEmpty()) {
             card = card.copy(todayExercises = card.todayExercises!!.dropLast(1))
         }

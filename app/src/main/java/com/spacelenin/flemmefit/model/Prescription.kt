@@ -111,7 +111,12 @@ data class Prescription(
         if (perSet != null) {
             if (perSet.take(count).count { it > 0 } < count) return false
             if (!isBoss) return true
-            return (0 until count).all { i -> perSet[i] >= ((sided?.plannedAt(i) ?: perSetPlanned) ?: 0) }
+            // La série à fond se juge sur l'objectif affiché, les autres sur la dose du jour.
+            val last = count - 1
+            return (0 until count).all { i ->
+                val need = (sided?.plannedAt(i) ?: perSetPlanned) ?: 0
+                perSet[i] >= if (i == last && sided == null && allOut) maxOf(need, target ?: 0) else need
+            }
         }
         return (sets == null || (log.sets ?: sets) >= sets) &&
             (!isBoss || reps == null || (log.reps ?: reps) >= reps) &&
@@ -233,7 +238,9 @@ data class Prescription(
 
             val planned = reps ?: seconds?.takeIf { exercise.reps == null }
             val target = when {
-                boss -> lastMax?.plus(1) ?: planned
+                // Boss : battre son dernier max, et jamais moins que la dose du jour (sinon l'objectif affiché
+                // serait plus bas que ce qu'il faut pour vaincre le Boss).
+                boss -> listOfNotNull(lastMax?.plus(1), planned).maxOrNull()
                 exercise.amrap -> planned
                 else -> null
             }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.spacelenin.flemmefit.BuildConfig
 import com.spacelenin.flemmefit.data.ProgramRepository
+import com.spacelenin.flemmefit.model.Challenge
 import com.spacelenin.flemmefit.model.FriendCard
 import com.spacelenin.flemmefit.model.Reminders
 import com.spacelenin.flemmefit.model.Social
@@ -85,6 +86,10 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
     @Volatile
     var challengesWon: () -> Int = { 0 }
 
+    /** Défis surprise connus, pour ceux du jour (fourni par l'appli). */
+    @Volatile
+    var challenges: () -> List<Challenge> = { emptyList() }
+
     fun setShareDetails(on: Boolean) {
         prefs.edit().putBoolean(KEY_SHARE_DETAILS, on).apply()
         _shareDetails.value = on
@@ -94,7 +99,7 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
     fun myCard(today: LocalDate = LocalDate.now()): FriendCard? = _pseudo.value?.let {
         Social.card(
             myId, it, repository.state.value.programs, today, System.currentTimeMillis(), BuildConfig.VERSION_CODE, challengesWon(),
-            details = _shareDetails.value,
+            details = _shareDetails.value, challenges = runCatching { challenges() }.getOrDefault(emptyList()),
         )
     }
 

@@ -3,7 +3,7 @@ package com.spacelenin.flemmefit.model
 import kotlin.math.roundToInt
 
 /** Ordre des exos d'une séance, et petites réductions de dose (« Crevé »). */
-object Dose {
+object SessionOrder {
     /** Une valeur de série réduite : au moins 1 ; en secondes, aux 5 s à partir d'une minute. */
     fun scale(value: Int, factor: Double, seconds: Boolean): Int {
         val v = value * factor
@@ -36,7 +36,7 @@ object Dose {
 fun Prescription.cutBy(percent: Int): Prescription {
     val f = 1 - percent.coerceIn(0, 90) / 100.0
     val inSeconds = maxIsSeconds
-    fun s(v: Int?, seconds: Boolean) = v?.let { Dose.scale(it, f, seconds) }
+    fun s(v: Int?, seconds: Boolean) = v?.let { SessionOrder.scale(it, f, seconds) }
     return copy(
         reps = s(reps, false),
         seconds = s(seconds, true),

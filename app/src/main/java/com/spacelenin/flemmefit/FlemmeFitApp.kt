@@ -14,6 +14,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
 class FlemmeFitApp : Application() {
@@ -47,11 +48,14 @@ class FlemmeFitApp : Application() {
         // Défis surprise : le jour et l'heure dépendent de cette installation.
         challenges = ChallengeManager(this, repository, social.myId.hashCode().toLong())
         social.challengesWon = challenges::wonCount
+        social.challenges = { challenges.all.value }
         challenges.onWon = {
             social.publishIfNeeded()
             backup.saveSoon()
         }
         social.publishIfNeeded()
+        // Un défi qui change (accepté, refusé, réussi, raté) : la carte des potes suit.
+        backgroundScope.launch { challenges.all.drop(1).collect { social.publishIfNeeded() } }
         // Rappels et défis recalculent les séances : en arrière-plan, pour ne pas freiner l'ouverture, et sans
         // jamais faire planter l'appli au démarrage.
         backgroundScope.launch {

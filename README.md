@@ -33,7 +33,8 @@ et une progression.
   Le **Pont** se débloque (pompes pike 5, superman 30 s, hip thrust 15, plus un test de souplesse à confirmer) :
   mains surélevées d'abord, puis au sol, +2 s à chaque séance réussie.
 - **Burst 🚀 et Chill 🛋** : une fois par semaine, renforcer ou alléger la séance du jour.
-- **Jours Boss 💀** aléatoires toutes les 3 à 4 semaines : séance renforcée et série à fond, on note son max.
+- **Jours Boss 💀** aléatoires toutes les 3 à 4 semaines : séance renforcée et série à fond, avec pour objectif son dernier
+  max + 1 (jamais moins que la dose du jour). Le réussir fait monter le réglage d'un cran au plus.
 - **Tests et paliers 📏** (démarrage objectif, façon 100 pompes) : un test à fond choisit le palier de départ, refait en
   cours de route pour passer au palier suivant. Exemple : `examples/routine-maison.json`.
 - **Mise à jour d'une routine** en la réimportant : le suivi (cases cochées, saisies, tests, date) est gardé.
