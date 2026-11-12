@@ -56,6 +56,12 @@ private const val OTHER_SALT = 0x5EED2L
 
 /** Crans de progression ajoutés par un Burst. */
 const val BURST_STEPS = 2
+/**
+ * Passage à un Boss par bloc de semaines de travail : les Boss tombés avant cette date (faits, ou annoncés la veille)
+ * restent ceux de l'ancienne règle.
+ */
+val BOSS_BLOCKS_FROM: java.time.LocalDate = java.time.LocalDate.of(2026, 11, 16)
+
 /** Crans de progression d'un Boss : plus dur qu'un Burst. */
 const val BOSS_STEPS = 3
 /** Part d'un Boss à faire pour sauver la journée (sans points ni 🔥 en plus). */
@@ -132,7 +138,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
 
     fun isDeloadWeek(programWeek: Int) = deloadEvery > 0 && (programWeek + 1) % deloadEvery == 0
 
-    // --- Jours Boss : une semaine sur 3 à 4, tirée au sort de façon reproductible. ---
+    // --- Jours Boss : un par bloc de semaines de travail (entre deux semaines allégées), semaine et jour au hasard. ---
 
     private val bossRandom = Random(seed)
     private val bossWeeks = ArrayList<Int>()
@@ -140,8 +146,12 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
 
     private fun planDaysOfWeek(programWeek: Int): List<PlanDay> = plan.weeks[programWeek % plan.weeks.size].days
 
-    private fun isBossWeek(programWeek: Int): Boolean {
-        if (!plan.boss) return false
+    /** Semaines d'un bloc de travail : entre deux semaines allégées (sans allégement : par 3). */
+    private val bossBlockSize get() = if (deloadEvery > 0) deloadEvery else 3
+    private fun bossBlockOf(programWeek: Int) = programWeek / bossBlockSize
+
+    /** Ancienne règle (un Boss toutes les 3 à 4 semaines) : gardée pour les Boss d'avant [BOSS_BLOCKS_FROM]. */
+    private fun oldBossWeekUpTo(programWeek: Int) {
         while (bossWeeks.lastOrNull().let { it == null || it < programWeek }) {
             val prev = bossWeeks.lastOrNull()
             var next = if (prev == null) 2 + bossRandom.nextInt(2) else prev + 3 + bossRandom.nextInt(2)
@@ -150,7 +160,33 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             bossWeeks += next
             bossWeekSet += next
         }
-        return programWeek in bossWeekSet
+    }
+
+    /** Le jour Boss tombe avant le passage à la nouvelle règle : il reste tel quel (déjà fait, ou déjà annoncé). */
+    private fun bossBeforeNewRule(programWeek: Int) =
+        programWeek != Int.MAX_VALUE && dateOf(bossIndexOfWeek(programWeek)).isBefore(BOSS_BLOCKS_FROM)
+
+    /** La semaine Boss du bloc [block] (nouvelle règle), ou null s'il n'y en a pas. */
+    private fun newBossWeekOf(block: Int): Int? {
+        val first = block * bossBlockSize
+        // Un Boss de l'ancienne règle déjà tombé dans ce bloc (avant le changement) compte pour le bloc.
+        oldBossWeekUpTo(first + bossBlockSize - 1)
+        if ((first until first + bossBlockSize).any { it in bossWeekSet && bossBeforeNewRule(it) }) return null
+        val candidates = (first until first + bossBlockSize).filter { w ->
+            !isDeloadWeek(w) && planDaysOfWeek(w).isNotEmpty() && w > 0 &&
+                (totalDays == null || w * DAYS_PER_WEEK < totalDays) &&
+                !dateOf(bossIndexOfWeek(w)).isBefore(BOSS_BLOCKS_FROM)
+        }
+        if (candidates.isEmpty()) return null
+        return candidates[Random(seed xor (block * 104729L)).nextInt(candidates.size)]
+    }
+
+    private fun isBossWeek(programWeek: Int): Boolean {
+        if (!plan.boss) return false
+        oldBossWeekUpTo(programWeek)
+        if (programWeek in bossWeekSet && bossBeforeNewRule(programWeek)) return true
+        val block = bossBlockOf(programWeek)
+        return newBossWeekOf(block) == programWeek
     }
 
     private fun bossIndexOfWeek(programWeek: Int): Int {

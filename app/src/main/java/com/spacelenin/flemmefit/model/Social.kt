@@ -312,10 +312,18 @@ object Social {
             .maxByOrNull { it.updatedAt }
     }
 
-    /** Classement : score décroissant, puis avancée du jour. */
+    /**
+     * Classement : points, puis à égalité ce qui est le plus dur (Boss vaincus, exploits), la série 🔥, les séances,
+     * l'avancée du jour, et enfin le pseudo pour que l'ordre ne change pas d'un rafraîchissement à l'autre.
+     */
     fun ranking(cards: List<FriendCard>, today: LocalDate): List<FriendCard> = cards.sortedWith(
         compareByDescending<FriendCard> { it.score }
-            .thenByDescending { if (it.isToday(today) && it.todayTotal > 0) it.todayDone.toFloat() / it.todayTotal else -1f },
+            .thenByDescending { it.bossDefeated }
+            .thenByDescending { it.exploits }
+            .thenByDescending { it.streak }
+            .thenByDescending { it.sessionsDone }
+            .thenByDescending { if (it.isToday(today) && it.todayTotal > 0) it.todayDone.toFloat() / it.todayTotal else -1f }
+            .thenBy { it.pseudo.lowercase() },
     )
 
     const val MAX_FRIENDS = 50

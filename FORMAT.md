@@ -333,7 +333,7 @@ Elle ne fait pas progresser et n'a jamais de Boss.
 
 ## Jours Boss 💀
 
-Toutes les **3 à 4 semaines**, une séance tirée au hasard devient un Boss (tirage fixe : rouvrir l'app ne le
+Dans chaque bloc de semaines de travail (les 3 semaines entre deux semaines allégées ; sans allégement, par 3), une séance tirée au hasard devient un Boss (tirage fixe : rouvrir l'app ne le
 change pas ; repousser la séance déplace le Boss avec elle). Il se dévoile **la veille**.
 - Plus dur qu'un Burst : **+3 crans de progression**, et **dernière série à fond** sur chaque exercice.
 - En cochant un exercice, l'app demande le **max** fait sur la série à fond. Objectif affiché : dernier max + 1.
@@ -417,4 +417,4 @@ Seul ce qui est en **gras** est indispensable ; le reste a une valeur par défau
 | Charge | celle indiquée | +1 kg quand le haut des reps est atteint | — |
 | Cardio / jeu | durée indiquée | +2 à 5 min toutes les 2 semaines | 30–45 min |
 
-Plus une semaine de décharge à 50 % toutes les 4 semaines et des jours Boss toutes les 3 à 4 semaines.
+Plus une semaine de décharge à 50 % toutes les 4 semaines et un jour Boss par bloc de 3 semaines de travail.

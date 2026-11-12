@@ -94,7 +94,7 @@ private val Pages = listOf(
     TutorialPage(
         "💀", "Boss, Burst et Chill",
         listOf(
-            "Boss : une séance surprise toutes les 3-4 semaines, dévoilée la veille. Plus dure qu'un Burst (+$BOSS_STEPS étapes) et dernière série à fond. Tout fait = Boss vaincu ; aux trois quarts, ta série 🔥 tient, sans points.",
+            "Boss : une séance surprise par bloc de 3 semaines (entre deux récups), dévoilée la veille. Plus dure qu'un Burst (+$BOSS_STEPS étapes) et dernière série à fond. Tout fait = Boss vaincu ; aux trois quarts, ta série 🔥 tient, sans points.",
             "Burst 🚀 : une fois par semaine, tu peux renforcer la séance du jour (+$BURST_STEPS étapes, ou une série de plus). +${FriendCard.BURST_POINTS} points chez les potes. Annulable tant que rien n'est fait.",
             "Chill 🛋 : une fois par semaine aussi, pour les jours mous : séries divisées par deux, la progression attend. Elle compte quand même pour ta série.",
         ),

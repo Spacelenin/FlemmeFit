@@ -133,3 +133,62 @@ class BossAndFriendsTest {
         assertTrue(long, long.length <= 60 && long.endsWith("…") && !long.endsWith(" …"))
     }
 }
+
+class BossBlocksTest {
+    private val routine = (PlanParser.parse(java.io.File("../examples/routine-maison.json").readText()) as ParseResult.Success).plan
+
+    /** L'ancienne règle, recopiée : un Boss toutes les 3 à 4 semaines. */
+    private fun oldBossDates(p: StoredProgram, s: ProgramSchedule, weeks: Int): List<LocalDate> {
+        val random = kotlin.random.Random(p.id.hashCode().toLong())
+        val seed = p.id.hashCode().toLong()
+        val out = ArrayList<LocalDate>()
+        var prev: Int? = null
+        while (true) {
+            var next = if (prev == null) 2 + random.nextInt(2) else prev + 3 + random.nextInt(2)
+            while ((next + 1) % 4 == 0) next++
+            if (next >= weeks) return out
+            val days = routine.weeks[next % routine.weeks.size].days
+            val pick = kotlin.random.Random(seed xor (next * 7919L)).nextInt(days.size)
+            out += s.dateOf(next * 7 + days[pick].day - 1)
+            prev = next
+        }
+    }
+
+    @Test
+    fun `bosses already met or announced stay, then one Boss per block of three working weeks`() {
+        for (id in listOf("levi", "ninjarque", "spacelenin", "exynos", "a", "b", "c", "d")) {
+            for (start in listOf(LocalDate.of(2026, 10, 19), LocalDate.of(2026, 10, 26), LocalDate.of(2026, 11, 2))) {
+                val p = StoredProgram(id, routine, start.toString())
+                val s = ProgramSchedule(p, start.plusDays(400))
+                val bosses = (0 until 52 * 7).mapNotNull { s.sessionAt(it) }.filter { it.isBoss }
+                // Avant le changement : exactement les mêmes jours qu'avant.
+                val old = oldBossDates(p, s, 52).filter { it.isBefore(BOSS_BLOCKS_FROM) }
+                assertEquals("$id $start", old, bosses.map { it.date }.filter { it.isBefore(BOSS_BLOCKS_FROM) })
+                // Après : un Boss par bloc de 4 semaines (3 de travail + 1 allégée), jamais en semaine allégée.
+                assertTrue(bosses.none { it.isDeload })
+                val blocks = bosses.filter { !it.date.isBefore(BOSS_BLOCKS_FROM) }.map { (it.index / 7) / 4 }
+                assertEquals("$id $start $blocks", blocks.distinct(), blocks)
+                val firstFull = ((java.time.temporal.ChronoUnit.DAYS.between(start, BOSS_BLOCKS_FROM) / 7 + 3) / 4).toInt() + 1
+                (firstFull until 12).forEach { b -> assertTrue("$id $start bloc $b", b in blocks) }
+            }
+        }
+    }
+}
+
+class RankingTieTest {
+    @Test
+    fun `equal points - more Bosses first, then exploits, then streak, then name`() {
+        val today = LocalDate.of(2026, 11, 12)
+        fun card(name: String, boss: Int, exploits: Int, streak: Int, sessions: Int) = FriendCard(
+            id = name, pseudo = name, date = today.toString(), updatedAt = 0, bossDefeated = boss, exploits = exploits,
+            streak = streak, sessionsDone = sessions,
+        )
+        // Tous à 30 points.
+        val levi = card("Levi", 1, 4, 13, 13)
+        val me = card("Spacelenin", 0, 6, 9, 12)
+        val ex = card("Zed", 0, 6, 10, 12)
+        val same = card("Anna", 0, 6, 10, 12)
+        assertTrue(listOf(levi, me, ex, same).all { it.score == 30 })
+        assertEquals(listOf("Levi", "Anna", "Zed", "Spacelenin"), Social.ranking(listOf(me, ex, same, levi), today).map { it.pseudo })
+    }
+}
