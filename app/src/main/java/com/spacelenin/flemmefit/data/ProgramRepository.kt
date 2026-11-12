@@ -118,6 +118,14 @@ class ProgramRepository(dir: File) {
     fun setExerciseFeeling(id: String, dayIndex: Int, exerciseIndex: Int, feeling: Int?) =
         updateProgram(id) { it.withExerciseFeeling(dayIndex, exerciseIndex, feeling) }
 
+    /** Forme du jour (null : en forme). Un Boss ce jour-là est reporté une fois, au premier choix. */
+    fun setForm(id: String, dayIndex: Int, percent: Int?) = updateProgram(id) { p ->
+        val updated = p.withForm(dayIndex, percent)
+        if (percent == null || p.bossMoves.containsKey(dayIndex.toString())) return@updateProgram updated
+        val schedule = ProgramSchedule(p, LocalDate.now())
+        if (schedule.isNaturalBoss(dayIndex)) updated.withBossMove(dayIndex, schedule.bossMoveTarget(dayIndex)) else updated
+    }
+
     fun setTired(id: String, dayIndex: Int, exerciseIndex: Int, on: Boolean) =
         updateProgram(id) { it.withTired(dayIndex, exerciseIndex, on) }
 

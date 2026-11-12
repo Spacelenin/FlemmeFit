@@ -25,6 +25,9 @@ et une progression.
 - **Excentrique ↘** sur les exos en reps (pompes, dips, abdos, tractions, squats…) : quand c'est trop dur, on ne
   travaille que la descente, le plus lentement possible. L'exo compte comme fait, mais le réglage, la progression et les
   records ne bougent pas (jamais un jour Boss ni sur un test).
+- **Forme du jour** : fatigué 😮‍💨 (70 %) ou malade 🤒 (55 %), à choisir avant la séance. Toutes les séries sont réduites,
+  la séance compte comme faite, et le réglage, la progression et les records ne bougent pas. Un Boss tombé ce jour-là
+  est reporté une fois, sur un jour de séance de la semaine qui suit.
 - **Mode séance** guidé : série par série, 4 s pour se mettre en place avant chaque série au temps, repos décompté,
   chrono qui continue en temps en plus, ressenti par exo.
 - **Exos d'un côté à la fois** : une série par côté, 🔴 gauche / 🔵 droite. Chaque côté est suivi à part ; un côté en

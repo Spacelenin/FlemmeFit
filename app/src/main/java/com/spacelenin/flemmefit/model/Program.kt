@@ -123,6 +123,10 @@ data class StoredProgram(
     val eccentrics: Set<String> = emptySet(),
     /** Exercices faits « crevé » ([Exercise.tired]), mêmes clés que [done]. */
     val tiredMarks: Set<String> = emptySet(),
+    /** Forme du jour (index de jour → 70 ou 55 % de la dose). Absent : en forme. */
+    val forms: Map<String, Int> = emptyMap(),
+    /** Boss reportés par la forme du jour : jour d'origine → jour du report (-1 : pas de jour trouvé). Une fois. */
+    val bossMoves: Map<String, Int> = emptyMap(),
 ) {
     val start: LocalDate get() = LocalDate.parse(startDate)
 
@@ -191,9 +195,19 @@ data class StoredProgram(
             exerciseFeelings = exerciseFeelings.filterKeys { !mine(it) },
             eccentrics = eccentrics.filterNot(::mine).toSet(),
             tiredMarks = tiredMarks.filterNot(::mine).toSet(),
+            forms = forms - dayIndex.toString(),
             feelings = feelings - dayIndex.toString(),
         )
     }
+
+    fun formOf(dayIndex: Int): Int? = forms[dayIndex.toString()]
+
+    fun withForm(dayIndex: Int, percent: Int?): StoredProgram =
+        copy(forms = if (percent == null || percent >= 100) forms - dayIndex.toString() else forms + (dayIndex.toString() to percent.coerceIn(30, 99)))
+
+    /** Le Boss du jour [dayIndex] part au jour [target] : une seule fois, le premier report reste. */
+    fun withBossMove(dayIndex: Int, target: Int): StoredProgram =
+        if (bossMoves.containsKey(dayIndex.toString())) this else copy(bossMoves = bossMoves + (dayIndex.toString() to target))
 
     fun isTired(dayIndex: Int, exerciseIndex: Int) = doneKey(dayIndex, exerciseIndex) in tiredMarks
 

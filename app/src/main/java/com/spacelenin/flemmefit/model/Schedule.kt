@@ -31,9 +31,12 @@ data class Session(
     val otherIndex: Int? = null,
     /** Séance allégée à la demande (Chill). */
     val isChill: Boolean = false,
-    /** Les mêmes exercices à dose pleine (avant « Crevé »). */
+    /** Les mêmes exercices à dose pleine (avant « Crevé » et la forme du jour). */
     val full: List<Prescription> = prescriptions,
-    /** Ce que le calcul de dose sait de chaque exercice (mêmes index que [prescriptions]) ; vide : pas de réduction. */
+    /** Forme du jour : 70 (fatigué) ou 55 (malade), en % de la dose ; null : en forme. */
+    val form: Int? = null,
+    /** Le Boss de ce jour a été reporté (forme du jour choisie). */
+    val bossMoved: Boolean = false,
 ) {
     /** L'ordre que donneraient ces clés d'exercices de la routine (voir [SessionOrder.arrange]). */
     fun orderFor(keys: List<String>?): List<Int> = SessionOrder.arrange(day.exercises, keys, variantIndex, variantBaseIndex, otherIndex)
@@ -187,6 +190,22 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         if (programWeek in bossWeekSet && bossBeforeNewRule(programWeek)) return true
         val block = bossBlockOf(programWeek)
         return newBossWeekOf(block) == programWeek
+    }
+
+    /** Le jour [i] est le Boss tiré au sort (avant tout report), qu'il soit dévoilé ou non. */
+    fun isNaturalBoss(i: Int): Boolean {
+        if (i < 0) return false
+        val week = i / DAYS_PER_WEEK
+        return !isDeloadWeek(week) && isBossWeek(week) && bossIndexOfWeek(week) == i
+    }
+
+    /** Où reporter le Boss du jour [i] : un jour de séance tiré au sort dans les 7 jours qui suivent (-1 : aucun). */
+    fun bossMoveTarget(i: Int): Int {
+        val candidates = (i + 1..i + DAYS_PER_WEEK).filter { d ->
+            inRange(d) && !isDeloadWeek(d / DAYS_PER_WEEK) && !isNaturalBoss(d) &&
+                planDaysOfWeek(d / DAYS_PER_WEEK).any { it.day == d % DAYS_PER_WEEK + 1 }
+        }
+        return if (candidates.isEmpty()) -1 else candidates[Random(seed xor (i * 31337L)).nextInt(candidates.size)]
     }
 
     private fun bossIndexOfWeek(programWeek: Int): Int {
@@ -450,11 +469,17 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             }
         }
         val deload = isDeloadWeek(week)
+        // Forme du jour (fatigué, malade) : dose réduite, la séance compte, le réglage ne bouge pas. Un Boss tombé ce
+        // jour-là est reporté, une seule fois, sur un jour tiré au sort dans la semaine qui suit.
+        val form = program.formOf(i)?.takeIf { !deload }
+        val naturalBoss = isNaturalBoss(i)
+        val movedHere = program.bossMoves.any { (from, to) -> to == i && from.toIntOrNull()?.let(program::formOf) != null }
         // Le Boss ne se dévoile que la veille : avant, la séance est affichée normalement.
-        val boss = !deload && isBossWeek(week) && bossIndexOfWeek(week) == i && !date.isAfter(today.plusDays(1))
+        val boss = !deload && form == null && (naturalBoss || movedHere) && !date.isAfter(today.plusDays(1))
         val weeksBefore = if (deloadEvery > 0) week - week / deloadEvery else week
-        val burst = !boss && !deload && i in program.bursts
-        val chill = !boss && !deload && !burst && i in program.chills
+        val burst = !boss && !deload && form == null && i in program.bursts
+        val chill = !boss && !deload && !burst && form == null && i in program.chills
+        val pause = chill || form != null
 
         fun prescribe(e: Int, original: Exercise): Prescription {
             val ex = named(original, date).let { if (StoredProgram.doneKey(i, e) in program.excused) it.copy(optional = true) else it }
@@ -589,7 +614,9 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         val order = SessionOrder.arrange(day.exercises, program.orderOn(i, day.day, date), variantIndex, variantBase, otherIndex, n)
         // « Crevé » (Beat Saber) : la dose du jour réduite, jamais un jour Boss ni sur un test.
         val dosed = prescriptions.toMutableList()
-        if (!boss) for (e in 0 until n) {
+        if (form != null) prescriptions.forEachIndexed { e, pr ->
+            if (!pr.exercise.optional && !pr.isTest) dosed[e] = pr.cutBy(100 - form).copy(tired = false, formPercent = form)
+        } else if (!boss) for (e in 0 until n) {
             val pr = prescriptions[e]
             val cut = pr.exercise.tired ?: continue
             if (!pr.isTest && pr.variant == null && pr.replaces == null && program.isTired(i, e)) dosed[e] = pr.cutBy(cut)
@@ -597,7 +624,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         resolved[i] = Session(
             i, week / plan.weeks.size + 1, cycleWeek + 1, day, planWeek.label, date, boss, deload, dosed, burst,
             order = order, variantIndex = variantIndex, variantBaseIndex = variantBase, otherIndex = otherIndex, isChill = chill,
-            full = prescriptions.toList(),
+            full = prescriptions.toList(), form = form, bossMoved = naturalBoss && form != null,
         )
 
         prescriptions.forEachIndexed { e, pr ->
@@ -606,6 +633,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             if (e == variantIndex) {
                 val v = variantPick!!.first
                 val test = plan.family(v.family)?.test?.let(testResults::get)
+                if (form != null) return@forEachIndexed
                 if (max != null && max > 0 && pr.variant?.full == true) variantBest[v.id] = maxOf(variantBest[v.id] ?: 0, max)
                 if (v.isFixed && program.isDone(i, e)) advanceFixed(v)
                 if (max != null && max > 0) {
@@ -615,7 +643,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 }
                 // Le dosage suit le taux ; ce qui est noté et ressenti règle la variante par-dessus, comme les autres exos.
                 val done = program.isDone(i, e)
-                if (!chill) runCatching { learn(pr, i, e, done, final = done || date.isBefore(today), extra = 0) }.onFailure(Safety::report)
+                if (!pause) runCatching { learn(pr, i, e, done, final = done || date.isBefore(today), extra = 0) }.onFailure(Safety::report)
                 return@forEachIndexed
             }
             if (pr.isTest) {
@@ -630,12 +658,14 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             // Excentrique fait : la séance compte (validation, série), le reste ne bouge pas.
             // Coché mais rien fait : un oubli comme un autre, le réglage le voit.
             if (pr.eccentric && (program.isDone(i, e) || program.logOf(i, e) != null)) return@forEachIndexed
+            // Forme du jour : la séance compte, le réglage, la progression et les max ne bougent pas.
+            if (form != null) return@forEachIndexed
             val done = program.isDone(i, e)
-            if (done && !deload && !chill) validated[key] = (validated[key] ?: 0) + 1
+            if (done && !deload && !pause) validated[key] = (validated[key] ?: 0) + 1
             // Le réglage n'est qu'un plus : s'il échoue, la séance reste calculée sans lui (jamais de plantage).
             // Boss et Burst gonflent le prévu exprès : le réglage compare à ce qui aurait été prévu sans eux.
             val extra = if (pr.exercise.progression == null) 0 else if (boss) BOSS_STEPS else if (burst) BURST_STEPS else 0
-            if (!deload && !chill) runCatching { learn(pr, i, e, done, final = done || date.isBefore(today), extra) }.onFailure(Safety::report)
+            if (!deload && !pause) runCatching { learn(pr, i, e, done, final = done || date.isBefore(today), extra) }.onFailure(Safety::report)
             if (max == null) return@forEachIndexed
             // Objectif du prochain Boss (sans réduction) : le max ramené à la dose pleine.
             lastMax[key] = max
@@ -1212,6 +1242,11 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             program.chills.none { it / DAYS_PER_WEEK == session.programWeek }
 
     fun canUndoChill(session: Session): Boolean = session.isChill && untouched(session)
+
+    /** Forme du jour : le jour même, sur une séance pas encore commencée (ni Chill, ni semaine allégée). */
+    fun canChooseForm(session: Session): Boolean =
+        session.date == today && !session.isDeload && !session.isChill && !session.isBurst && untouched(session) &&
+            session.prescriptions.any { it.sets != null || it.reps != null || it.seconds != null }
 
     private fun untouched(session: Session) =
         (0 until session.exerciseCount).none { program.isDone(session.index, it) || program.logOf(session.index, it) != null }

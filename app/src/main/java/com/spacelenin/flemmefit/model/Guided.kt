@@ -88,7 +88,7 @@ object Celebration {
 
     /** [previousBest] : la meilleure série notée de cet exo avant cette séance (null : jamais fait). */
     fun of(pr: Prescription, log: ExerciseLog, previousBest: Int?): String? {
-        if (!pr.allOut || pr.isTest || pr.eccentric) return null
+        if (!pr.allOut || pr.isTest || pr.neutral) return null
         val max = log.max ?: return null
         val planned = pr.exploitPlanned
         if (planned != null && Exploit.isExploit(max, planned, pr.maxIsSeconds)) return EXPLOIT

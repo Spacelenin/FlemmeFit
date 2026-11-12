@@ -192,3 +192,50 @@ class RankingTieTest {
         assertEquals(listOf("Levi", "Anna", "Zed", "Spacelenin"), Social.ranking(listOf(me, ex, same, levi), today).map { it.pseudo })
     }
 }
+
+class FormOfDayTest {
+    private val start = LocalDate.of(2026, 11, 16)
+    private val pushups = Exercise("Pompes", sets = 3, reps = "10", progression = Progression(reps = 1, every = 1))
+    private val plan = Plan(
+        version = 1, name = "R", repeat = REPEAT_FOREVER, deloadEvery = 4, boss = true,
+        weeks = listOf(PlanWeek(days = listOf(PlanDay(1, exercises = listOf(pushups)), PlanDay(3, exercises = listOf(pushups)), PlanDay(5, exercises = listOf(pushups))))),
+    )
+
+    @Test
+    fun `a tired day is lighter, counts as done and teaches nothing`() {
+        val p0 = StoredProgram("form", plan, start.toString())
+        val tired = p0.withForm(0, 70).saveLog(0, 0, ExerciseLog.ofSets(listOf(20, 20, 20), false), complete = true)
+        val s = ProgramSchedule(tired, start.plusDays(30))
+        val day = s.sessionAt(0)!!
+        assertEquals(70, day.form)
+        assertEquals(7, day.prescriptions[0].reps)
+        assertTrue(s.isComplete(day))
+        assertNull(day.prescriptions[0].exploitPlanned)
+        // Le réglage et la progression n'ont rien vu : même dose que sans la séance.
+        val normal = ProgramSchedule(p0, start.plusDays(30)).sessionAt(2)!!.prescriptions[0].reps
+        assertEquals(normal, s.sessionAt(2)!!.prescriptions[0].reps)
+    }
+
+    @Test
+    fun `a Boss on a tired day moves once, within the week, and is lost if tired again`() {
+        val p0 = StoredProgram("form-boss", plan, start.toString())
+        val s0 = ProgramSchedule(p0, start.plusDays(200))
+        val bossDay = (0 until 120).first { s0.isNaturalBoss(it) }
+        val target = s0.bossMoveTarget(bossDay)
+        assertTrue(target in bossDay + 1..bossDay + 7)
+        val moved = p0.withForm(bossDay, 55).withBossMove(bossDay, target)
+        val s1 = ProgramSchedule(moved, start.plusDays(200))
+        assertFalse(s1.sessionAt(bossDay)!!.isBoss)
+        assertTrue(s1.sessionAt(bossDay)!!.bossMoved)
+        assertTrue(s1.sessionAt(target)!!.isBoss)
+        // Une seule fois : un second report est ignoré, et fatigué au jour du report = plus de Boss.
+        assertEquals(target, moved.withBossMove(bossDay, target + 1).bossMoves[bossDay.toString()])
+        val lost = ProgramSchedule(moved.withForm(target, 70), start.plusDays(200))
+        assertFalse(lost.sessionAt(target)!!.isBoss)
+        assertFalse(lost.sessionAt(bossDay)!!.isBoss)
+        // Changer d'avis (en forme) : le Boss revient à son jour, le report ne vaut plus.
+        val back = ProgramSchedule(moved.withForm(bossDay, null), start.plusDays(200))
+        assertTrue(back.sessionAt(bossDay)!!.isBoss)
+        assertFalse(back.sessionAt(target)!!.isBoss)
+    }
+}
