@@ -112,6 +112,8 @@ class DayActions(
     val onReplace: (session: Session) -> Unit = {},
     /** « Réorganiser » : changer l'ordre des exos de la séance. */
     val onReorder: (session: Session) -> Unit = {},
+    /** Forme du jour (null : en forme). */
+    val onForm: (session: Session, percent: Int?) -> Unit = { _, _ -> },
 )
 
 /** Détail du jour sélectionné, sous forme d'éléments de liste pour s'insérer dans n'importe quelle LazyColumn. */
@@ -274,6 +276,15 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
                 if (withTest) " Commence par le test : il choisit tes niveaux pour la suite." else " La progression reprend la semaine suivante.",
             DeloadColor,
         )
+        Spacer(Modifier.height(12.dp))
+    }
+    // Forme du jour : ce qu'elle change, et le choix tant que la séance n'a pas commencé.
+    session.form?.let { f ->
+        Banner(formLabel(f), formExplanation(f, session.bossMoved), DeloadColor)
+        Spacer(Modifier.height(12.dp))
+    }
+    if (schedule.canChooseForm(session)) {
+        FormRow(session.form, enabled = true, onPick = { actions.onForm(session, it) })
         Spacer(Modifier.height(12.dp))
     }
     session.variantIndex?.let { v ->

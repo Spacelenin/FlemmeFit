@@ -39,13 +39,18 @@ data class Prescription(
     val replaces: String? = null,
     /** Fait « crevé » ([Exercise.tired]) : dose du jour réduite. */
     val tired: Boolean = false,
+    /** Forme du jour (fatigué, malade) : la dose en %, et rien ne se règle ni ne se bat ce jour-là. */
+    val formPercent: Int? = null,
     /** Dose réduite : ce qui était prévu par série avant réduction. */
     val fullPlanned: Int? = null,
     /** Fait en version excentrique ([Exercise.eccentric]) : compte comme fait, sans rien régler ni battre. */
     val eccentric: Boolean = false,
 ) {
     /** Les exploits se comptent sur la dose pleine : un exo réduit ne rend pas l'exploit plus facile. Jamais en excentrique. */
-    val exploitPlanned: Int? get() = if (eccentric) null else fullPlanned ?: perSetPlanned
+    val exploitPlanned: Int? get() = if (neutral) null else fullPlanned ?: perSetPlanned
+
+    /** Excentrique ou forme du jour : compte comme fait, sans réglage, exploit ni record. */
+    val neutral: Boolean get() = eccentric || formPercent != null
 
     /** La consigne excentrique proposée ce jour-là : ni test, ni Boss, ni variante, ni remplacement. */
     val eccentricOffer: String? get() = exercise.eccentric?.takeIf { !isTest && !isBoss && variant == null && replaces == null }

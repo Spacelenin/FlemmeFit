@@ -106,14 +106,19 @@ class ProgressionTest {
     }
 
     @Test
-    fun `boss days come every 3 to 4 weeks, are reproducible and revealed the day before`() {
+    fun `one boss per block of working weeks, reproducible and revealed the day before`() {
         val program = StoredProgram("boss-id", plan(boss = true), start.toString())
         val today = start.plusDays(7L * 60)
         val s = ProgramSchedule(program, today)
         val bosses = s.sessionsThrough(7 * 60 - 1).filter { it.isBoss }
         val weeks = bosses.map { it.programWeek }
-        assertTrue(weeks.toString(), weeks.first() in 2..4)
-        weeks.zipWithNext().forEach { (a, b) -> assertTrue(weeks.toString(), b - a in 3..5) }
+        // Les Boss d'avant le changement de règle suivent l'ancien rythme (3 à 4 semaines) ; ensuite, un par bloc
+        // de 4 semaines (3 de travail + 1 allégée), à n'importe quelle semaine de travail du bloc.
+        val (oldWeeks, newWeeks) = bosses.partition { it.date.isBefore(BOSS_BLOCKS_FROM) }.let { (o, n) -> o.map { it.programWeek } to n.map { it.programWeek } }
+        oldWeeks.zipWithNext().forEach { (a, b) -> assertTrue(weeks.toString(), b - a in 3..5) }
+        val blocks = newWeeks.map { it / 4 }
+        assertEquals(weeks.toString(), blocks.distinct(), blocks)
+        assertTrue(weeks.toString(), newWeeks.isNotEmpty())
         bosses.forEach { assertTrue(s.isDeloadWeek(it.programWeek).not()) }
         assertEquals(weeks, ProgramSchedule(program, today).sessionsThrough(7 * 60 - 1).filter { it.isBoss }.map { it.programWeek })
 

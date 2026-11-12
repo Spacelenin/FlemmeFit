@@ -70,6 +70,7 @@ fun GuidedSession(
     onWeights: (exerciseIndex: Int, on: Boolean) -> Unit,
     onEccentric: (exerciseIndex: Int, on: Boolean) -> Unit = { _, _ -> },
     onTired: (exerciseIndex: Int, on: Boolean) -> Unit = { _, _ -> },
+    onForm: (percent: Int?) -> Unit = {},
     onFeeling: (exerciseIndex: Int, feeling: Int?) -> Unit,
     onClose: () -> Unit,
 ) {
@@ -261,6 +262,14 @@ fun GuidedSession(
                 color = color,
                 modifier = Modifier.fillMaxWidth(),
             )
+            // Forme du jour : à choisir avant la première série ; ensuite, juste rappelée.
+            if (step != Step.END && schedule.canChooseForm(session)) {
+                Spacer(Modifier.height(12.dp))
+                FormRow(session.form, enabled = run == null, onPick = { onForm(it) }, modifier = Modifier.fillMaxWidth(), center = true)
+            } else if (step != Step.END) session.form?.let { f ->
+                Spacer(Modifier.height(8.dp))
+                Text(formLabel(f), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = DeloadColor, modifier = Modifier.align(Alignment.CenterHorizontally))
+            }
             Spacer(Modifier.height(24.dp))
 
             if (step == Step.END || guided == null || prescription == null) {

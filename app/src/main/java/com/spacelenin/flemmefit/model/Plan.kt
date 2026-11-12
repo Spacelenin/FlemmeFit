@@ -45,7 +45,7 @@ data class Plan(
     val repeat: Int = 1,
     /** Une semaine sur N est allégée de moitié. 0 = jamais. Absent = [DEFAULT_DELOAD_EVERY] s'il y a des progressions. */
     val deloadEvery: Int? = null,
-    /** Jours Boss aléatoires (toutes les 3 à 4 semaines). */
+    /** Jours Boss aléatoires (un par bloc de semaines de travail). */
     val boss: Boolean = true,
     /** Tests de départ : leur résultat choisit le palier des exercices qui s'y rattachent. */
     val tests: List<PlanTest> = emptyList(),

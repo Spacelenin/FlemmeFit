@@ -197,7 +197,7 @@ data class Stats(
                     a.sets += sets; a.reps += reps; a.seconds += secs
                     val bestSet = perSet?.maxOrNull()?.takeIf { it > 0 }
                     // Une version excentrique compte dans les totaux, pas dans les records.
-                    if (!pr.eccentric) {
+                    if (!pr.neutral) {
                         listOfNotNull(if (pr.maxIsSeconds) null else bestSet ?: repsPerSet, maxReps).maxOrNull()
                             ?.let { a.bestReps = maxOf(a.bestReps ?: 0, it) }
                         listOfNotNull(if (pr.maxIsSeconds) bestSet ?: secPerSet else secPerSet, maxSec).maxOrNull()

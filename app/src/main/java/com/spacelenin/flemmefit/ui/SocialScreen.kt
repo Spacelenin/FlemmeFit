@@ -394,12 +394,16 @@ private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.Lo
                             "💀 Jour Boss · " + when (b) {
                                 FriendCard.BOSS_WON -> "vaincu ✅"
                                 FriendCard.BOSS_LOST -> "raté ❌"
+                                FriendCard.BOSS_MOVED -> "reporté"
                                 else -> "en cours"
                             },
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Black,
                             color = BossColor,
                         )
+                    }
+                    card.todayForm?.let { f ->
+                        Text(formLabel(f), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                     }
                     card.todayDefis?.forEach { d ->
                         Text(

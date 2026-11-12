@@ -43,6 +43,8 @@ data class FriendCard(
     @SerialName("tb") val todayBoss: String? = null,
     /** Défis surprise proposés aujourd'hui (une fois proposés seulement). */
     @SerialName("td") val todayDefis: List<SharedDefi>? = null,
+    /** Forme du jour : 70 (fatigué) ou 55 (malade) ; null : en forme. */
+    @SerialName("tf") val todayForm: Int? = null,
 ) {
     /** Points du concours : un Boss vaut plus qu'un exploit, qui vaut plus qu'un Burst, qui vaut plus qu'une séance. */
     val score: Int get() = bossDefeated * BOSS_POINTS + exploits * EXPLOIT_POINTS + bursts * BURST_POINTS + defis * Challenges.POINTS + sessionsDone
@@ -57,6 +59,7 @@ data class FriendCard(
         const val BOSS_WON = "w"
         const val BOSS_LOST = "l"
         const val BOSS_ONGOING = "o"
+        const val BOSS_MOVED = "m"
         const val EXPLOIT_POINTS = 3
         /** En plus du point de la séance. */
         const val BURST_POINTS = 2
@@ -176,6 +179,7 @@ object Social {
         var title: String? = null
         var feeling: Int? = null
         var boss: String? = null
+        var form: Int? = null
         val shared = ArrayList<SharedExercise>()
         val stats = programs.map { p ->
             val schedule = ProgramSchedule(p, today)
@@ -184,6 +188,8 @@ object Social {
                 total += s.requiredCount
                 if (title == null) title = s.day.title ?: p.plan.name
                 if (feeling == null) feeling = p.feelingOf(s.index)
+                if (form == null) form = s.form
+                if (s.bossMoved && boss == null) boss = FriendCard.BOSS_MOVED
                 if (s.isBoss && boss == null) boss = when {
                     schedule.isComplete(s) -> FriendCard.BOSS_WON
                     s.required.all { schedule.exerciseState(s, it) != ExerciseState.TODO } -> FriendCard.BOSS_LOST
@@ -214,6 +220,7 @@ object Social {
             todayExercises = shared.take(MAX_SHARED).takeIf { details },
             todayFeeling = feeling.takeIf { details },
             todayBoss = boss,
+            todayForm = form,
             todayDefis = challenges.filter { it.date == today.toString() && !(it.acceptedAt == null && it.open(now)) }
                 .takeLast(SharedDefi.MAX).map { SharedDefi.of(it, now) }.ifEmpty { null },
         ).fitted()
@@ -312,10 +319,18 @@ object Social {
             .maxByOrNull { it.updatedAt }
     }
 
-    /** Classement : score décroissant, puis avancée du jour. */
+    /**
+     * Classement : points, puis à égalité ce qui est le plus dur (Boss vaincus, exploits), la série 🔥, les séances,
+     * l'avancée du jour, et enfin le pseudo pour que l'ordre ne change pas d'un rafraîchissement à l'autre.
+     */
     fun ranking(cards: List<FriendCard>, today: LocalDate): List<FriendCard> = cards.sortedWith(
         compareByDescending<FriendCard> { it.score }
-            .thenByDescending { if (it.isToday(today) && it.todayTotal > 0) it.todayDone.toFloat() / it.todayTotal else -1f },
+            .thenByDescending { it.bossDefeated }
+            .thenByDescending { it.exploits }
+            .thenByDescending { it.streak }
+            .thenByDescending { it.sessionsDone }
+            .thenByDescending { if (it.isToday(today) && it.todayTotal > 0) it.todayDone.toFloat() / it.todayTotal else -1f }
+            .thenBy { it.pseudo.lowercase() },
     )
 
     const val MAX_FRIENDS = 50

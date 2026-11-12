@@ -107,6 +107,7 @@ fun rememberDayActions(
         onSkipVariant = { s -> repository.skipVariant(program.id, s.index) },
         onReplace = { s -> replaceDay = s.index },
         onReorder = { s -> reorderDay = s.index },
+        onForm = { s, p -> repository.setForm(program.id, s.index, p) },
     )
 
     reorderDay?.let { dayIndex ->
@@ -226,6 +227,7 @@ fun rememberDayActions(
             onFeeling = { i, f -> repository.setExerciseFeeling(program.id, dayIndex, i, f) },
             onEccentric = { i, on -> repository.setEccentric(program.id, dayIndex, i, on) },
             onTired = { i, on -> repository.setTired(program.id, dayIndex, i, on) },
+            onForm = { p -> repository.setForm(program.id, dayIndex, p) },
             onClose = { guidedDay = null },
         )
     }
