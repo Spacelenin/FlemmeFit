@@ -61,7 +61,7 @@ et une progression.
 ## Installer l'APK
 
 Chaque push sur `main` construit l'APK via GitHub Actions et le publie dans les
-**[Releases](../../releases)** : ouvre la dernière release depuis le téléphone, télécharge
+**[Releases de FlemmeFit-releases](https://github.com/Spacelenin/FlemmeFit-releases/releases)** (repo public qui ne contient que les APK) : ouvre la dernière release depuis le téléphone, télécharge
 `FlemmeFit-N.apk` et installe-le (autoriser « sources inconnues » la première fois).
 
 **Mises à jour dans l'app** : une fois FlemmeFit installé, plus besoin de revenir sur GitHub. L'app vérifie
