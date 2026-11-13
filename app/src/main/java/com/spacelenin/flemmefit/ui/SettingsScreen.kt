@@ -129,6 +129,23 @@ fun SettingsScreen(
                     }
                     Switch(checked = fitTheme, onCheckedChange = { settings.setFitTheme(it) })
                 }
+                if (fitTheme) {
+                    val railLeft by settings.fitRailLeft.collectAsStateWithLifecycle()
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth().clickable { settings.setFitRailLeft(!railLeft) }.padding(horizontal = 20.dp, vertical = 8.dp),
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Onglets à gauche sur écran déplié", style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                "Sur un pliable ouvert ou une tablette : les onglets en colonne à gauche plutôt qu'en bas.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(checked = railLeft, onCheckedChange = { settings.setFitRailLeft(it) })
+                    }
+                }
 
                 Section("SÉANCE")
                 Text("Repos en plus", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(horizontal = 20.dp, vertical = 2.dp))

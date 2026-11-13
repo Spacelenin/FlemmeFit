@@ -315,3 +315,17 @@ class ExploitCurveTest {
         assertEquals(card, Social.decodeAll("[$json]").first())
     }
 }
+
+class EmbeddedNotesTest {
+    @Test
+    fun `embedded notes are cleaned and combined across skipped builds`() {
+        val notes = Releases.parseEmbedded(
+            """[{"v": 296, "n": "Thème\n\nCo-Authored-By: X"}, {"v": 292, "n": "Classement"}, {"v": 288, "n": "Forme du jour"}]""",
+        )
+        assertEquals("Thème", notes[296])
+        assertEquals("Thème", Releases.combinedEmbedded(notes, after = 295, upTo = 296))
+        assertEquals("Build 296\nThème\n\nBuild 292\nClassement", Releases.combinedEmbedded(notes, after = 288, upTo = 296))
+        assertNull(Releases.combinedEmbedded(notes, after = 296, upTo = 296))
+        assertTrue(Releases.parseEmbedded("pas du json").isEmpty())
+    }
+}

@@ -285,7 +285,11 @@ private fun FriendRow(rank: Int, last: Boolean, card: FriendCard, isMe: Boolean,
             }
             Text(todayText, style = MaterialTheme.typography.bodyMedium)
             if (card.isToday(today) && card.todayTotal > 0) {
-                LinearProgressIndicator(progress = { card.todayDone.toFloat() / card.todayTotal }, modifier = Modifier.fillMaxWidth())
+                FitProgress(
+                    progress = { card.todayDone.toFloat() / card.todayTotal },
+                    color = if (com.spacelenin.flemmefit.ui.theme.LocalFitTheme.current) LocalFitRoom.current else MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
             Text(
                 "🔥 ${card.streak} · 💀 ${card.bossDefeated} · 🏆 ${card.exploits} · 🚀 ${card.bursts}" +
@@ -490,6 +494,15 @@ private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.Lo
                             }
                         }
                     }
+                }
+                // Sa version de l'appli, en tout petit : de quoi voir qui est à jour.
+                if (card.build > 0) {
+                    Text(
+                        "build ${card.build}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.align(Alignment.End),
+                    )
                 }
             }
         },

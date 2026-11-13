@@ -236,7 +236,7 @@ fun TimerOverlay(timer: WorkoutTimer, modifier: Modifier = Modifier) {
                 }
             }
             if (left != null && !current.finished) {
-                LinearProgressIndicator(
+                FitProgress(
                     progress = { current.progress(now) },
                     color = accent,
                     modifier = Modifier.fillMaxWidth().padding(end = 8.dp, top = 4.dp, bottom = 8.dp),

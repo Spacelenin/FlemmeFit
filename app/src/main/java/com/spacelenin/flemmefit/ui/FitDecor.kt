@@ -162,8 +162,9 @@ fun NoticeBubble(color: Color, modifier: Modifier = Modifier, plain: @Composable
 }
 
 /**
- * Bouton principal. Thème fit : une pastille blanche au contour épais coloré (la couleur demandée, sinon le vert),
- * texte gris foncé. Sinon le bouton plein habituel.
+ * Bouton principal. Thème fit : bouton bombé (marche, double bord fin, rayures, reflet) de la couleur du contexte
+ * (la couleur demandée, sinon celle de la salle), assombrie si besoin pour que le texte blanc reste lisible.
+ * Sinon le bouton plein habituel.
  */
 @Composable
 fun PillButton(
@@ -178,25 +179,22 @@ fun PillButton(
         return
     }
     val scheme = MaterialTheme.colorScheme
-    val accent = colors?.containerColor?.takeIf { it != scheme.onSurface && it != Color.Unspecified } ?: scheme.outline
+    val asked = colors?.containerColor?.takeIf { it != scheme.onSurface && it != scheme.primary && it != Color.Unspecified }
+    val base = if (enabled) (asked ?: LocalFitRoom.current).forWhiteText() else Color(0xFFB7C1C8)
     OutlinedButton(
         onClick = onClick,
-        // Petite brillance : blanc en haut, gris très clair en bas.
-        modifier = modifier
-            .clip(CircleShape)
-            .background(Brush.verticalGradient(listOf(Color.White, Color(0xFFE9EEF2), Color(0xFFD8E0E6))), CircleShape)
-            .drawBehind {
-                // Reflet nacré sur la moitié haute.
-                drawRoundRect(
-                    Brush.verticalGradient(listOf(Color.White, Color.White.copy(alpha = 0f)), endY = size.height * 0.5f),
-                    topLeft = Offset(size.height * 0.3f, 2.dp.toPx()),
-                    size = androidx.compose.ui.geometry.Size((size.width - size.height * 0.6f).coerceAtLeast(0f), size.height * 0.42f),
-                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(size.height / 2),
-                )
-            },
+        modifier = modifier.glossy(
+            fill = listOf(base.pale(0.45f), base, base.deeper()),
+            ring = base.deeper(),
+            step = base.deeper().deeper(),
+            shape = RoundedCornerShape(50),
+        ),
         enabled = enabled,
-        colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent, contentColor = FitPalette.Text),
-        border = BorderStroke(3.dp, if (enabled) accent else scheme.outlineVariant),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = Color.Transparent, contentColor = Color.White,
+            disabledContainerColor = Color.Transparent, disabledContentColor = Color.White.copy(alpha = 0.85f),
+        ),
+        border = null,
         content = content,
     )
 }

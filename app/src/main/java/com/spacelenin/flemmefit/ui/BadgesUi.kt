@@ -71,7 +71,7 @@ private fun BadgeRow(b: Badge, color: Color) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                LinearProgressIndicator(
+                FitProgress(
                     progress = { (b.value.toFloat() / next).coerceIn(0f, 1f) },
                     color = color,
                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),

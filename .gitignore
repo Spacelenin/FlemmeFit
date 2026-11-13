@@ -7,3 +7,5 @@ build/
 captures/
 .externalNativeBuild/
 .cxx/
+# Notes de version embarquées, générées par la CI.
+app/src/main/assets/release-notes.json

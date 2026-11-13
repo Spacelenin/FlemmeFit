@@ -1,5 +1,10 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.material3.contentColorFor
@@ -81,9 +86,9 @@ private val TitleShadow = Shadow(Color(0x55000000), Offset(0f, 2f), 3f)
 private val SoftShadow = Shadow(Color(0x33000000), Offset(0f, 1.5f), 2f)
 
 /** Une teinte plus sombre, pour les contours. */
-private fun Color.deeper() = lerp(this, Color.Black, 0.18f)
+internal fun Color.deeper() = lerp(this, Color.Black, 0.18f)
 
-private fun Color.pale(amount: Float) = lerp(this, White, amount)
+internal fun Color.pale(amount: Float) = lerp(this, White, amount)
 
 /** Titre de section : texte normal, ou bandeau coloré arrondi au titre blanc sur le thème fit. */
 @Composable
@@ -174,25 +179,35 @@ fun FitRowFrame(number: Int? = null, done: Boolean = false, content: @Composable
     }
 }
 
-/** Barre d'onglets du thème fit : l'onglet actif en pastille pleine, de la couleur de sa salle, texte blanc. */
+/** Socle des onglets : dégradé clair et fines rayures, comme les bandeaux. */
+private fun Modifier.tabBase(vertical: Boolean): Modifier = this
+    .background(if (vertical) Brush.horizontalGradient(listOf(White, Color(0xFFE7EEF2))) else Brush.verticalGradient(listOf(White, Color(0xFFE7EEF2))))
+    .fitStripes(Color(0xFF8CA0AF), alpha = 0.10f)
+
+/**
+ * Barre d'onglets du thème fit : un socle rayé, des pastilles brillantes à double bord fin, l'onglet actif de la
+ * couleur de sa salle. Sur écran large, elle reste centrée et ne s'étire pas.
+ */
 @Composable
 fun FitTabBar(tabs: List<Pair<String, ImageVector>>, tab: Int, onTab: (Int) -> Unit) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    Box(
+        contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxWidth()
-            .background(Brush.verticalGradient(listOf(White, Color(0xFFECF0F3))))
+            .tabBase(vertical = false)
             .drawBehind { drawLine(FitPalette.Line, Offset(0f, 0f), Offset(size.width, 0f), strokeWidth = 2.dp.toPx()) }
             .navigationBarsPadding()
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+            .padding(horizontal = 8.dp, vertical = 6.dp),
     ) {
-        tabs.forEachIndexed { i, (label, icon) ->
-            FitTab(label, icon, selected = i == tab, color = FitRooms.forTab(i), modifier = Modifier.weight(1f).height(58.dp)) { onTab(i) }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth()) {
+            tabs.forEachIndexed { i, (label, icon) ->
+                FitTab(label, icon, selected = i == tab, color = FitRooms.forTab(i), modifier = Modifier.weight(1f).height(58.dp)) { onTab(i) }
+            }
         }
     }
 }
 
-/** Les mêmes onglets en colonne, à gauche, sur écran déplié. */
+/** Les mêmes onglets en colonne, à gauche, sur écran déplié (si demandé dans les Réglages). */
 @Composable
 fun FitTabRail(tabs: List<Pair<String, ImageVector>>, tab: Int, onTab: (Int) -> Unit) {
     Column(
@@ -200,10 +215,10 @@ fun FitTabRail(tabs: List<Pair<String, ImageVector>>, tab: Int, onTab: (Int) -> 
         modifier = Modifier
             .fillMaxHeight()
             .width(96.dp)
-            .background(Brush.horizontalGradient(listOf(White, Color(0xFFECF0F3))))
+            .tabBase(vertical = true)
             .drawBehind { drawLine(FitPalette.Line, Offset(size.width, 0f), Offset(size.width, size.height), strokeWidth = 2.dp.toPx()) }
             .statusBarsPadding()
-            .padding(8.dp),
+            .padding(horizontal = 6.dp, vertical = 8.dp),
     ) {
         tabs.forEachIndexed { i, (label, icon) ->
             FitTab(label, icon, selected = i == tab, color = FitRooms.forTab(i), modifier = Modifier.fillMaxWidth().height(64.dp)) { onTab(i) }
@@ -213,14 +228,18 @@ fun FitTabRail(tabs: List<Pair<String, ImageVector>>, tab: Int, onTab: (Int) -> 
 
 @Composable
 private fun FitTab(label: String, icon: ImageVector, selected: Boolean, color: Color, modifier: Modifier, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(20.dp)
+    val base = color.forWhiteText()
+    val ring = if (selected) base.deeper() else Color(0xFFA7C3D3)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = modifier
-            .clip(shape)
-            .background(if (selected) Brush.verticalGradient(listOf(color.pale(0.2f), color)) else Brush.verticalGradient(listOf(White, White)))
-            .border(2.dp, if (selected) color.deeper() else FitPalette.Line, shape)
+            .glossy(
+                fill = if (selected) listOf(base.pale(0.45f), base, base.deeper()) else listOf(Color(0xFFF7FBFE), Color(0xFFEDF3F7), Color(0xFFDFEAF1)),
+                ring = ring,
+                step = if (selected) base.deeper().deeper() else Color(0xFF9DB8C8),
+                shape = RoundedCornerShape(18.dp),
+            )
             .clickable(role = Role.Tab, onClick = onClick),
     ) {
         val tint = if (selected) White else FitPalette.TextSoft
@@ -232,6 +251,46 @@ private fun FitTab(label: String, icon: ImageVector, selected: Boolean, color: C
             color = tint,
         )
     }
+}
+
+/**
+ * La matière des boutons du thème fit (mix A + B) : petite marche colorée en dessous, double bord fin (1 dp de
+ * [ring], 2 dp de blanc), dégradé [fill] en deux tons, fines rayures et reflet en haut.
+ */
+fun Modifier.glossy(fill: List<Color>, ring: Color, step: Color, shape: RoundedCornerShape, stepHeight: Dp = 3.dp): Modifier = this
+    .padding(bottom = stepHeight)
+    .drawBehind {
+        val outline = shape.createOutline(size, layoutDirection, this)
+        translate(top = stepHeight.toPx()) { drawOutline(outline, step) }
+    }
+    .border(1.dp, ring, shape)
+    .padding(1.dp)
+    .border(2.dp, White, shape)
+    .clip(shape)
+    .background(Brush.verticalGradient(0f to fill[0], 0.48f to fill.getOrElse(1) { fill[0] }, 1f to fill.last()))
+    .fitStripes(White, alpha = 0.14f)
+    .drawBehind {
+        // Reflet : la moitié haute, éclaircie.
+        drawRoundRect(
+            Brush.verticalGradient(listOf(White.copy(alpha = 0.8f), White.copy(alpha = 0.05f)), endY = size.height * 0.42f),
+            topLeft = Offset(size.width * 0.08f, 2.dp.toPx()),
+            size = Size(size.width * 0.84f, size.height * 0.4f),
+            cornerRadius = CornerRadius(size.height * 0.4f),
+        )
+    }
+
+/**
+ * La couleur assombrie juste assez pour qu'un texte blanc y reste lisible (contraste d'au moins 3:1, celui des
+ * gros textes en gras) : un vert clair ou un orange ne donnent pas un bouton illisible au soleil.
+ */
+fun Color.forWhiteText(minContrast: Float = 3f): Color {
+    var c = this
+    repeat(12) {
+        val contrast = 1.05f / (c.luminance() + 0.05f)
+        if (contrast >= minContrast) return c
+        c = lerp(c, Color.Black, 0.08f)
+    }
+    return c
 }
 
 /**

@@ -18,13 +18,22 @@ class AppSettings(context: Context) {
         _theme.value = theme
     }
 
-    /** Thème clair façon console de salon (bêta) : remplace les couleurs choisies tant qu'il est actif. */
+    /** Thème clair façon console de salon : remplace les couleurs choisies tant qu'il est actif. */
     private val _fitTheme = MutableStateFlow(prefs.getBoolean(KEY_FIT_THEME, false))
     val fitTheme: StateFlow<Boolean> = _fitTheme.asStateFlow()
 
     fun setFitTheme(on: Boolean) {
         prefs.edit().putBoolean(KEY_FIT_THEME, on).apply()
         _fitTheme.value = on
+    }
+
+    /** Thème fit, écran déplié : barre des onglets à gauche plutôt qu'en bas (en bas par défaut). */
+    private val _fitRailLeft = MutableStateFlow(prefs.getBoolean(KEY_FIT_RAIL_LEFT, false))
+    val fitRailLeft: StateFlow<Boolean> = _fitRailLeft.asStateFlow()
+
+    fun setFitRailLeft(on: Boolean) {
+        prefs.edit().putBoolean(KEY_FIT_RAIL_LEFT, on).apply()
+        _fitRailLeft.value = on
     }
 
     private val _tutorialOffered = MutableStateFlow(prefs.getBoolean(KEY_TUTORIAL, false))
@@ -91,6 +100,7 @@ class AppSettings(context: Context) {
     private companion object {
         const val KEY_THEME = "theme"
         const val KEY_FIT_THEME = "theme_fit_beta"
+        const val KEY_FIT_RAIL_LEFT = "theme_fit_rail_left"
         const val KEY_TUTORIAL = "tutorial_offered"
         const val KEY_SURPRISE = "surprise_seen"
         const val KEY_SURPRISE_YEAR = "surprise_year"

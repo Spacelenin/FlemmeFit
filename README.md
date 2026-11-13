@@ -70,8 +70,12 @@ les Releases au lancement (toutes les 6 h au plus, ou via *⚙ Réglages → Vé
 « Nouvelle version disponible », télécharge l'APK (empreinte SHA-256 vérifiée) et lance l'installeur Android.
 La première fois, Android demande d'autoriser FlemmeFit à installer des applications.
 
-Les builds sont tous signés avec la même clé (`app/debug.keystore`) et ont un numéro de version croissant :
-une nouvelle version s'installe **par-dessus** l'ancienne sans perdre la progression.
+Les builds sont signés avec une clé privée qui n'est pas dans le dépôt : elle est fournie à la CI par les secrets
+`FLEMMEFIT_KEYSTORE_B64` et `FLEMMEFIT_KEYSTORE_PASSWORD` (alias `flemmefit`). L'ancienne clé, `app/debug.keystore`,
+reste dans le dépôt uniquement pour la rotation de signature (APK Signature Scheme v3) : Android accepte ainsi les
+nouveaux builds par-dessus les anciens. Avec un numéro de version croissant, une nouvelle version s'installe
+**par-dessus** l'ancienne sans perdre la progression. Sans ces secrets (build local), l'APK est signé avec l'ancienne
+clé seule.
 
 Les autres branches produisent aussi l'APK, en artefact de l'onglet *Actions*.
 
