@@ -397,7 +397,8 @@ private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.Lo
         onDismissRequest = onDismiss,
         title = { Text(card.pseudo + if (isMe) " (toi)" else "") },
         text = {
-            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Toute la largeur : le numéro de build se cale toujours à droite, même sur une carte courte.
+            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 // Le récap du pote : sa semaine, son rythme, son meilleur badge, ses compteurs.
                 FriendRecap(card)
                 // Jour Boss et défis du jour : en tête, même sans le détail des exos.

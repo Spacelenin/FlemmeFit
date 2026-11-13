@@ -13,6 +13,12 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -190,17 +196,20 @@ fun PillButton(
     val scheme = MaterialTheme.colorScheme
     val asked = colors?.containerColor?.takeIf { it != scheme.onSurface && it != scheme.primary && it != Color.Unspecified }
     val base = if (enabled) (asked ?: LocalFitRoom.current).forWhiteText() else Color(0xFFB7C1C8)
+    if (small) {
+        SmallPill(onClick, modifier, enabled, listOf(base.pale(0.45f), base, base.deeper()), base.deeper(), base.deeper().deeper(), Color.White, content)
+        return
+    }
     OutlinedButton(
         onClick = onClick,
-        modifier = modifier.then(if (small) Modifier.height(SmallHeight) else Modifier).glossy(
+        modifier = modifier.glossy(
             fill = listOf(base.pale(0.45f), base, base.deeper()),
             ring = base.deeper(),
             step = base.deeper().deeper(),
             shape = RoundedCornerShape(50),
         ),
         enabled = enabled,
-        contentPadding = if (small) SmallPadding else ButtonDefaults.ContentPadding,
-        colors = ButtonDefaults.outlinedButtonColors(
+                colors = ButtonDefaults.outlinedButtonColors(
             containerColor = Color.Transparent, contentColor = Color.White,
             disabledContainerColor = Color.Transparent, disabledContentColor = Color.White.copy(alpha = 0.85f),
         ),
@@ -209,8 +218,35 @@ fun PillButton(
     )
 }
 
-private val SmallHeight = 38.dp
-private val SmallPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
+/**
+ * Pilule compacte dessinée à la main : un bouton Material imposerait sa zone tactile de 48 dp et déborderait
+ * du cadre bombé.
+ */
+@Composable
+private fun SmallPill(
+    onClick: () -> Unit,
+    modifier: Modifier,
+    enabled: Boolean,
+    fill: List<Color>,
+    ring: Color,
+    step: Color,
+    textColor: Color,
+    content: @Composable RowScope.() -> Unit,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+        modifier = modifier
+            .glossy(fill = fill, ring = ring, step = step, shape = RoundedCornerShape(50))
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .heightIn(min = 34.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+    ) {
+        CompositionLocalProvider(LocalContentColor provides textColor) {
+            ProvideTextStyle(MaterialTheme.typography.labelLarge.copy(color = textColor)) { content() }
+        }
+    }
+}
 
 /**
  * Bouton secondaire. Thème fit : pilule blanche bombée (même matière que les boutons principaux), texte gris foncé.
@@ -228,17 +264,23 @@ fun SoftButton(
         OutlinedButton(onClick = onClick, modifier = modifier, enabled = enabled, content = content)
         return
     }
+    if (small) {
+        SmallPill(
+            onClick, modifier, enabled, listOf(Color(0xFFFFFFFF), Color(0xFFEFF4F7), Color(0xFFDFE8EE)), Color(0xFFA7C3D3), Color(0xFF9DB8C8),
+            if (enabled) FitPalette.Text else FitPalette.TextSoft, content,
+        )
+        return
+    }
     OutlinedButton(
         onClick = onClick,
-        modifier = modifier.then(if (small) Modifier.height(SmallHeight) else Modifier).glossy(
+        modifier = modifier.glossy(
             fill = listOf(Color(0xFFFFFFFF), Color(0xFFEFF4F7), Color(0xFFDFE8EE)),
             ring = Color(0xFFA7C3D3),
             step = Color(0xFF9DB8C8),
             shape = RoundedCornerShape(50),
         ),
         enabled = enabled,
-        contentPadding = if (small) SmallPadding else ButtonDefaults.ContentPadding,
-        colors = ButtonDefaults.outlinedButtonColors(
+                colors = ButtonDefaults.outlinedButtonColors(
             containerColor = Color.Transparent, contentColor = FitPalette.Text,
             disabledContainerColor = Color.Transparent, disabledContentColor = FitPalette.TextSoft,
         ),
