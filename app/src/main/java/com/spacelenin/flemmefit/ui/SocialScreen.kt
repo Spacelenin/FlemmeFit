@@ -1,5 +1,6 @@
 package com.spacelenin.flemmefit.ui
 
+import com.spacelenin.flemmefit.model.Measures
 import com.spacelenin.flemmefit.model.SharedDefi
 import com.spacelenin.flemmefit.model.SharedExercise
 import com.spacelenin.flemmefit.model.StoredProgram
@@ -393,7 +394,8 @@ private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.Lo
                         Text(
                             "💀 Jour Boss · " + when (b) {
                                 FriendCard.BOSS_WON -> "vaincu ✅"
-                                FriendCard.BOSS_LOST -> "raté ❌"
+                                // Anciennes versions : « raté » envoyé avant la fin de la journée.
+                                FriendCard.BOSS_LOST -> "en cours"
                                 FriendCard.BOSS_MOVED -> "reporté"
                                 else -> "en cours"
                             },
@@ -444,7 +446,7 @@ private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.Lo
                                 val extras = listOfNotNull(
                                     "🏆 exploit".takeIf { e.exploit },
                                     "🔄 remplacé".takeIf { e.replaced },
-                                    e.target?.let { "💀 objectif $it" },
+                                    e.target?.let { "💀 objectif " + if (e.targetSeconds == true) Measures.formatSeconds(it) else "$it" },
                                     when (e.version) {
                                         SharedExercise.VERSION_ECCENTRIC -> "↘ excentrique"
                                         SharedExercise.VERSION_EASY -> "facile"

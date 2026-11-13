@@ -97,7 +97,7 @@ private fun HistoryBars(points: List<TestPoint>, color: Color, format: (Int) -> 
         }
         Text(
             "${points.first().date.format(DayMonth)} → ${points.last().date.format(DayMonth)} · max ${format(top)}" +
-                if (points.any { it.date in eccentric }) " · pâle : ↘ excentrique" else "",
+                if (points.any { it.date in eccentric }) " · pâle : excentrique ou forme réduite" else "",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
