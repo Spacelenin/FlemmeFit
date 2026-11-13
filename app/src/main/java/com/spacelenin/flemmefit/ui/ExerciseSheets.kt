@@ -489,7 +489,7 @@ fun exerciseInitials(name: String): String =
 /** Confirmation avant de passer la séance du jour en Burst. */
 @Composable
 fun BurstDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
-    androidx.compose.material3.AlertDialog(
+    PanelDialog(
         onDismissRequest = onDismiss,
         title = { Text("🚀 Burst aujourd'hui ?") },
         text = {
@@ -506,7 +506,7 @@ fun BurstDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
 /** Passer la séance du jour en Chill : allégée, une fois par semaine. */
 @Composable
 fun ChillDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
-    androidx.compose.material3.AlertDialog(
+    PanelDialog(
         onDismissRequest = onDismiss,
         title = { Text("🛋 Chill aujourd'hui ?") },
         text = {

@@ -60,13 +60,22 @@ data class ChallengeDose(val exercise: String, val amount: Int, val seconds: Boo
 data class ChallengeSlot(val id: String, val date: LocalDate, val minuteOfDay: Int)
 
 object Challenges {
-    const val ANSWER_MS = 30 * 60 * 1000L
+    /** Le temps pour accepter : 2 h, avec une relance au bout d'1 h. */
+    const val ANSWER_MS = 2 * 60 * 60 * 1000L
+    const val REMIND_MS = 60 * 60 * 1000L
     const val DURATION_MS = 60 * 60 * 1000L
     /** Après l'heure, le temps de dire si c'est fait. */
     const val GRACE_MS = 30 * 60 * 1000L
     const val POINTS = 2
-    /** Séances faites avant les premiers défis : ils commencent au 7e jour d'entraînement. */
-    const val SESSIONS_BEFORE = 6
+    /** À partir de cette semaine, les défis peuvent aussi tomber les jours de repos. */
+    val ANY_DAY_FROM: LocalDate = LocalDate.of(2026, 11, 16)
+
+    /**
+     * Les défis ont commencé : on est au moins dans la 2e semaine d'un programme, et une séance y a été validée.
+     * Une fois lancés, ils ne s'arrêtent plus.
+     */
+    fun started(today: LocalDate, programs: List<Pair<LocalDate, Boolean>>): Boolean =
+        programs.any { (start, validated) -> validated && !today.isBefore(start.plusWeeks(1)) }
     const val SHARE = 0.6
     /** Défis lancés entre 10 h et 21 h. */
     private const val FIRST_MINUTE = 10 * 60

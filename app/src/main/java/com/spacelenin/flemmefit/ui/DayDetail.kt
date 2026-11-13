@@ -1,5 +1,8 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.spacelenin.flemmefit.model.SessionEstimate
@@ -367,6 +370,24 @@ private fun SessionHeader(schedule: ProgramSchedule, session: Session, color: Co
 
 @Composable
 private fun Banner(title: String, text: String, color: Color) {
+    // Thème fit : un panneau blanc au contour coloré, titre sur bandeau rayé, texte sur papier ligné.
+    if (LocalFitTheme.current) {
+        val shape = RoundedCornerShape(20.dp)
+        Column(Modifier.fillMaxWidth().clip(shape).background(Color.White).border(3.dp, color, shape)) {
+            Text(
+                title,
+                style = MaterialTheme.typography.titleMedium.copy(color = Color.White, shadow = null),
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Brush.horizontalGradient(listOf(color, lerp(color, Color.White, 0.3f))))
+                    .fitStripes(Color.White, alpha = 0.16f)
+                    .padding(horizontal = 14.dp, vertical = 6.dp),
+            )
+            Text(text, style = MaterialTheme.typography.bodyMedium, color = Color(0xFF2A332B), modifier = Modifier.fillMaxWidth().linedPaper().padding(14.dp))
+        }
+        return
+    }
     Card(
         colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.16f)),
         shape = RoundedCornerShape(20.dp),

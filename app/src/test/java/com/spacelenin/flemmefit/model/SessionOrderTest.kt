@@ -281,3 +281,37 @@ class FriendTargetUnitTest {
         assertEquals(SharedExercise("x"), e.bare())
     }
 }
+
+class ExploitCurveTest {
+    @Test
+    fun `exploits start at x2 and ease down to x1_5`() {
+        assertEquals(8, Exploit.needed(3, false))   // +5 mini
+        assertEquals(16, Exploit.needed(8, false))
+        assertEquals(27, Exploit.needed(15, false))
+        assertEquals(38, Exploit.needed(25, false))
+        assertEquals(60, Exploit.needed(40, false))
+        assertEquals(180, Exploit.needed(120, true))
+        assertTrue(Exploit.isExploit(27, 15, false))
+        assertFalse(Exploit.isExploit(26, 15, false))
+    }
+
+    @Test
+    fun `challenges start in week 2 once a session is validated, and never stop`() {
+        val start = LocalDate.of(2026, 11, 16)
+        assertFalse(Challenges.started(start.plusDays(3), listOf(start to true)))   // semaine 1
+        assertFalse(Challenges.started(start.plusDays(10), listOf(start to false))) // rien de validé
+        assertTrue(Challenges.started(start.plusDays(7), listOf(start to true)))
+        assertEquals(2 * 60 * 60 * 1000L, Challenges.ANSWER_MS)
+    }
+
+    @Test
+    fun `week dots and new card fields stay small and drop first`() {
+        val card = FriendCard(
+            id = "x", pseudo = "P", date = "2026-11-16", updatedAt = 0, weekNumber = 3, weekDone = 3, weekPlanned = 5,
+            rhythm = "doux", bestBadge = "🥇 100 pompes", counters = listOf("1 240 pompes"), todayMode = FriendCard.MODE_BURST, todayMinutes = 42,
+        )
+        val json = Social.encode(card)
+        assertTrue(json, "\"wn\":3" in json && "\"tm\":\"b\"" in json && "\"du\":42" in json)
+        assertEquals(card, Social.decodeAll("[$json]").first())
+    }
+}

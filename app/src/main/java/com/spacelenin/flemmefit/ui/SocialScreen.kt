@@ -58,6 +58,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spacelenin.flemmefit.data.ProgramRepository
 import com.spacelenin.flemmefit.model.Exploit
+import com.spacelenin.flemmefit.model.AdaptProfile
+import androidx.compose.material3.HorizontalDivider
 import com.spacelenin.flemmefit.model.FriendCard
 import com.spacelenin.flemmefit.model.Social
 import com.spacelenin.flemmefit.social.SocialSync
@@ -174,7 +176,7 @@ fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() 
                         if (com.spacelenin.flemmefit.ui.theme.LocalFitTheme.current) FitBand("Classement", LocalFitRoom.current, Modifier.padding(bottom = 6.dp))
                         Text(
                             "Points : Boss 💀 = ${FriendCard.BOSS_POINTS}, exploit 🏆 = ${FriendCard.EXPLOIT_POINTS}, Burst 🚀 = +${FriendCard.BURST_POINTS}, séance = 1. " +
-                                "Exploit = un max au moins ${Exploit.FACTOR}× plus grand que la série prévue.",
+                                "Exploit = un max bien au-dessus de la série prévue : ×2 au début, jusqu'à ×1,5 pour les grosses séries.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -388,6 +390,8 @@ private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.Lo
         title = { Text(card.pseudo + if (isMe) " (toi)" else "") },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Le récap du pote : sa semaine, son rythme, son meilleur badge, ses compteurs.
+                FriendRecap(card)
                 // Jour Boss et défis du jour : en tête, même sans le détail des exos.
                 if (card.isToday(today)) {
                     card.todayBoss?.let { b ->
@@ -428,7 +432,16 @@ private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.Lo
                         else "Pas de détail : soit il ne le partage pas, soit son appli n'est pas à jour.",
                     )
                     else -> {
-                        Text(card.todayTitle ?: "Séance du jour", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(
+                            (card.todayTitle ?: "Séance du jour") + when (card.todayMode) {
+                                FriendCard.MODE_BURST -> "  🚀 Burst"
+                                FriendCard.MODE_CHILL -> "  🛋 Chill"
+                                else -> ""
+                            },
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        card.todayMinutes?.let { Text("⏱ ~$it min", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                         card.todayFeeling?.let { f ->
                             val emoji = StoredProgram.FEELINGS.getOrNull(f)
                             val label = StoredProgram.FEELING_LABELS.getOrNull(f)
@@ -445,6 +458,7 @@ private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.Lo
                                 // Chaque info à part : la ligne se replie entre deux infos, jamais au milieu d'une.
                                 val extras = listOfNotNull(
                                     "🏆 exploit".takeIf { e.exploit },
+                                    "🏅 record".takeIf { e.record == true },
                                     "🔄 remplacé".takeIf { e.replaced },
                                     e.target?.let { "💀 objectif " + if (e.targetSeconds == true) Measures.formatSeconds(it) else "$it" },
                                     when (e.version) {
@@ -481,4 +495,32 @@ private fun FriendDayDialog(card: FriendCard, isMe: Boolean, today: java.time.Lo
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text("Fermer") } },
     )
+}
+
+/** « ●●●○○ » : une pastille par séance prévue de la semaine, pleine si elle est faite. */
+fun weekDots(done: Int, planned: Int): String = "●".repeat(done.coerceIn(0, planned)) + "○".repeat((planned - done).coerceAtLeast(0))
+
+/** En tête de la carte complète d'un pote : sa semaine, son rythme, son meilleur badge et ses compteurs. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun FriendRecap(card: FriendCard) {
+    val items = listOfNotNull(
+        card.weekNumber?.let { n ->
+            "Semaine $n" + (if (card.weekDeload == true) " · récup" else "") +
+                (card.weekPlanned?.takeIf { it > 0 }?.let { " · " + weekDots(card.weekDone ?: 0, it) } ?: "")
+        },
+        card.rhythm?.let { AdaptProfile.of(it).let { r -> "${r.emoji} ${r.label}" } },
+        card.bestBadge?.let { "Meilleur badge : $it" },
+    )
+    val counters = card.counters.orEmpty()
+    if (items.isEmpty() && counters.isEmpty()) return
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            items.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) }
+        }
+        if (counters.isNotEmpty()) {
+            Text("💪 " + counters.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        HorizontalDivider(Modifier.padding(top = 6.dp))
+    }
 }

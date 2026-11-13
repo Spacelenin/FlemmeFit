@@ -45,6 +45,21 @@ data class FriendCard(
     @SerialName("td") val todayDefis: List<SharedDefi>? = null,
     /** Forme du jour : 70 (fatigué) ou 55 (malade) ; null : en forme. */
     @SerialName("tf") val todayForm: Int? = null,
+    /** Semaine du programme (1, 2…), séances faites et prévues cette semaine-là, semaine allégée ou non. */
+    @SerialName("wn") val weekNumber: Int? = null,
+    @SerialName("wd") val weekDone: Int? = null,
+    @SerialName("wp") val weekPlanned: Int? = null,
+    @SerialName("wr") val weekDeload: Boolean? = null,
+    /** Rythme d'adaptation ([AdaptProfile.id]). */
+    @SerialName("rt") val rhythm: String? = null,
+    /** Meilleur badge : « 🥇 100 pompes ». */
+    @SerialName("bg") val bestBadge: String? = null,
+    /** Compteurs cumulés, déjà mis en forme (« 1 240 pompes »), 3 au plus. */
+    @SerialName("ct") val counters: List<String>? = null,
+    /** Séance du jour renforcée ([MODE_BURST]) ou allégée ([MODE_CHILL]). */
+    @SerialName("tm") val todayMode: String? = null,
+    /** Durée estimée de la séance du jour, en minutes. */
+    @SerialName("du") val todayMinutes: Int? = null,
 ) {
     /** Points du concours : un Boss vaut plus qu'un exploit, qui vaut plus qu'un Burst, qui vaut plus qu'une séance. */
     val score: Int get() = bossDefeated * BOSS_POINTS + exploits * EXPLOIT_POINTS + bursts * BURST_POINTS + defis * Challenges.POINTS + sessionsDone
@@ -60,6 +75,8 @@ data class FriendCard(
         const val BOSS_LOST = "l"
         const val BOSS_ONGOING = "o"
         const val BOSS_MOVED = "m"
+        const val MODE_BURST = "b"
+        const val MODE_CHILL = "c"
         const val EXPLOIT_POINTS = 3
         /** En plus du point de la séance. */
         const val BURST_POINTS = 2
@@ -94,9 +111,11 @@ data class SharedExercise(
     @SerialName("tg") val target: Int? = null,
     /** [target] en secondes (exercice en durée). */
     @SerialName("ts") val targetSeconds: Boolean? = null,
+    /** Record battu sur cet exo aujourd'hui. */
+    @SerialName("rc") val record: Boolean? = null,
 ) {
     /** Sans les détails en plus : ce qui saute d'abord quand la carte est trop grosse. */
-    fun bare() = copy(version = null, level = null, levelCount = null, feeling = null, dosePercent = null, weighted = null, target = null, targetSeconds = null)
+    fun bare() = copy(version = null, level = null, levelCount = null, feeling = null, dosePercent = null, weighted = null, target = null, targetSeconds = null, record = null)
 
     companion object {
         const val VERSION_EASY = "f"
@@ -182,6 +201,11 @@ object Social {
         var feeling: Int? = null
         var boss: String? = null
         var form: Int? = null
+        var week: Triple<Int, Int, Int>? = null
+        var weekDeload = false
+        var rhythm: String? = null
+        var mode: String? = null
+        var minutes: Int? = null
         val shared = ArrayList<SharedExercise>()
         val stats = programs.map { p ->
             val schedule = ProgramSchedule(p, today)
@@ -191,6 +215,15 @@ object Social {
                 if (title == null) title = s.day.title ?: p.plan.name
                 if (feeling == null) feeling = p.feelingOf(s.index)
                 if (form == null) form = s.form
+                if (week == null) {
+                    val w = s.index / DAYS_PER_WEEK
+                    val days = (w * DAYS_PER_WEEK until (w + 1) * DAYS_PER_WEEK).mapNotNull { schedule.sessionAt(it) }
+                    week = Triple(w + 1, days.count { schedule.isComplete(it) }, days.size)
+                    weekDeload = s.isDeload
+                    rhythm = p.profileOn(today).id
+                    mode = if (s.isBurst) FriendCard.MODE_BURST else if (s.isChill) FriendCard.MODE_CHILL else null
+                    minutes = runCatching { SessionTime.estimate(s).minutes }.getOrNull()
+                }
                 if (s.bossMoved && boss == null) boss = FriendCard.BOSS_MOVED
                 if (s.isBoss && boss == null) boss = when {
                     // Pas de « raté » le jour même : tant que la journée dure, on peut encore le vaincre.
@@ -202,6 +235,10 @@ object Social {
             Stats.of(schedule)
         }
         val all = Stats.merge(stats, today)
+        val badge = runCatching { Badges.of(all).filter { it.tier >= 0 }.maxByOrNull { it.tier * 1000 + it.value.coerceAtMost(999) } }.getOrNull()
+        val counters = all.counters.filter { it.reps > 0 || it.seconds > 0 }
+            .sortedByDescending { if (it.isTime) it.seconds / 60 else it.reps }.take(3)
+            .map { c -> if (c.isTime) "${Measures.formatSeconds(c.seconds)} de ${c.name.lowercase()}" else "${String.format(java.util.Locale.FRENCH, "%,d", c.reps)} ${c.name.lowercase()}" }
         val last = all.exploits.maxByOrNull { it.date }
         return FriendCard(
             id = id,
@@ -223,6 +260,15 @@ object Social {
             todayFeeling = feeling.takeIf { details },
             todayBoss = boss,
             todayForm = form,
+            weekNumber = week?.first,
+            weekDone = week?.second,
+            weekPlanned = week?.third,
+            weekDeload = true.takeIf { weekDeload },
+            rhythm = rhythm,
+            bestBadge = badge?.let { "${it.medal} ${it.reached} ${it.unit}" },
+            counters = counters.ifEmpty { null },
+            todayMode = mode,
+            todayMinutes = minutes,
             todayDefis = challenges.filter { it.date == today.toString() && !(it.acceptedAt == null && it.open(now)) }
                 .takeLast(SharedDefi.MAX).map { SharedDefi.of(it, now) }.ifEmpty { null },
         ).fitted()
@@ -259,6 +305,10 @@ object Social {
             weighted = true.takeIf { pr.weighted == true },
             target = pr.target.takeIf { pr.isBoss && pr.allOut },
             targetSeconds = true.takeIf { pr.isBoss && pr.allOut && pr.maxIsSeconds },
+            record = true.takeIf {
+                val best = runCatching { schedule.previousBest(s, e) }.getOrNull()
+                !pr.neutral && max != null && best != null && best > 0 && max > best
+            },
         )
     }
 
@@ -266,7 +316,7 @@ object Social {
     private fun FriendCard.fitted(): FriendCard {
         var card = this
         // Trop gros : les détails en plus sautent d'abord, puis les exos un par un en partant de la fin.
-        if (encode(card).toByteArray().size > MAX_CARD_BYTES) card = card.copy(todayExercises = card.todayExercises?.map { it.bare() }, todayDefis = null)
+        if (encode(card).toByteArray().size > MAX_CARD_BYTES) card = card.copy(todayExercises = card.todayExercises?.map { it.bare() }, todayDefis = null, counters = null)
         while (encode(card).toByteArray().size > MAX_CARD_BYTES && !card.todayExercises.isNullOrEmpty()) {
             card = card.copy(todayExercises = card.todayExercises!!.dropLast(1))
         }
