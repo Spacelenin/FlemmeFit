@@ -22,6 +22,38 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # Notes de toutes les versions publiées (et de celle-ci), embarquées dans l'APK : le « Quoi de neuf » et
+      # l'historique s'affichent même hors ligne, et survivent au passage du code en privé.
+      - name: Notes de version embarquées
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_NUMBER: ${{ github.run_number }}
+          EVENT: ${{ github.event_name }}
+          CURRENT_NOTES: ${{ github.event.head_commit.message }}
+        run: |
+          mkdir -p app/src/main/assets
+          gh api --paginate "repos/$REPO/releases?per_page=100" --jq '.[] | {tag: .tag_name, body: (.body // "")}' > /tmp/releases.jsonl || true
+          python3 - <<'PY'
+          import json, os, re
+          notes = {}
+          for line in open('/tmp/releases.jsonl', encoding='utf-8'):
+              line = line.strip()
+              if not line:
+                  continue
+              r = json.loads(line)
+              m = re.match(r'^build-(\d+)$', r['tag'])
+              if m and r['body'].strip():
+                  notes[int(m.group(1))] = r['body']
+          current = os.environ.get('CURRENT_NOTES', '').strip()
+          if os.environ.get('EVENT') == 'push' and current:
+              notes[int(os.environ['RUN_NUMBER'])] = current
+          data = [{'v': v, 'n': n} for v, n in sorted(notes.items(), reverse=True)]
+          with open('app/src/main/assets/release-notes.json', 'w', encoding='utf-8') as f:
+              json.dump(data, f, ensure_ascii=False)
+          print(len(data), 'notes embarquées')
+          PY
+
       - name: Tests + APK
         run: ./gradlew --no-daemon testReleaseUnitTest assembleRelease
         # Nouvelle clé de signature (rotation, voir app/build.gradle.kts). Sans ces secrets, l'ancienne clé seule.

@@ -59,7 +59,8 @@ fun UpdateGate(updater: AppUpdater) {
                     is State.Available -> {
                         Text("${s.release.name} est disponible (tu as le build ${updater.currentVersion}). Installe-la pour continuer.")
                         s.release.notes?.let {
-                            Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 8, overflow = TextOverflow.Ellipsis)
+                            // En entier : un long changelog se lit en faisant défiler.
+                            Text(it, style = MaterialTheme.typography.bodySmall, modifier = Modifier.heightIn(max = 260.dp).verticalScroll(rememberScrollState()))
                         }
                         if (!updater.canInstall()) {
                             Text(

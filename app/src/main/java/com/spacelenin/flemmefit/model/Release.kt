@@ -73,6 +73,29 @@ object Releases {
      * Notes de toutes les versions après [after] jusqu'à [upTo] incluse, de la plus récente à la plus ancienne :
      * qui saute des versions voit tout ce qu'il a raté. Une seule version : ses notes telles quelles.
      */
+    /** Les notes embarquées dans l'APK (`release-notes.json` : `[{"v": 292, "n": "…"}]`), nettoyées. */
+    fun parseEmbedded(json: String): Map<Int, String> = try {
+        PlanParser.json.decodeFromString(kotlinx.serialization.builtins.ListSerializer(EmbeddedNotes.serializer()), json)
+            .mapNotNull { e -> cleanNotes(e.n)?.let { e.v to it } }.toMap()
+    } catch (e: SerializationException) {
+        emptyMap()
+    } catch (e: IllegalArgumentException) {
+        emptyMap()
+    }
+
+    @Serializable
+    private data class EmbeddedNotes(val v: Int, val n: String)
+
+    /** Les notes des versions de (after, upTo], embarquées : « Build N » devant chacune s'il y en a plusieurs. */
+    fun combinedEmbedded(notes: Map<Int, String>, after: Int, upTo: Int): String? {
+        val picked = notes.filterKeys { it in (after + 1)..upTo }.toSortedMap(compareByDescending { it })
+        return when (picked.size) {
+            0 -> null
+            1 -> picked.values.first()
+            else -> picked.entries.joinToString("\n\n") { (v, n) -> "Build $v\n$n" }
+        }
+    }
+
     fun combinedNotes(releases: List<ReleaseInfo>, after: Int, upTo: Int): String? {
         val withNotes = releases.filter { it.versionCode in (after + 1)..upTo && it.notes != null }
             .distinctBy { it.versionCode }

@@ -1,5 +1,6 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -112,41 +113,49 @@ fun FitChip(
     }
 }
 
-/** Barre d'avancement : la barre fine habituelle, ou une jauge épaisse, arrondie et rayée. */
+/**
+ * Barre d'avancement : la barre fine habituelle, ou sur le thème fit une jauge brillante et fine (bord blanc et
+ * fin liseré de la couleur, remplissage en deux tons à rayures en biais, reflet).
+ */
 @Composable
-fun FitProgress(progress: () -> Float, color: Color, modifier: Modifier = Modifier, height: Dp = 14.dp) {
+fun FitProgress(progress: () -> Float, color: Color, modifier: Modifier = Modifier, height: Dp = 10.dp) {
     if (!LocalFitTheme.current) {
         LinearProgressIndicator(progress = progress, color = color, modifier = modifier)
         return
     }
-    val shape = RoundedCornerShape(height / 2)
+    val shape = RoundedCornerShape(50)
     Box(
         modifier
-            .height(height)
+            .height(height + 6.dp)
+            .border(1.dp, lerp(color, Color.White, 0.45f), shape)
+            .padding(1.dp)
+            .border(2.dp, Color.White, shape)
+            .padding(2.dp)
             .clip(shape)
-            .background(Color.White)
-            .background(Brush.verticalGradient(listOf(Color(0xFFE3E8EC), Color.White)))
-            .border(2.dp, lerp(color, Color.White, 0.35f), shape)
+            .background(Color(0xFFE9F0F3))
             .drawBehind {
                 val p = progress().coerceIn(0f, 1f)
                 if (p <= 0f) return@drawBehind
-                val inset = 2.dp.toPx()
-                val w = (size.width - inset * 2) * p
-                val h = size.height - inset * 2
-                drawRoundRect(
-                    Brush.verticalGradient(listOf(lerp(color, Color.White, 0.4f), color, lerp(color, Color.Black, 0.12f))),
-                    topLeft = Offset(inset, inset), size = Size(w, h), cornerRadius = CornerRadius(h / 2),
-                )
-                // Rayures fines et reflet sur la partie remplie.
-                var y = inset + 1.5.dp.toPx()
-                while (y < inset + h) {
-                    drawLine(Color.White.copy(alpha = 0.16f), Offset(inset, y), Offset(inset + w, y), strokeWidth = 1f)
-                    y += 3.dp.toPx()
+                val w = size.width * p
+                val h = size.height
+                clipRect(right = w) {
+                    drawRoundRect(
+                        Brush.verticalGradient(listOf(lerp(color, Color.White, 0.45f), color, lerp(color, Color.Black, 0.1f))),
+                        size = Size(w, h), cornerRadius = CornerRadius(h / 2),
+                    )
+                    // Rayures en biais.
+                    val stripe = 5.dp.toPx()
+                    var x = -h
+                    while (x < w) {
+                        drawLine(Color.White.copy(alpha = 0.3f), Offset(x, h), Offset(x + h * 0.9f, 0f), strokeWidth = stripe * 0.6f)
+                        x += stripe * 2
+                    }
+                    // Reflet.
+                    drawRoundRect(
+                        Color.White.copy(alpha = 0.5f), topLeft = Offset(h / 3, 1f),
+                        size = Size((w - h * 0.66f).coerceAtLeast(0f), h * 0.35f), cornerRadius = CornerRadius(h / 4),
+                    )
                 }
-                drawRoundRect(
-                    Color.White.copy(alpha = 0.35f), topLeft = Offset(inset + h / 3, inset + 1f),
-                    size = Size((w - h * 0.66f).coerceAtLeast(0f), h * 0.35f), cornerRadius = CornerRadius(h / 4),
-                )
             },
     )
 }

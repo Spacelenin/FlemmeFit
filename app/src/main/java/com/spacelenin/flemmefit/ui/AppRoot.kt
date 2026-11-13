@@ -73,6 +73,7 @@ fun AppRoot(
     val timer = remember { WorkoutTimer() }
     val guard = remember { SessionGuard() }
     val restBonus by settings.restBonus.collectAsStateWithLifecycle()
+    val fitRailLeft by settings.fitRailLeft.collectAsStateWithLifecycle()
 
     // Programme tout juste importé dont il faut demander les tests de départ.
     var askTestsFor by rememberSaveable { mutableStateOf<String?>(null) }
@@ -245,7 +246,7 @@ fun AppRoot(
                 }
                 else -> {
                     if (tab != 0) BackHandler { tab = 0 }
-                    MainTabs(tab = tab, onTab = { tab = it }) {
+                    MainTabs(tab = tab, onTab = { tab = it }, fitRailLeft = fitRailLeft) {
                         when (tab) {
                             1 -> GlobalStatsScreen(programs = state.programs)
                             2 -> MyExercisesScreen(programs = state.programs, repository = repository)

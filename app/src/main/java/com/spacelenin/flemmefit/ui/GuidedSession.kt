@@ -257,10 +257,11 @@ fun GuidedSession(
             }
             val total = queue.size.coerceAtLeast(1)
             val sets = guided?.sets ?: 1
-            LinearProgressIndicator(
+            FitProgress(
                 progress = { if (step == Step.END) 1f else (pos + set.toFloat() / sets) / total },
                 color = color,
                 modifier = Modifier.fillMaxWidth(),
+                height = 6.dp,
             )
             // Forme du jour : à choisir avant la première série ; ensuite, juste rappelée.
             if (step != Step.END && schedule.canChooseForm(session)) {

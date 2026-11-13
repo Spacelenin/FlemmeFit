@@ -37,9 +37,11 @@ private val Destinations = listOf(
 
 /** Barre du bas sur téléphone / Fold plié, rail à gauche sur écran déplié. */
 @Composable
-fun MainTabs(tab: Int, onTab: (Int) -> Unit, content: @Composable () -> Unit) {
+fun MainTabs(tab: Int, onTab: (Int) -> Unit, fitRailLeft: Boolean = false, content: @Composable () -> Unit) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        if (maxWidth >= TwoPaneMinWidth) {
+        // Thème fit déplié : la barre reste en bas comme sur téléphone, sauf si on l'a demandée à gauche.
+        val rail = maxWidth >= TwoPaneMinWidth && (!LocalFitTheme.current || fitRailLeft)
+        if (rail) {
             Row(Modifier.fillMaxSize()) {
                 if (LocalFitTheme.current) {
                     FitTabRail(Destinations.map { it.label to it.icon }, tab, onTab)

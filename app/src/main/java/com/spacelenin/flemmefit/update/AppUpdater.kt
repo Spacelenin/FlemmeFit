@@ -74,6 +74,11 @@ class AppUpdater(private val context: Context) {
             markChangelogSeen()
             return
         }
+        // D'abord les notes embarquées dans l'APK : toujours là, même hors ligne.
+        Releases.combinedEmbedded(embeddedNotes, after = if (seen > 0) seen else currentVersion - 1, upTo = currentVersion)?.let { notes ->
+            _changelog.value = ReleaseInfo(currentVersion, "FlemmeFit build $currentVersion", notes, apkUrl = "", apkSize = 0, sha256 = null)
+            return
+        }
         scope.launch {
             try {
                 val release = Releases.parseLatest(httpGet("$TAG_URL$currentVersion"))
@@ -143,13 +148,28 @@ class AppUpdater(private val context: Context) {
      * Lève une exception si GitHub ne répond pas. À appeler hors du fil principal.
      */
     fun allReleases(): List<ReleaseInfo> {
+        // L'historique embarqué (tout ce qui était publié au moment du build), complété par GitHub s'il répond.
+        val embedded = embeddedNotes.map { (v, n) -> ReleaseInfo(v, "FlemmeFit build $v", n, apkUrl = "", apkSize = 0, sha256 = null) }
         val all = ArrayList<ReleaseInfo>()
-        for (page in 1..MAX_PAGES) {
-            val releases = Releases.parseList(httpGet("$ALL_URL$page"))
-            if (releases.isEmpty()) break
-            all += releases
+        try {
+            for (page in 1..MAX_PAGES) {
+                val releases = Releases.parseList(httpGet("$ALL_URL$page"))
+                if (releases.isEmpty()) break
+                all += releases
+            }
+        } catch (e: Exception) {
+            if (embedded.isEmpty()) throw e
         }
-        return all.distinctBy { it.versionCode }.sortedByDescending { it.versionCode }
+        return (all + embedded).filter { it.notes != null }.distinctBy { it.versionCode }.sortedByDescending { it.versionCode }
+    }
+
+    /** Notes embarquées dans l'APK par la CI (vide pour un build local). */
+    private val embeddedNotes: Map<Int, String> by lazy {
+        try {
+            context.assets.open(EMBEDDED_NOTES).bufferedReader().use { Releases.parseEmbedded(it.readText()) }
+        } catch (e: Exception) {
+            emptyMap()
+        }
     }
 
     /** Plusieurs versions d'écart : les notes de chacune, pas seulement de la dernière. */
@@ -287,6 +307,7 @@ class AppUpdater(private val context: Context) {
         private const val KEY_LAST_CHECK = "lastCheck"
         private const val KEY_DISMISSED = "dismissedVersion"
         private const val KEY_SEEN_VERSION = "seenVersion"
+        private const val EMBEDDED_NOTES = "release-notes.json"
         private const val LIST_URL = "https://api.github.com/repos/$REPOSITORY/releases?per_page=30"
         private const val ALL_URL = "https://api.github.com/repos/$REPOSITORY/releases?per_page=100&page="
         private const val MAX_PAGES = 5
