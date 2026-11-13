@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -164,12 +165,14 @@ fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() 
                 FriendDayDialog(card, isMe = card.id == social.myId, today = today, onDismiss = { detailFor = null })
             }
 
+            // Une seule colonne, centrée et pas trop large une fois déplié.
+            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
             LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 320.dp),
+                columns = GridCells.Fixed(1),
                 contentPadding = PaddingValues(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.widthIn(max = 640.dp).fillMaxSize(),
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Column {
@@ -204,6 +207,7 @@ fun SocialScreen(social: SocialSync, repository: ProgramRepository, onBack: (() 
                         onClick = { detailFor = card.id },
                     )
                 }
+            }
             }
         }
     }

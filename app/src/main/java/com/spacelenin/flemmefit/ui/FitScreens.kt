@@ -143,12 +143,13 @@ fun FitProgress(progress: () -> Float, color: Color, modifier: Modifier = Modifi
                         Brush.verticalGradient(listOf(lerp(color, Color.White, 0.45f), color, lerp(color, Color.Black, 0.1f))),
                         size = Size(w, h), cornerRadius = CornerRadius(h / 2),
                     )
-                    // Rayures en biais.
-                    val stripe = 5.dp.toPx()
+                    // Fines stries en biais, comme celles des boutons mais inclinées à 45°.
+                    val step = 3.5.dp.toPx()
+                    val stroke = 1.dp.toPx()
                     var x = -h
                     while (x < w) {
-                        drawLine(Color.White.copy(alpha = 0.3f), Offset(x, h), Offset(x + h * 0.9f, 0f), strokeWidth = stripe * 0.6f)
-                        x += stripe * 2
+                        drawLine(Color.White.copy(alpha = 0.32f), Offset(x, h), Offset(x + h, 0f), strokeWidth = stroke)
+                        x += step
                     }
                     // Reflet.
                     drawRoundRect(

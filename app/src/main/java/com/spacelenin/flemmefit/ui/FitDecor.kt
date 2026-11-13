@@ -13,6 +13,13 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -172,6 +179,8 @@ fun PillButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     colors: ButtonColors? = null,
+    /** Version compacte (panneau de l'accueil) sur le thème fit. */
+    small: Boolean = false,
     content: @Composable RowScope.() -> Unit,
 ) {
     if (!LocalFitTheme.current) {
@@ -183,13 +192,14 @@ fun PillButton(
     val base = if (enabled) (asked ?: LocalFitRoom.current).forWhiteText() else Color(0xFFB7C1C8)
     OutlinedButton(
         onClick = onClick,
-        modifier = modifier.glossy(
+        modifier = modifier.then(if (small) Modifier.height(SmallHeight) else Modifier).glossy(
             fill = listOf(base.pale(0.45f), base, base.deeper()),
             ring = base.deeper(),
             step = base.deeper().deeper(),
             shape = RoundedCornerShape(50),
         ),
         enabled = enabled,
+        contentPadding = if (small) SmallPadding else ButtonDefaults.ContentPadding,
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = Color.Transparent, contentColor = Color.White,
             disabledContainerColor = Color.Transparent, disabledContentColor = Color.White.copy(alpha = 0.85f),
@@ -197,4 +207,70 @@ fun PillButton(
         border = null,
         content = content,
     )
+}
+
+private val SmallHeight = 38.dp
+private val SmallPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
+
+/**
+ * Bouton secondaire. Thème fit : pilule blanche bombée (même matière que les boutons principaux), texte gris foncé.
+ * Sinon le bouton à contour habituel.
+ */
+@Composable
+fun SoftButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    small: Boolean = false,
+    content: @Composable RowScope.() -> Unit,
+) {
+    if (!LocalFitTheme.current) {
+        OutlinedButton(onClick = onClick, modifier = modifier, enabled = enabled, content = content)
+        return
+    }
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier.then(if (small) Modifier.height(SmallHeight) else Modifier).glossy(
+            fill = listOf(Color(0xFFFFFFFF), Color(0xFFEFF4F7), Color(0xFFDFE8EE)),
+            ring = Color(0xFFA7C3D3),
+            step = Color(0xFF9DB8C8),
+            shape = RoundedCornerShape(50),
+        ),
+        enabled = enabled,
+        contentPadding = if (small) SmallPadding else ButtonDefaults.ContentPadding,
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = Color.Transparent, contentColor = FitPalette.Text,
+            disabledContainerColor = Color.Transparent, disabledContentColor = FitPalette.TextSoft,
+        ),
+        border = null,
+        content = content,
+    )
+}
+
+/**
+ * Bouton d'icône de la barre du haut. Thème fit : bulle ronde bombée, blanche (ou de la couleur [color] si donnée,
+ * icône blanche). Sinon le bouton d'icône habituel.
+ */
+@Composable
+fun FitIconButton(onClick: () -> Unit, icon: ImageVector, description: String, color: Color? = null) {
+    if (!LocalFitTheme.current) {
+        IconButton(onClick = onClick) { Icon(icon, description) }
+        return
+    }
+    val base = color?.forWhiteText()
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .padding(horizontal = 4.dp)
+            .size(44.dp)
+            .glossy(
+                fill = if (base != null) listOf(base.pale(0.45f), base, base.deeper()) else listOf(Color(0xFFFFFFFF), Color(0xFFEFF4F7), Color(0xFFDFE8EE)),
+                ring = base?.deeper() ?: Color(0xFFA7C3D3),
+                step = base?.deeper()?.deeper() ?: Color(0xFF9DB8C8),
+                shape = RoundedCornerShape(50),
+            )
+            .clickable(role = Role.Button, onClickLabel = description, onClick = onClick),
+    ) {
+        Icon(icon, description, tint = if (base != null) Color.White else FitPalette.TextSoft, modifier = Modifier.size(22.dp))
+    }
 }

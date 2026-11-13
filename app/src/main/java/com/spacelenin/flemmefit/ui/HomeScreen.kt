@@ -54,6 +54,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.border
+import androidx.compose.foundation.Canvas
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -109,8 +125,8 @@ fun HomeScreen(
             TopAppBar(colors = fitBarColors(), 
                 title = { Text("FlemmeFit", fontWeight = FontWeight.ExtraBold) },
                 actions = {
-                    IconButton(onClick = { menuOpen = true }) { Icon(Icons.Default.Add, "Ajouter un programme") }
-                    IconButton(onClick = actions.settings) { Icon(Icons.Default.Settings, "Réglages") }
+                    FitIconButton(onClick = { menuOpen = true }, icon = Icons.Default.Add, description = "Ajouter un programme", color = LocalFitRoom.current)
+                    FitIconButton(onClick = actions.settings, icon = Icons.Default.Settings, description = "Réglages")
                 },
             )
         },
@@ -403,55 +419,38 @@ private fun TodayCard(
         else -> color
     }
 
-    Card(
-        colors = CardDefaults.cardColors(containerColor = fitCardColor(MaterialTheme.colorScheme.secondaryContainer)),
-        shape = RoundedCornerShape(24.dp),
-        modifier = modifier.fillMaxWidth().fitBorder(accent, shape = RoundedCornerShape(24.dp)),
-    ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                val badge = when {
-                    finished -> "Terminé"
-                    notStarted -> "Bientôt"
-                    session?.isBurst == true -> "🚀 Burst"
-                    session?.isBoss == true -> "💀 Boss"
-                    session?.isDeload == true -> "🌿 Récup"
-                    session != null -> "Aujourd'hui"
-                    else -> "Repos"
-                }
-                Text(
-                    badge,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0F0F0F),
-                    modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(accent).padding(horizontal = 10.dp, vertical = 3.dp),
-                )
-                Text(
-                    program.plan.name + (session?.let { " · ${it.position(program.plan.repeat)}" } ?: ""),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
-                )
-                actions.menu(program)
-            }
+    val fit = LocalFitTheme.current
+    val badge = when {
+        finished -> "Terminé"
+        notStarted -> "Bientôt"
+        session?.isBurst == true -> "🚀 Burst"
+        session?.isBoss == true -> "💀 Boss"
+        session?.isDeload == true -> "🌿 Récup"
+        session != null -> "Aujourd'hui"
+        else -> "Repos"
+    }
+    val programLine = program.plan.name + (session?.let { " · ${it.position(program.plan.repeat)}" } ?: "")
+    val next = progress.nextSession
+    val (title, sub) = when {
+        finished -> "Programme terminé 🎉" to "${progress.doneSessions}/${progress.totalSessions} séances faites"
+        notStarted -> "Ça commence le ${schedule.startDate.shortLabel()}" to (next?.let { "Première séance : ${it.title()}" } ?: "")
+        session != null -> session.title() to "${schedule.requiredDone(session)}/${session.requiredCount} exos faits"
+        next != null -> "Repos aujourd'hui" to "Prochaine : ${next.date.shortLabel()} · ${next.title()}"
+        else -> "Repos aujourd'hui" to "Plus de séance à venir"
+    }
+    val ratio = if (session == null || session.requiredCount == 0) 0f else schedule.requiredDone(session).toFloat() / session.requiredCount
 
-            val next = progress.nextSession
-            val (title, sub) = when {
-                finished -> "Programme terminé 🎉" to "${progress.doneSessions}/${progress.totalSessions} séances faites"
-                notStarted -> "Ça commence le ${schedule.startDate.shortLabel()}" to (next?.let { "Première séance : ${it.title()}" } ?: "")
-                session != null -> session.title() to "${schedule.requiredDone(session)}/${session.requiredCount} exos faits"
-                next != null -> "Repos aujourd'hui" to "Prochaine : ${next.date.shortLabel()} · ${next.title()}"
-                else -> "Repos aujourd'hui" to "Plus de séance à venir"
+    // Le contenu sous l'en-tête, commun aux deux thèmes.
+    val content: @Composable ColumnScope.() -> Unit = {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
+                if (sub.isNotEmpty()) Text(sub, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
-                    if (sub.isNotEmpty()) Text(sub, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
-                }
-                if (session != null && !finished) {
-                    val ratio = if (session.requiredCount == 0) 0f else schedule.requiredDone(session).toFloat() / session.requiredCount
+            if (session != null && !finished) {
+                if (fit) {
+                    FitRing(ratio, accent)
+                } else {
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.size(56.dp)) {
                         CircularProgressIndicator(
                             progress = { ratio },
@@ -464,48 +463,167 @@ private fun TodayCard(
                     }
                 }
             }
+        }
 
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                when {
-                    finished -> {
-                        PillButton(onClick = { actions.open(program.id) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)) {
-                            Text("Voir le bilan")
-                        }
-                        OutlinedButton(onClick = { actions.restart(program) }) { Text("Recommencer") }
-                    }
-                    session != null -> {
-                        PillButton(onClick = { dayActions.onGuided(session) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)) {
-                            Text(if (schedule.doneCount(session) == 0) "C'est parti" else "Continuer")
-                        }
-                        if (schedule.canBurst(session)) {
-                            OutlinedButton(onClick = { dayActions.onBurst(session, true) }) { Text("🚀 Burst") }
-                        }
-                        if (schedule.canChill(session)) {
-                            OutlinedButton(onClick = { dayActions.onChill(session, true) }) { Text("🛋 Chill") }
-                        }
-                        if (!schedule.isComplete(session)) {
-                            OutlinedButton(onClick = { dayActions.onPostpone(session) }) { Text("Décaler") }
-                        }
-                    }
-                    else -> if (next != null) OutlinedButton(onClick = { onShow(next.date) }) { Text("Voir la prochaine séance") }
+        // Boutons compacts sur le thème fit, de la couleur du contexte.
+        val main = ButtonDefaults.buttonColors(containerColor = if (fit) accent else MaterialTheme.colorScheme.onSurface)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(if (fit) 8.dp else 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            when {
+                finished -> {
+                    PillButton(onClick = { actions.open(program.id) }, colors = main, small = true) { Text("Voir le bilan") }
+                    SoftButton(onClick = { actions.restart(program) }, small = true) { Text("Recommencer") }
                 }
-            }
-
-            others.forEach { (p, s) ->
-                val o = s.sessionOn(today)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(8.dp).clip(CircleShape).background(programColor(p.colorIndex)))
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        p.plan.name + " : " + (o?.let { "${it.title()} (${s.requiredDone(it)}/${it.requiredCount})" } ?: "repos aujourd'hui"),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                session != null -> {
+                    PillButton(onClick = { dayActions.onGuided(session) }, colors = main, small = true) {
+                        Text(if (schedule.doneCount(session) == 0) "C'est parti" else "Continuer")
+                    }
+                    if (schedule.canBurst(session)) {
+                        SoftButton(onClick = { dayActions.onBurst(session, true) }, small = true) { Text("🚀 Burst") }
+                    }
+                    if (schedule.canChill(session)) {
+                        SoftButton(onClick = { dayActions.onChill(session, true) }, small = true) { Text("🛋 Chill") }
+                    }
+                    if (!schedule.isComplete(session)) {
+                        SoftButton(onClick = { dayActions.onPostpone(session) }, small = true) { Text("Décaler") }
+                    }
                 }
+                else -> if (next != null) SoftButton(onClick = { onShow(next.date) }, small = true) { Text("Voir la prochaine séance") }
             }
         }
+
+        others.forEach { (p, s) ->
+            val o = s.sessionOn(today)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(8.dp).clip(CircleShape).background(programColor(p.colorIndex)))
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    p.plan.name + " : " + (o?.let { "${it.title()} (${s.requiredDone(it)}/${it.requiredCount})" } ?: "repos aujourd'hui"),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+
+    if (fit) {
+        // Panneau à bandeau : titre dans une bande rayée de la couleur du contexte, corps ligné.
+        val base = accent.forWhiteText()
+        val shape = RoundedCornerShape(22.dp)
+        Column(
+            modifier
+                .fillMaxWidth()
+                .padding(bottom = 4.dp)
+                .drawBehind {
+                    val outline = shape.createOutline(size, layoutDirection, this)
+                    translate(top = 4.dp.toPx()) { drawOutline(outline, base.deeper()) }
+                }
+                .border(1.dp, base.deeper(), shape)
+                .padding(1.dp)
+                .border(3.dp, Color.White, shape)
+                .clip(shape)
+                .background(Color.White),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Brush.verticalGradient(listOf(base.pale(0.3f), base)))
+                    .fitStripes(Color.White, alpha = 0.18f)
+                    .padding(start = 16.dp, end = 4.dp, top = 2.dp, bottom = 2.dp),
+            ) {
+                Text(badge, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black, color = Color.White)
+                Text(
+                    programLine,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White.copy(alpha = 0.92f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                CompositionLocalProvider(LocalContentColor provides Color.White) { actions.menu(program) }
+            }
+            Column(Modifier.fillMaxWidth().linedPaper().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp), content = content)
+        }
+        return
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        shape = RoundedCornerShape(24.dp),
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    badge,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF0F0F0F),
+                    modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(accent).padding(horizontal = 10.dp, vertical = 3.dp),
+                )
+                Text(
+                    programLine,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                actions.menu(program)
+            }
+            content()
+        }
+    }
+}
+
+/** Jauge ronde du thème fit : anneau bombé, fines stries en biais de la couleur du contexte, pourcentage au centre. */
+@Composable
+private fun FitRing(ratio: Float, color: Color) {
+    val base = color.forWhiteText()
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(bottom = 3.dp).size(62.dp)) {
+        Canvas(Modifier.fillMaxSize()) {
+            val r = size.minDimension / 2
+            val c = center
+            // Marche sous la jauge, liseré, bord blanc.
+            drawCircle(base.deeper(), radius = r, center = c + Offset(0f, 3.dp.toPx()))
+            drawCircle(base.deeper(), radius = r)
+            drawCircle(Color.White, radius = r - 1.dp.toPx())
+            val ring = r - 3.dp.toPx()
+            val thick = 9.dp.toPx()
+            val mid = ring - thick / 2
+            val topLeft = Offset(c.x - mid, c.y - mid)
+            val arc = Size(mid * 2, mid * 2)
+            drawArc(Color(0xFFE3EAEE), 0f, 360f, false, topLeft, arc, style = Stroke(thick))
+            if (ratio > 0f) {
+                drawArc(
+                    Brush.verticalGradient(listOf(base.pale(0.4f), base, base.deeper())),
+                    -90f, 360f * ratio.coerceIn(0f, 1f), false, topLeft, arc, style = Stroke(thick),
+                )
+            }
+            // Stries fines en biais sur l'anneau.
+            val band = Path().apply {
+                fillType = PathFillType.EvenOdd
+                addOval(Rect(c, ring))
+                addOval(Rect(c, ring - thick))
+            }
+            clipPath(band) {
+                val step = 3.5.dp.toPx()
+                var x = -size.height
+                while (x < size.width) {
+                    drawLine(Color.White.copy(alpha = 0.32f), Offset(x, size.height), Offset(x + size.height, 0f), strokeWidth = 1.dp.toPx())
+                    x += step
+                }
+            }
+            // Centre bombé.
+            val inner = ring - thick
+            drawCircle(Color(0xFFC9D4DB), radius = inner)
+            drawCircle(Brush.verticalGradient(listOf(Color.White, Color(0xFFE9EFF3)), startY = c.y - inner, endY = c.y + inner), radius = inner - 1.dp.toPx())
+        }
+        Text("${(ratio * 100).toInt()}%", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Black, color = FitPalette.Text)
     }
 }
 
