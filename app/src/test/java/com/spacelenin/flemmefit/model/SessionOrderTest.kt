@@ -210,6 +210,13 @@ class FormOfDayTest {
         assertEquals(70, day.form)
         assertEquals(7, day.prescriptions[0].reps)
         assertTrue(s.isComplete(day))
+        // Journée sauvée : la 🔥 tient, mais pas de point de séance.
+        assertTrue(s.isSaved(day))
+        assertFalse(s.counts(day))
+        assertEquals(SessionStatus.SAVED, s.status(day))
+        assertEquals(0, Stats.of(s).sessionsDone)
+        assertFalse(s.canBurst(day))
+        assertFalse(s.canChill(day))
         assertNull(day.prescriptions[0].exploitPlanned)
         // Le réglage et la progression n'ont rien vu : même dose que sans la séance.
         val normal = ProgramSchedule(p0, start.plusDays(30)).sessionAt(2)!!.prescriptions[0].reps
@@ -223,6 +230,10 @@ class FormOfDayTest {
         val bossDay = (0 until 120).first { s0.isNaturalBoss(it) }
         val target = s0.bossMoveTarget(bossDay)
         assertTrue(target in bossDay + 1..bossDay + 7)
+        assertEquals("même bloc de 4 semaines", bossDay / 7 / 4, target / 7 / 4)
+        // Un Boss en fin de bloc (juste avant la semaine allégée) ne peut pas sortir de son bloc : perdu.
+        val lastBlockDay = (0 until 120).first { s0.isNaturalBoss(it) && (it / 7) % 4 == 2 && it % 7 >= 4 }.let { it }
+        assertTrue(s0.bossMoveTarget(lastBlockDay).let { it == -1 || it / 7 / 4 == lastBlockDay / 7 / 4 })
         val moved = p0.withForm(bossDay, 55).withBossMove(bossDay, target)
         val s1 = ProgramSchedule(moved, start.plusDays(200))
         assertFalse(s1.sessionAt(bossDay)!!.isBoss)
@@ -257,5 +268,16 @@ class BossSparesWarmUpTest {
             assertNull(b.variantIndex)
             assertTrue(b.prescriptions.none { it.replacedBy != null })
         }
+    }
+}
+
+class FriendTargetUnitTest {
+    @Test
+    fun `a Boss target in seconds says so on the card`() {
+        val saber = Prescription.of(Exercise("Beat Saber", duration = "90min"), 0, false, boss = true, lastMax = null)
+        assertTrue(saber.maxIsSeconds)
+        val e = SharedExercise("x", target = 5400, targetSeconds = true)
+        assertEquals("90min", Measures.formatSeconds(e.target!!))
+        assertEquals(SharedExercise("x"), e.bare())
     }
 }

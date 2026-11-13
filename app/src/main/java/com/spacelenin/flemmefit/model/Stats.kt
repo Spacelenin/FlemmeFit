@@ -148,7 +148,9 @@ data class Stats(
             for (s in sessions) {
                 val monday = s.date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
                 val complete = schedule.isComplete(s)
-                if (complete) sessionsDone++
+                // Forme réduite : la journée est sauvée (la 🔥 tient) mais ne compte pas comme une séance.
+                val counted = schedule.counts(s)
+                if (counted) sessionsDone++
                 if (complete && s.isBurst) burstsDone++
                 if (s.isBoss && !s.date.isAfter(today)) {
                     bossMet++
@@ -157,7 +159,7 @@ data class Stats(
                 }
                 if (s.isDeload) weekDeload += monday
                 if (!s.date.isAfter(today)) {
-                    if (complete) run++ else if (s.date != today && !schedule.isSaved(s)) run = 0
+                    if (counted) run++ else if (s.date != today && !schedule.isSaved(s)) run = 0
                     bestStreak = maxOf(bestStreak, run)
                 }
 

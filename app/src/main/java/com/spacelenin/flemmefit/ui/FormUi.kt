@@ -30,7 +30,7 @@ fun formLabel(percent: Int): String = when {
 
 /** Ce que fait la forme du jour, en une phrase. */
 fun formExplanation(percent: Int, bossMoved: Boolean): String =
-    "Séries à $percent %. Ça compte comme une séance faite, ton réglage ne bouge pas." +
+    "Séries à $percent %. Ta série 🔥 tient (sans point de séance), ton réglage ne bouge pas." +
         if (bossMoved) " Le Boss du jour est reporté de quelques jours." else ""
 
 /** Le choix de la forme du jour : trois pastilles, avant de commencer la séance. */

@@ -202,10 +202,15 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         return !isDeloadWeek(week) && isBossWeek(week) && bossIndexOfWeek(week) == i
     }
 
-    /** Où reporter le Boss du jour [i] : un jour de séance tiré au sort dans les 7 jours qui suivent (-1 : aucun). */
+    /**
+     * Où reporter le Boss du jour [i] : un jour de séance tiré au sort dans les 7 jours qui suivent, dans le même bloc
+     * (-1 : aucun, le Boss est perdu).
+     */
     fun bossMoveTarget(i: Int): Int {
         val candidates = (i + 1..i + DAYS_PER_WEEK).filter { d ->
-            inRange(d) && !isDeloadWeek(d / DAYS_PER_WEEK) && !isNaturalBoss(d) &&
+            // Toujours dans le même bloc de 3 semaines : jamais collé au Boss du bloc suivant.
+            bossBlockOf(d / DAYS_PER_WEEK) == bossBlockOf(i / DAYS_PER_WEEK) &&
+                inRange(d) && !isDeloadWeek(d / DAYS_PER_WEEK) && !isNaturalBoss(d) &&
                 planDaysOfWeek(d / DAYS_PER_WEEK).any { it.day == d % DAYS_PER_WEEK + 1 }
         }
         return if (candidates.isEmpty()) -1 else candidates[Random(seed xor (i * 31337L)).nextInt(candidates.size)]
@@ -1079,7 +1084,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
                 val value = log?.perSet?.maxOrNull()?.takeIf { it > 0 } ?: log?.max
                     ?: if (program.isDone(i, e)) s.prescriptions.getOrNull(e)?.perSetPlanned else null
                 if (value != null) history += TestPoint(s.date, value)
-                if (value != null && s.prescriptions.getOrNull(e)?.eccentric == true) eccentricDates += s.date
+                if (value != null && (s.form != null || s.prescriptions.getOrNull(e)?.eccentric == true)) eccentricDates += s.date
             }
         }
         // Prochaine séance où il est prévu (4 semaines au plus), et sa dose pleine.
@@ -1210,16 +1215,23 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
     /** Séance finie : tous les exercices obligatoires faits. */
     fun isComplete(session: Session) = requiredDone(session) == session.requiredCount
 
-    /** Boss pas fini mais fait aux trois quarts : la journée est sauvée, sans points ni 🔥 en plus. */
+    /**
+     * Journée sauvée, sans point ni 🔥 en plus : Boss fait aux trois quarts, ou séance faite en forme réduite
+     * (fatigué, malade).
+     */
     fun isSaved(session: Session) =
-        session.isBoss && !isComplete(session) && requiredDone(session) >= ceil(session.requiredCount * BOSS_SAVE_SHARE)
+        (session.form != null && isComplete(session)) ||
+            (session.isBoss && !isComplete(session) && requiredDone(session) >= ceil(session.requiredCount * BOSS_SAVE_SHARE))
+
+    /** Séance qui compte pleinement (point et 🔥) : finie, et pas en forme réduite. */
+    fun counts(session: Session) = isComplete(session) && session.form == null
 
     fun status(session: Session): SessionStatus {
         val done = doneCount(session)
         val started = done > 0 || (0 until session.exerciseCount).any { exerciseState(session, it) == ExerciseState.PARTIAL }
         return when {
-            isComplete(session) -> SessionStatus.DONE
             isSaved(session) -> SessionStatus.SAVED
+            isComplete(session) -> SessionStatus.DONE
             started -> SessionStatus.PARTIAL
             session.date.isBefore(today) -> SessionStatus.MISSED
             else -> SessionStatus.PENDING
@@ -1234,7 +1246,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
      * la même semaine du programme.
      */
     fun canBurst(session: Session): Boolean =
-        session.date == today && !session.isBoss && !session.isDeload && !session.isBurst && !session.isChill &&
+        session.date == today && session.form == null && !session.isBoss && !session.isDeload && !session.isBurst && !session.isChill &&
             session.prescriptions.any { it.exercise.progression != null || it.sets != null } &&
             untouched(session) &&
             program.bursts.none { it / DAYS_PER_WEEK == session.programWeek }
@@ -1244,7 +1256,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
 
     /** Chill possible : comme le Burst, une fois par semaine du programme, jamais un jour de Boss. */
     fun canChill(session: Session): Boolean =
-        session.date == today && !session.isBoss && !session.isDeload && !session.isBurst && !session.isChill &&
+        session.date == today && session.form == null && !session.isBoss && !session.isDeload && !session.isBurst && !session.isChill &&
             session.prescriptions.any { it.sets != null || it.reps != null || it.seconds != null } &&
             untouched(session) &&
             program.chills.none { it / DAYS_PER_WEEK == session.programWeek }
@@ -1279,15 +1291,15 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         for (s in sessions) {
             doneEx += requiredDone(s)
             totalEx += s.requiredCount
-            if (isComplete(s)) doneSessions++
+            if (counts(s)) doneSessions++
             else if (status(s) == SessionStatus.MISSED) missed++
         }
 
         var streak = 0
         for (s in sessions.asReversed()) {
             if (s.date.isAfter(today)) continue
-            if (isComplete(s)) streak++
-            else if (isSaved(s)) continue // Boss sauvé : la série tient sans avancer
+            if (counts(s)) streak++
+            else if (isSaved(s)) continue // Boss sauvé ou forme réduite : la série tient sans avancer
             else if (s.date == today) continue // la séance du jour ne casse pas la série
             else break
         }

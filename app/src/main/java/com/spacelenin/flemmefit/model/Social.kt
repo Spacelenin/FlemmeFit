@@ -92,9 +92,11 @@ data class SharedExercise(
     @SerialName("w") val weighted: Boolean? = null,
     /** Jour Boss : l'objectif de la série à fond. */
     @SerialName("tg") val target: Int? = null,
+    /** [target] en secondes (exercice en durée). */
+    @SerialName("ts") val targetSeconds: Boolean? = null,
 ) {
     /** Sans les détails en plus : ce qui saute d'abord quand la carte est trop grosse. */
-    fun bare() = copy(version = null, level = null, levelCount = null, feeling = null, dosePercent = null, weighted = null, target = null)
+    fun bare() = copy(version = null, level = null, levelCount = null, feeling = null, dosePercent = null, weighted = null, target = null, targetSeconds = null)
 
     companion object {
         const val VERSION_EASY = "f"
@@ -191,8 +193,8 @@ object Social {
                 if (form == null) form = s.form
                 if (s.bossMoved && boss == null) boss = FriendCard.BOSS_MOVED
                 if (s.isBoss && boss == null) boss = when {
+                    // Pas de « raté » le jour même : tant que la journée dure, on peut encore le vaincre.
                     schedule.isComplete(s) -> FriendCard.BOSS_WON
-                    s.required.all { schedule.exerciseState(s, it) != ExerciseState.TODO } -> FriendCard.BOSS_LOST
                     else -> FriendCard.BOSS_ONGOING
                 }
                 if (details) runCatching { shared += sharedExercises(schedule, s) }.onFailure(Safety::report)
@@ -256,6 +258,7 @@ object Social {
             dosePercent = pr.exercise.tired?.takeIf { pr.tired }?.let { 100 - it },
             weighted = true.takeIf { pr.weighted == true },
             target = pr.target.takeIf { pr.isBoss && pr.allOut },
+            targetSeconds = true.takeIf { pr.isBoss && pr.allOut && pr.maxIsSeconds },
         )
     }
 
