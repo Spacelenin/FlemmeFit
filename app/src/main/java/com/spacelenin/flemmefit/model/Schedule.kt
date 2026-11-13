@@ -65,6 +65,9 @@ const val BURST_STEPS = 2
  */
 val BOSS_BLOCKS_FROM: java.time.LocalDate = java.time.LocalDate.of(2026, 11, 16)
 
+/** Plus de variante un jour Boss à partir de cette date (avant : ce qui a été fait reste tel quel). */
+val NO_VARIANT_ON_BOSS_FROM: java.time.LocalDate = java.time.LocalDate.of(2026, 11, 14)
+
 /** Crans de progression d'un Boss : plus dur qu'un Burst. */
 const val BOSS_STEPS = 3
 /** Part d'un Boss à faire pour sauver la journée (sans points ni 🔥 en plus). */
@@ -549,8 +552,11 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
         val prescriptions = day.exercises.mapIndexed(::prescribe).toMutableList()
         val n = prescriptions.size
 
-        // Jour variante et exercice perso : tirés pour chaque séance, dévoilés le jour même.
-        val variantPick = if (deload) null else drawVariant(i, day, date)
+        // Jour variante et exercice perso : tirés pour chaque séance, dévoilés le jour même. Jamais un jour Boss (la
+        // variante prendrait la série à fond du Boss) : elle tombe un autre jour du cycle. Les Boss d'avant
+        // [NO_VARIANT_ON_BOSS_FROM] gardent ce qui a pu y être fait.
+        val bossDay = (naturalBoss || movedHere) && !date.isBefore(NO_VARIANT_ON_BOSS_FROM)
+        val variantPick = if (deload || bossDay) null else drawVariant(i, day, date)
         val otherPick = if (deload) null else drawOther(i, date)
         val shown = !date.isAfter(today)
         var variantIndex: Int? = null

@@ -198,7 +198,8 @@ class VariantsTest {
     fun `legs are mostly variants, the classic squat once every two cycles`() {
         val days = legDays(mapOf("squats" to 40))
         assertEquals(6, days.size)
-        assertEquals(1, days.count { it.variant == null })
+        // Un jour Boss n'a jamais de variante : le squat classique y revient en plus.
+        assertEquals(1, days.count { it.variant == null && !it.isBoss })
         val block = days.first { it.variant != null }
         assertTrue(block.variant!!.full && block.variant!!.whole)
         // Le bloc prend la place de l'exercice de base, au même rang.

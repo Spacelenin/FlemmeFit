@@ -253,6 +253,9 @@ class BossSparesWarmUpTest {
                 assertFalse(it.exercise.name, it.isBoss || it.allOut)
             }
             assertTrue(b.prescriptions.any { it.isBoss && it.allOut })
+            // Pas de variante un jour Boss : elle prendrait la série à fond.
+            assertNull(b.variantIndex)
+            assertTrue(b.prescriptions.none { it.replacedBy != null })
         }
     }
 }
