@@ -86,15 +86,41 @@ object Reminders {
     fun seenBosses(cards: List<FriendCard>, seen: Map<String, Int>): Map<String, Int> =
         seen + cards.associate { it.pseudo.trim().lowercase() to maxOf(it.bossDefeated, seen[it.pseudo.trim().lowercase()] ?: 0) }
 
-    /** « 💀 Bob a battu son Boss. » */
-    fun bossMessage(names: List<String>): ReminderMessage? {
-        val text = when (names.size) {
+    /** « 💀 Bob a battu son Boss. », une phrase tirée au hasard parmi quelques-unes. */
+    fun bossMessage(names: List<String>, random: Random = Random.Default): ReminderMessage? {
+        val options = when (names.size) {
             0 -> return null
-            1 -> "${names[0]} a battu son Boss. À toi de pas être le maillon faible."
-            2 -> "${names[0]} et ${names[1]} ont battu leur Boss. Ça commence à faire beaucoup."
-            else -> "${names[0]}, ${names[1]} et ${names.size - 2} autre${if (names.size > 3) "s" else ""} ont battu leur Boss."
+            1 -> {
+                val a = names[0]
+                listOf(
+                    "$a a battu son Boss. Toi, t'as battu ton record de scroll.",
+                    "$a a terrassé son Boss. Pendant ce temps, ton canapé a encore gagné.",
+                    "$a a battu son Boss. On prévient ta mère ou tu le fais toi-même ?",
+                    "$a vient de démonter son Boss. Ton prochain va être au courant.",
+                    "$a a battu son Boss. Note-le quelque part, ça te fera un modèle.",
+                )
+            }
+            2 -> {
+                val (a, b) = names
+                listOf(
+                    "$a et $b ont battu leur Boss. Toi, t'es le Boss de rien.",
+                    "$a et $b ont battu leur Boss. Le groupe avance, toi tu suis… de loin.",
+                    "$a et $b ont plié leur Boss. Il paraît qu'ils parlent de toi au passé.",
+                    "Double Boss vaincu : $a et $b. Toi, double portion de chips.",
+                )
+            }
+            else -> {
+                val others = names.size - 2
+                val who = "${names[0]}, ${names[1]} et $others autre${if (others > 1) "s" else ""}"
+                listOf(
+                    "$who ont battu leur Boss. Ça devient gênant pour toi.",
+                    "$who ont battu leur Boss. Même les Boss ont pitié de toi.",
+                    "Hécatombe de Boss : $who. Ta chaise, elle, tient bon.",
+                    "$who ont battu leur Boss. On garde une place pour toi au fond.",
+                )
+            }
         }
-        return ReminderMessage(BOSS_NEWS_ID, "💀 Boss vaincu", text)
+        return ReminderMessage(BOSS_NEWS_ID, "💀 Boss vaincu", options[random.nextInt(options.size)])
     }
 
     const val BOSS_NEWS_ID = "potes-boss"

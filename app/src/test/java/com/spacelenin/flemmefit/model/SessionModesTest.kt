@@ -2,6 +2,7 @@ package com.spacelenin.flemmefit.model
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
@@ -119,5 +120,18 @@ class SessionModesTest {
         val news = Reminders.newBosses(listOf(bob.copy(bossDefeated = 3), al), seen)
         assertEquals(listOf("Bob"), news)
         assertEquals("💀 Boss vaincu", Reminders.bossMessage(news)!!.title)
+    }
+
+    @Test
+    fun `boss news names everyone whatever the phrase`() {
+        repeat(40) { seed ->
+            val r = kotlin.random.Random(seed)
+            assertTrue(Reminders.bossMessage(listOf("Bob"), r)!!.text.contains("Bob"))
+            val two = Reminders.bossMessage(listOf("Bob", "Levi"), r)!!.text
+            assertTrue(two.contains("Bob") && two.contains("Levi"))
+            assertTrue(Reminders.bossMessage(listOf("Bob", "Levi", "Al"), r)!!.text.let { it.contains("1 autre") && !it.contains("1 autres") })
+            assertTrue(Reminders.bossMessage(listOf("Bob", "Levi", "Al", "Zoé"), r)!!.text.contains("2 autres"))
+        }
+        assertNull(Reminders.bossMessage(emptyList()))
     }
 }
