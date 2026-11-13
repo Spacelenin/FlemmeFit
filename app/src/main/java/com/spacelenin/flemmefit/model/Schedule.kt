@@ -526,9 +526,11 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             }
             ex.test?.let { testSeen[ex.key] = testCount[it] ?: 0 }
             val steps = steps()
+            // Le Boss ne touche ni l'échauffement ni les étirements (facultatifs), ni les exos à dose fixe (Beat Saber).
+            val bossHere = boss && !ex.optional && !ex.steady
             val extra = when {
                 p == null -> 0
-                boss -> BOSS_STEPS
+                bossHere -> BOSS_STEPS
                 burst -> BURST_STEPS
                 else -> 0
             }
@@ -537,7 +539,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             if (!deload && !chill && p != null) adaptViews[ex.key] = AdaptBase(base, steps, applied, weighted)
             val level = (steps + applied).coerceAtLeast(0) + extra
             fun at(l: Int) = Prescription.of(
-                base, l, deload || chill, boss = boss, lastMax = lastMax[ex.key], palier = palier, burst = burst,
+                base, l, deload || chill, boss = bossHere, lastMax = lastMax[ex.key], palier = palier, burst = burst,
                 weighted = weighted,
             )
             val limb = ex.perSide ?: return at(level)
@@ -664,7 +666,7 @@ class ProgramSchedule(val program: StoredProgram, val today: LocalDate = LocalDa
             if (done && !deload && !pause) validated[key] = (validated[key] ?: 0) + 1
             // Le réglage n'est qu'un plus : s'il échoue, la séance reste calculée sans lui (jamais de plantage).
             // Boss et Burst gonflent le prévu exprès : le réglage compare à ce qui aurait été prévu sans eux.
-            val extra = if (pr.exercise.progression == null) 0 else if (boss) BOSS_STEPS else if (burst) BURST_STEPS else 0
+            val extra = if (pr.exercise.progression == null) 0 else if (pr.isBoss) BOSS_STEPS else if (burst) BURST_STEPS else 0
             if (!deload && !pause) runCatching { learn(pr, i, e, done, final = done || date.isBefore(today), extra) }.onFailure(Safety::report)
             if (max == null) return@forEachIndexed
             // Objectif du prochain Boss (sans réduction) : le max ramené à la dose pleine.

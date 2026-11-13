@@ -239,3 +239,20 @@ class FormOfDayTest {
         assertFalse(back.sessionAt(target)!!.isBoss)
     }
 }
+
+class BossSparesWarmUpTest {
+    @Test
+    fun `a Boss day leaves warm-up, stretches and fixed-dose cardio alone`() {
+        val routine = (PlanParser.parse(java.io.File("../examples/routine-maison.json").readText()) as ParseResult.Success).plan
+        val start = LocalDate.of(2026, 11, 16)
+        val s = ProgramSchedule(StoredProgram("warm", routine, start.toString()), start.plusDays(200))
+        val bosses = (0 until 120).mapNotNull { s.sessionAt(it) }.filter { it.isBoss }
+        assertTrue(bosses.isNotEmpty())
+        bosses.forEach { b ->
+            b.prescriptions.filter { it.exercise.optional || it.exercise.steady }.forEach {
+                assertFalse(it.exercise.name, it.isBoss || it.allOut)
+            }
+            assertTrue(b.prescriptions.any { it.isBoss && it.allOut })
+        }
+    }
+}
