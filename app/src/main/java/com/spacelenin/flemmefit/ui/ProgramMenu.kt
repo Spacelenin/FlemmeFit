@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -46,7 +47,7 @@ fun ProgramMenuButton(
     /** Ouvre directement les tests (juste après l'import). */
     askTests: Boolean = false,
     onTestsAsked: () -> Unit = {},
-    tint: Color = MaterialTheme.colorScheme.onSurface,
+    tint: Color = LocalContentColor.current,
 ) {
     var open by remember { mutableStateOf(false) }
     var dialog by rememberSaveable(program.id) { mutableStateOf(if (askTests) DIALOG_TESTS else null) }

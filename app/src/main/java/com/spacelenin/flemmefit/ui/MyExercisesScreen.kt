@@ -27,6 +27,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -89,7 +91,14 @@ fun MyExercisesScreen(programs: List<StoredProgram>, repository: ProgramReposito
     Scaffold(
         topBar = { TopAppBar(colors = fitBarColors(), title = { Text("Mes exos") }) },
         floatingActionButton = {
-            if (program != null) {
+            if (program != null && com.spacelenin.flemmefit.ui.theme.LocalFitTheme.current) {
+                // Thème fit : pilule bombée de la couleur de la salle, comme les autres boutons.
+                PillButton(onClick = { adding = true }, modifier = Modifier.height(54.dp)) {
+                    Icon(Icons.Default.Add, null, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Ajouter un exo", fontWeight = FontWeight.Black)
+                }
+            } else if (program != null) {
                 val (fabBg, fabFg) = fabColors()
                 ExtendedFloatingActionButton(
                     containerColor = fabBg,
