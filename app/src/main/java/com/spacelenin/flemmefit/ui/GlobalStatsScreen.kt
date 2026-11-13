@@ -1,5 +1,7 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -78,7 +80,10 @@ fun GlobalStatsScreen(programs: List<StoredProgram>) {
 
 @Composable
 fun ProgressSummary(progress: Progress, schedule: ProgramSchedule, color: Color, modifier: Modifier = Modifier) {
-    Card(modifier.fillMaxWidth()) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = fitCardColor(MaterialTheme.colorScheme.surfaceContainerHigh)),
+        modifier = modifier.fillMaxWidth().fitBorder(color, shape = RoundedCornerShape(20.dp)),
+    ) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(

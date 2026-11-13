@@ -49,11 +49,11 @@ class ChallengesTest {
     }
 
     @Test
-    fun `30 minutes to accept, an hour to do it, points only when won`() {
+    fun `2 hours to accept, an hour to do it, points only when won`() {
         val c = Challenge("s", "2026-10-27", "Pompes", 39, false, offeredAt = 0)
-        assertEquals(Challenge.Status.OFFERED, c.status(29 * min))
-        assertEquals(Challenge.Status.EXPIRED, c.status(31 * min))
-        assertEquals(c, c.accept(31 * min))
+        assertEquals(Challenge.Status.OFFERED, c.status(119 * min))
+        assertEquals(Challenge.Status.EXPIRED, c.status(121 * min))
+        assertEquals(c, c.accept(121 * min))
         assertEquals(c, c.finish(true, 10 * min)) // pas accepté : rien à gagner
 
         val accepted = c.accept(10 * min)

@@ -29,13 +29,31 @@ data class Exploit(val name: String, val value: Int, val planned: Int, val isSec
     }
 
     companion object {
-        const val FACTOR = 2
+        /** Multiplicateur au début (petites séries) et au plus haut (grosses séries). */
+        const val FACTOR = 2.0
+        const val FACTOR_MIN = 1.5
+        /** ×2 jusqu'à 5 reps (30 s) prévues, puis ça descend en ligne droite jusqu'à ×1,5 à 25 reps (2 min). */
+        private const val REPS_FROM = 5
+        private const val REPS_TO = 25
+        private const val SECONDS_FROM = 30
+        private const val SECONDS_TO = 120
         /** Écart minimal en plus du facteur, pour que 4 reps au lieu de 2 ne compte pas. */
         const val MIN_GAIN_REPS = 5
         const val MIN_GAIN_SECONDS = 15
 
-        fun isExploit(max: Int, planned: Int, isSeconds: Boolean) =
-            planned > 0 && max >= FACTOR * planned && max - planned >= if (isSeconds) MIN_GAIN_SECONDS else MIN_GAIN_REPS
+        /** Le multiplicateur pour une série prévue de [planned] : de ×2 à ×1,5, l'écart se creuse moins vite. */
+        fun factorFor(planned: Int, isSeconds: Boolean): Double {
+            val from = if (isSeconds) SECONDS_FROM else REPS_FROM
+            val to = if (isSeconds) SECONDS_TO else REPS_TO
+            val t = ((planned - from).toDouble() / (to - from)).coerceIn(0.0, 1.0)
+            return FACTOR - (FACTOR - FACTOR_MIN) * t
+        }
+
+        /** Ce qu'il faut atteindre pour un exploit sur une série prévue de [planned]. */
+        fun needed(planned: Int, isSeconds: Boolean): Int =
+            maxOf(kotlin.math.ceil(factorFor(planned, isSeconds) * planned - 1e-9).toInt(), planned + if (isSeconds) MIN_GAIN_SECONDS else MIN_GAIN_REPS)
+
+        fun isExploit(max: Int, planned: Int, isSeconds: Boolean) = planned > 0 && max >= needed(planned, isSeconds)
     }
 }
 

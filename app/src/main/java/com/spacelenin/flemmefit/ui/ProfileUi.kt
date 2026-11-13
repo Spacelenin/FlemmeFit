@@ -1,5 +1,6 @@
 package com.spacelenin.flemmefit.ui
 
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import androidx.compose.foundation.clickable
@@ -93,7 +94,10 @@ fun ProfileSuggestionCard(
     onLater: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.14f)), modifier = modifier.fillMaxWidth()) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = fitCardColor(color.copy(alpha = 0.14f))),
+        modifier = modifier.fillMaxWidth().fitBorder(color, shape = RoundedCornerShape(20.dp)),
+    ) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             ProfileSuggestionContent(current, suggestion, onAccept, onLater)
         }

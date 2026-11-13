@@ -119,7 +119,7 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth().clickable { settings.setFitTheme(!fitTheme) }.padding(horizontal = 20.dp, vertical = 8.dp),
                 ) {
                     Column(Modifier.weight(1f)) {
-                        Text("Thème Wii Fit (bêta)", style = MaterialTheme.typography.bodyLarge)
+                        Text("Thème Wii Fit", style = MaterialTheme.typography.bodyLarge)
                         Text(
                             "Salle claire, calendrier à tampons, police toute ronde. Remplace les couleurs ci-dessus tant qu'il est actif ; " +
                                 "le désactiver remet tout comme avant.",

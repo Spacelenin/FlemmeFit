@@ -280,7 +280,8 @@ class AppUpdater(private val context: Context) {
 
     companion object {
         private const val TAG = "AppUpdater"
-        const val REPOSITORY = "Spacelenin/FlemmeFit"
+        /** Repo public qui ne contient que les APK et leurs notes : le code peut rester privé. */
+        const val REPOSITORY = "Spacelenin/FlemmeFit-releases"
         private const val LATEST_URL = "https://api.github.com/repos/$REPOSITORY/releases/latest"
         private const val APK_FILE = "update.apk"
         private const val KEY_LAST_CHECK = "lastCheck"

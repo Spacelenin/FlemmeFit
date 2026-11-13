@@ -18,7 +18,6 @@ import com.spacelenin.flemmefit.model.Challenge
 import com.spacelenin.flemmefit.model.ChallengeSlot
 import com.spacelenin.flemmefit.model.Challenges
 import com.spacelenin.flemmefit.model.ProgramSchedule
-import com.spacelenin.flemmefit.model.Stats
 import com.spacelenin.flemmefit.timer.AppVisibility
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -71,7 +70,21 @@ class ChallengeManager(private val context: Context, private val repository: Pro
         val programs = repository.state.value.programs
         // Un calcul par programme pour toute la semaine (avant : un par jour et par programme).
         val schedules = programs.map { ProgramSchedule(it, monday.plusDays(6)) }
-        return (0L..6L).map(monday::plusDays).filter { d -> schedules.any { it.sessionOn(d) != null } }
+        // Depuis [Challenges.ANY_DAY_FROM] : tous les jours du programme, repos compris (un défi n'est pas une séance).
+        val anyDay = !monday.isBefore(Challenges.ANY_DAY_FROM)
+        return (0L..6L).map(monday::plusDays).filter { d ->
+            schedules.any { if (anyDay) it.isInProgram(d) else it.sessionOn(d) != null }
+        }
+    }
+
+    /** Les défis ont-ils commencé (2e semaine, et une séance validée) ? */
+    private fun started(today: LocalDate): Boolean {
+        val programs = repository.state.value.programs.map { p ->
+            val s = ProgramSchedule(p, today)
+            val validated = (0..s.lastIndexOnOrBefore(today)).any { i -> s.sessionAt(i)?.let(s::isComplete) == true }
+            s.startDate to validated
+        }
+        return Challenges.started(today, programs)
     }
 
     private fun nextSlot(now: LocalDateTime): Pair<ChallengeSlot, LocalDateTime>? {
@@ -88,10 +101,7 @@ class ChallengeManager(private val context: Context, private val repository: Pro
 
     /** Date et heure du prochain défi prévu, null s'il n'y en a pas (ou pas encore assez de séances faites). */
     fun nextPlanned(): LocalDateTime? = runCatching {
-        val today = LocalDate.now()
-        val programs = repository.state.value.programs
-        val done = Stats.merge(programs.map { Stats.of(ProgramSchedule(it, today)) }, today).sessionsDone
-        if (done < Challenges.SESSIONS_BEFORE) null else nextSlot(LocalDateTime.now())?.second
+        if (!started(LocalDate.now())) null else nextSlot(LocalDateTime.now())?.second
     }.getOrNull()
 
     /** Programme l'alarme du prochain créneau (au lancement, au redémarrage, après chaque défi). */
@@ -130,9 +140,8 @@ class ChallengeManager(private val context: Context, private val repository: Pro
         if (_all.value.any { it.id == slotId } || current(now) != null) return
         val today = LocalDate.now()
         val programs = repository.state.value.programs
-        // Les défis commencent au 7e jour d'entraînement.
-        val done = Stats.merge(programs.map { Stats.of(ProgramSchedule(it, today)) }, today).sessionsDone
-        if (done < Challenges.SESSIONS_BEFORE) return
+        // Les défis commencent en 2e semaine, dès qu'une séance a été validée.
+        if (!started(today)) return
         // Séance en cours : on repasse un peu plus tard (pas après 21 h 30).
         if (AppVisibility.sessionRunning) {
             val later = LocalDateTime.now().plusMinutes(POSTPONE_MS / 60_000)
@@ -141,15 +150,28 @@ class ChallengeManager(private val context: Context, private val repository: Pro
             }
             return
         }
-        val session = programs.firstNotNullOfOrNull { ProgramSchedule(it, today).sessionOn(today) } ?: return
+        // Jour de séance : ses exos ; jour de repos : ceux de la dernière séance (sinon de la prochaine).
+        val session = programs.firstNotNullOfOrNull { p ->
+            val s = ProgramSchedule(p, today)
+            s.sessionOn(today) ?: (1L..7L).firstNotNullOfOrNull { s.sessionOn(today.minusDays(it)) }
+                ?: (1L..7L).firstNotNullOfOrNull { s.sessionOn(today.plusDays(it)) }
+        } ?: return
         val dose = Challenges.pick(session.prescriptions, seed * 13 + slotId.hashCode()) ?: return
         val challenge = Challenge(slotId, today.toString(), dose.exercise, dose.amount, dose.seconds, offeredAt = now, perSide = dose.perSide)
         save(_all.value + challenge)
         notifyOffer(challenge)
+        setExact(now + Challenges.REMIND_MS, actionIntent(ACTION_REMIND))
+    }
+
+    /** Relance au bout d'1 h, si le défi attend toujours une réponse. */
+    internal fun remind() {
+        val c = current() ?: return
+        if (c.status(System.currentTimeMillis()) == Challenge.Status.OFFERED) notifyOffer(c, reminder = true)
     }
 
     fun accept() {
         val c = update { it.accept(System.currentTimeMillis()) } ?: return
+        alarms.cancel(actionIntent(ACTION_REMIND))
         cancelNotification()
         notifyRunning(c)
         setExact(c.acceptedAt!! + Challenges.DURATION_MS, actionIntent(ACTION_TIME_UP))
@@ -157,6 +179,7 @@ class ChallengeManager(private val context: Context, private val repository: Pro
 
     fun refuse() {
         update { it.refuse(System.currentTimeMillis()) } ?: return
+        alarms.cancel(actionIntent(ACTION_REMIND))
         cancelNotification()
     }
 
@@ -184,9 +207,13 @@ class ChallengeManager(private val context: Context, private val repository: Pro
 
     // --- Notifications ---
 
-    private fun notifyOffer(c: Challenge) {
-        val builder = base("🎯 Défi surprise !", "${c.label} en 1 h, en autant de fois que tu veux. Tu as 30 min pour accepter.")
-            .setTimeoutAfter(Challenges.ANSWER_MS)
+    private fun notifyOffer(c: Challenge, reminder: Boolean = false) {
+        val left = (c.offeredAt + Challenges.ANSWER_MS - System.currentTimeMillis()).coerceAtLeast(60_000)
+        val builder = (
+            if (reminder) base("🎯 Défi toujours en attente", "${c.label} en 1 h, en autant de fois que tu veux. Plus qu'1 h pour accepter.")
+            else base("🎯 Défi surprise !", "${c.label} en 1 h, en autant de fois que tu veux. Tu as 2 h pour accepter.")
+            )
+            .setTimeoutAfter(left)
             .addAction(0, "Accepter", actionIntent(ACTION_ACCEPT))
             .addAction(0, "Refuser", actionIntent(ACTION_REFUSE))
         notify(builder)
@@ -297,6 +324,7 @@ class ChallengeManager(private val context: Context, private val repository: Pro
         internal const val ACTION_WON = "com.spacelenin.flemmefit.CHALLENGE_WON"
         internal const val ACTION_LOST = "com.spacelenin.flemmefit.CHALLENGE_LOST"
         internal const val ACTION_TIME_UP = "com.spacelenin.flemmefit.CHALLENGE_TIME_UP"
+        internal const val ACTION_REMIND = "com.spacelenin.flemmefit.CHALLENGE_REMIND"
     }
 }
 
@@ -316,6 +344,7 @@ class ChallengeReceiver : BroadcastReceiver() {
                     }
                 }.start()
             }
+            ChallengeManager.ACTION_REMIND -> manager.remind()
             ChallengeManager.ACTION_ACCEPT -> manager.accept()
             ChallengeManager.ACTION_REFUSE -> manager.refuse()
             ChallengeManager.ACTION_WON -> manager.finish(won = true)

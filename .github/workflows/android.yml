@@ -48,3 +48,18 @@ jobs:
           body: ${{ github.event.head_commit.message }}
           files: FlemmeFit-${{ github.run_number }}.apk
           make_latest: true
+
+      # Repo public des APK : l'appli y cherche ses mises à jour, le code peut rester privé.
+      # Jeton à part (RELEASES_TOKEN, droits limités à ce repo), jamais dans l'appli.
+      - name: Release publique
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: Spacelenin/FlemmeFit-releases
+          token: ${{ secrets.RELEASES_TOKEN }}
+          target_commitish: main
+          tag_name: build-${{ github.run_number }}
+          name: FlemmeFit build ${{ github.run_number }}
+          body: ${{ github.event.head_commit.message }}
+          files: FlemmeFit-${{ github.run_number }}.apk
+          make_latest: true

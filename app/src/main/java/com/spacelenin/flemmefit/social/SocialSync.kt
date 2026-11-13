@@ -181,6 +181,13 @@ class SocialSync(context: Context, private val repository: ProgramRepository) {
     /** Vérification de fond (alarme toutes les 3 h) : lit le canal pour annoncer les Boss battus. */
     fun checkInBackground() {
         if (_pseudo.value == null) return
+        // Ma carte aussi : republiée au moins toutes les 6 h, pour rester visible même sans ouvrir l'appli
+        // (le relais ne garde un message que 12 h).
+        try {
+            kotlinx.coroutines.runBlocking { publish(force = false) }
+        } catch (e: Exception) {
+            Log.w(TAG, "Carte non republiée", e)
+        }
         try {
             pull(BACKGROUND_TIMEOUT_MS)
         } catch (e: Exception) {

@@ -325,9 +325,9 @@ private fun CustomCard(
     onDelete: () -> Unit,
 ) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+        colors = CardDefaults.cardColors(containerColor = fitCardColor(MaterialTheme.colorScheme.surfaceContainerHigh)),
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp).fitBorder(LocalFitRoom.current, shape = RoundedCornerShape(16.dp)),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(c.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
