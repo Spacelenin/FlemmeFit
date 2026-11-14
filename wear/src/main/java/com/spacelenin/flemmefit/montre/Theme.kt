@@ -70,6 +70,7 @@ val Red = Ctx(Color(0xFFD93A3A), Color(0xFFF08A8A), Color(0xFFA82424))
 val Sky = Ctx(Color(0xFF2B9FD6), Color(0xFF7FD0F2), Color(0xFF1C74A0))
 val Orange = Ctx(Color(0xFFE07A12), Color(0xFFF7B766), Color(0xFFAD5C08))
 val Teal = Ctx(Color(0xFF2F9D8A), Color(0xFF7FD3C2), Color(0xFF1F7466))
+val Grey = Ctx(Color(0xFF6E7C86), Color(0xFFA9B6BF), Color(0xFF4B565E))
 val Purple = Ctx(Color(0xFF8A5CC7), Color(0xFFC0A2EA), Color(0xFF5E3A93))
 
 fun ctxFor(mode: String): Ctx = when (mode) {

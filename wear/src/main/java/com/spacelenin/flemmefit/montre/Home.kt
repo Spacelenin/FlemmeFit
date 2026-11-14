@@ -34,20 +34,22 @@ import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.Text
 
 /*
- * Accueil au centre, en boucle : … Stats ⇄ Semaine ⇄ ACCUEIL ⇄ Potes ⇄ Stats …
- * Une page de chaque côté, la quatrième en face : deux balayages au plus pour revenir à l'accueil.
+ * Accueil au centre, en boucle : … Réglages ⇄ Semaine ⇄ ACCUEIL ⇄ Potes ⇄ Stats ⇄ Réglages …
+ * Deux balayages au plus pour revenir à l'accueil, dans un sens ou dans l'autre.
  */
-private const val PAGES = 4
+private const val PAGES = 5
 private const val HOME = 0
 private const val FRIENDS = 1
 private const val STATS = 2
-private const val WEEK = 3
+private const val SETTINGS = 3
+private const val WEEK = 4
 private const val LAPS = 2000
 
 private fun pageName(page: Int) = when (page) {
     HOME -> "Accueil"
     FRIENDS -> "Potes"
     STATS -> "Stats"
+    SETTINGS -> "Réglages"
     else -> "Semaine"
 }
 
@@ -69,7 +71,8 @@ fun HomePager(
             when (page) {
                 HOME -> HomePage(today, update, updating, onStart, onDemo, onUpdate)
                 FRIENDS -> FriendsPage(today)
-                STATS -> StatsPage(today, update, updating, onUpdate, onCheck)
+                STATS -> StatsPage(today)
+                SETTINGS -> SettingsPage(update, updating, onUpdate, onCheck)
                 else -> WeekPage(today)
             }
             // Où mène chaque balayage : la page de gauche et celle de droite.
@@ -257,11 +260,8 @@ private fun FriendsPage(today: WatchToday?) {
 }
 
 @Composable
-private fun StatsPage(today: WatchToday?, update: Updater.Found?, updating: Updater.State, onUpdate: () -> Unit, onCheck: () -> Unit) {
+private fun StatsPage(today: WatchToday?) {
     val pal = LocalPalette.current
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val version = remember { context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode }
-    val manual by Updater.manual.collectAsState()
     Dial(1f, Sky) {
         Band("Mes stats", ctx = Sky)
         Centered(top = 44.dp) {
@@ -269,7 +269,7 @@ private fun StatsPage(today: WatchToday?, update: Updater.Found?, updating: Upda
             if (stats.isEmpty()) {
                 Meta("Tes stats arrivent avec le téléphone.")
             } else {
-                stats.take(4).chunked(2).forEach { pair ->
+                stats.take(6).chunked(2).forEach { pair ->
                     Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                         pair.forEach { s ->
                             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(70.dp)) {
@@ -280,6 +280,23 @@ private fun StatsPage(today: WatchToday?, update: Updater.Found?, updating: Upda
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun Gap(h: Int) = Spacer(Modifier.height(h.dp))
+
+/** Réglages : la version de l'app, ses mises à jour, et la démo. */
+@Composable
+private fun SettingsPage(update: Updater.Found?, updating: Updater.State, onUpdate: () -> Unit, onCheck: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val version = remember { context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode }
+    val manual by Updater.manual.collectAsState()
+    val demo by Store.demo.collectAsState()
+    Dial(0f, Grey) {
+        Band("Réglages", ctx = Grey)
+        Centered(top = 44.dp) {
             // Version de l'app et mises à jour : chaque état est écrit en clair.
             Meta("Version $version")
             when {
@@ -292,9 +309,7 @@ private fun StatsPage(today: WatchToday?, update: Updater.Found?, updating: Upda
                 }
                 else -> FitButton("Chercher une maj", onCheck, plain = true)
             }
+            if (demo) FitButton("Quitter la démo", { Store.setDemo(false) }, plain = true)
         }
     }
 }
-
-@Composable
-fun Gap(h: Int) = Spacer(Modifier.height(h.dp))
