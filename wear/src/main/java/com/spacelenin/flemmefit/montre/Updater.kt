@@ -220,6 +220,16 @@ object Updater {
         }
     }
 
+    /** Une mise à jour arrive du téléphone (Bluetooth). */
+    fun received() {
+        _state.value = State.Installing(0)
+    }
+
+    internal fun installReceived(context: Context, file: File) {
+        note("Reçue du téléphone : ${file.length() / 1024} Ko")
+        installFile(context, file)
+    }
+
     private fun installFile(context: Context, file: File) {
         val installer = context.packageManager.packageInstaller
         val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL).apply {

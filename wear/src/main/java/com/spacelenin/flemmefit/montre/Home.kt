@@ -128,6 +128,20 @@ private fun HomePage(today: WatchToday?, update: Updater.Found?, updating: Updat
         }
         return
     }
+    // Montre trop ancienne pour ce téléphone : rien ne se lance avant la mise à jour.
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val version = remember { context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode }
+    if (version < today.minWatch) {
+        Dial(0f, Red) {
+            Band("Mise à jour requise", ctx = Red)
+            Centered(top = 44.dp) {
+                Meta("Ton téléphone a besoin de la version ${today.minWatch} de l'app montre (tu as la $version).")
+                Meta("Téléphone : Réglages › Montre › Mettre à jour la montre.")
+                UpdateLine(update, updating, onUpdate)
+            }
+        }
+        return
+    }
     val done = today.exercises.count { it.done }
     val total = today.exercises.size
     val progress = if (total == 0) 0f else done.toFloat() / total
@@ -170,7 +184,7 @@ private fun UpdateLine(update: Updater.Found?, updating: Updater.State, onUpdate
             "Maj ${updating.version} : " + (updating.percent?.let { "$it %" } ?: "connexion…") +
                 (updating.kbPerSecond?.let { " · ${if (it >= 1024) "%.1f Mo/s".format(it / 1024f) else "$it Ko/s"}" } ?: ""),
         )
-        is Updater.State.Installing -> Kicker("Installation de la maj ${updating.version}…")
+        is Updater.State.Installing -> Kicker(if (updating.version == 0) "Installation de la maj envoyée par le téléphone…" else "Installation de la maj ${updating.version}…")
         is Updater.State.Failed -> {
             Kicker("❌ ${updating.message}", Red.c)
             if (update != null) FitButton("Réessayer", onUpdate, plain = true)

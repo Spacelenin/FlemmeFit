@@ -44,6 +44,7 @@ object Phase {
 data class Run(
     val date: String,
     val session: Int,
+    val programId: String = "",
     val demo: Boolean = false,
     val startedAt: Long,
     val startBattery: Int? = null,
@@ -117,8 +118,13 @@ object Store {
         _demo.value = prefs.getBoolean(KEY_DEMO, false)
         // Batterie relue chaque minute : fond nuit sous 15 %, récap de fin de séance.
         scope.launch {
+            var published = -100
             while (true) {
                 _battery.value = readBattery()
+                if (kotlin.math.abs(_battery.value - published) >= 5) {
+                    published = _battery.value
+                    PhoneLink.publishStatus(app)
+                }
                 delay(60_000)
             }
         }
@@ -179,4 +185,16 @@ object Store {
         _pending.value = list
         prefs.edit().putString(KEY_PENDING, WatchJson.encodeToString(ListSerializer(WatchLog.serializer()), list)).apply()
     }
+
+    fun version(): Int = app.packageManager.getPackageInfo(app.packageName, 0).longVersionCode.toInt()
+
+    /** L'état de la montre, pour l'encart du téléphone. */
+    fun status() = WatchStatus(
+        version = version(),
+        battery = _battery.value,
+        pending = _pending.value.size,
+        inSession = _run.value?.let { it.phase != Phase.RECAP } == true,
+        todayDate = _today.value?.date,
+        at = System.currentTimeMillis(),
+    )
 }

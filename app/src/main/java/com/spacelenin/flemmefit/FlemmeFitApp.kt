@@ -9,6 +9,10 @@ import com.spacelenin.flemmefit.reminders.ReminderScheduler
 import com.spacelenin.flemmefit.social.SocialSync
 import com.spacelenin.flemmefit.update.AppUpdater
 import com.spacelenin.flemmefit.widget.TodayWidget
+import com.spacelenin.flemmefit.watch.WatchLink
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import android.util.Log
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -31,6 +35,8 @@ class FlemmeFitApp : Application() {
     lateinit var backup: BackupManager
         private set
     lateinit var challenges: ChallengeManager
+        private set
+    lateinit var watch: WatchLink
         private set
 
     override fun onCreate() {
@@ -61,6 +67,15 @@ class FlemmeFitApp : Application() {
         backgroundScope.launch {
             runCatching { reminders.reschedule() }.onFailure { Log.e("FlemmeFit", "Rappels", it) }
             runCatching { challenges.reschedule() }.onFailure { Log.e("FlemmeFit", "Défis", it) }
+        }
+        // App montre : la séance du jour la suit (programme, potes), en Bluetooth seulement, si une montre est là.
+        watch = WatchLink(this)
+        watch.refresh()
+        backgroundScope.launch {
+            combine(repository.state, social.friends) { a, b -> a to b }.collectLatest {
+                delay(1500)
+                watch.publish()
+            }
         }
         // Le widget suit le suivi : chaque exercice coché le met à jour.
         backgroundScope.launch {

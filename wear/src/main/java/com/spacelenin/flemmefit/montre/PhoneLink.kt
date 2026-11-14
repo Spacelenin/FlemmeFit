@@ -22,6 +22,8 @@ object PhoneLink {
     const val PATH_TODAY = "/flemmefit/today"
     const val PATH_LOG = "/flemmefit/log/"
     const val PATH_SYNC = "/flemmefit/sync"
+    const val PATH_STATUS = "/flemmefit/watch"
+    const val PATH_APK = "/flemmefit/apk"
     const val KEY_JSON = "json"
 
     private val lock = Mutex()
@@ -46,9 +48,26 @@ object PhoneLink {
                         client.putDataItem(request).await()
                         Store.setPending(Store.pending.value.filterNot { it.id == log.id })
                     }
+                    publishStatus(app)
                 } catch (e: Exception) {
                     Log.w(TAG, "Envoi au téléphone impossible", e)
                 }
+            }
+        }
+    }
+
+    /** Publie l'état de la montre (version, batterie, envois en attente) pour l'encart du téléphone. */
+    fun publishStatus(context: Context) {
+        val app = context.applicationContext
+        Store.scope.launch {
+            try {
+                if (nearbyPhone(app) == null) return@launch
+                val request = PutDataMapRequest.create(PATH_STATUS).apply {
+                    dataMap.putString(KEY_JSON, WatchJson.encodeToString(WatchStatus.serializer(), Store.status()))
+                }.asPutDataRequest().setUrgent()
+                Wearable.getDataClient(app).putDataItem(request).await()
+            } catch (e: Exception) {
+                Log.w(TAG, "État non publié", e)
             }
         }
     }
@@ -69,6 +88,7 @@ object PhoneLink {
                     items.release()
                 }
                 nearbyPhone(app)?.let { Wearable.getMessageClient(app).sendMessage(it, PATH_SYNC, ByteArray(0)).await() }
+                publishStatus(app)
             } catch (e: Exception) {
                 Log.w(TAG, "Téléphone injoignable", e)
             }
@@ -85,8 +105,30 @@ object PhoneLink {
     }
 }
 
-/** Reçoit la séance du jour même app fermée, et en profite pour renvoyer la file (le téléphone est là). */
+/**
+ * Reçoit la séance du jour même app fermée (et en profite pour renvoyer la file : le téléphone est là),
+ * et la mise à jour de l'app envoyée par le téléphone en Bluetooth.
+ */
 class PhoneListenerService : WearableListenerService() {
+    override fun onChannelOpened(channel: com.google.android.gms.wearable.ChannelClient.Channel) {
+        if (channel.path != PhoneLink.PATH_APK) return
+        Store.init(this)
+        val app = applicationContext
+        Store.scope.launch {
+            val client = Wearable.getChannelClient(app)
+            try {
+                Updater.received()
+                val file = java.io.File(app.cacheDir, "from-phone.apk")
+                client.getInputStream(channel).await().use { input -> file.outputStream().use { input.copyTo(it) } }
+                Updater.installReceived(app, file)
+            } catch (e: Exception) {
+                Updater.note("❌ Maj du téléphone : ${e.message ?: e.javaClass.simpleName}")
+            } finally {
+                runCatching { client.close(channel).await() }
+            }
+        }
+    }
+
     override fun onDataChanged(dataEvents: DataEventBuffer) {
         Store.init(this)
         PhoneLink.onData(dataEvents)

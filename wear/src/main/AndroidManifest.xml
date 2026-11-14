@@ -67,6 +67,14 @@
                     android:pathPrefix="/flemmefit"
                     android:scheme="wear" />
             </intent-filter>
+            <!-- Mise à jour envoyée par le téléphone. -->
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.CHANNEL_EVENT" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/flemmefit/apk"
+                    android:scheme="wear" />
+            </intent-filter>
         </service>
 
         <receiver

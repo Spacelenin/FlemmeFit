@@ -188,12 +188,14 @@ fun SessionScreen(run: Run, today: WatchToday, ambient: Boolean) {
             Dial(1f) {
                 Stack {
                     Kicker("Ressenti ?")
-                    val feelings = listOf("😴", "👌", "😰", "🥵")
+                    // Les ressentis du téléphone (Dur, OK, Facile), pour qu'ils comptent pareil des deux côtés.
+                    val feelings = today.feelings.ifEmpty { listOf("😮‍💨", "👌", "💪") }
+                    val perRow = if (feelings.size <= 3) feelings.size else 2
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        feelings.chunked(2).forEachIndexed { row, pair ->
+                        feelings.chunked(perRow).forEachIndexed { row, pair ->
                             Row2 {
                                 pair.forEachIndexed { col, emoji ->
-                                    FitButton(emoji, { SessionFlow.feeling(context, row * 2 + col) }, plain = true)
+                                    FitButton(emoji, { SessionFlow.feeling(context, row * perRow + col) }, plain = true)
                                 }
                             }
                         }
@@ -309,7 +311,7 @@ private fun SeriesScreen(run: Run, today: WatchToday, ex: WatchExercise, onHow: 
     ) {
         Stack {
             Header(run, ex, onHow)
-            Row2 {
+            if (!ex.plain) Row2 {
                 FitRound("−") { value = (value - 1).coerceAtLeast(0) }
                 Text(
                     "$value", style = text(46.sp, FontWeight.Black),

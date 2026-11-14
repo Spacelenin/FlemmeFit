@@ -35,11 +35,12 @@ object SessionFlow {
         val now = System.currentTimeMillis()
         Store.setRun(
             Run(
-                date = today.date, session = today.session, demo = demo, startedAt = now,
+                date = today.date, session = today.session, programId = today.programId, demo = demo, startedAt = now,
                 startBattery = Store.readBattery(), queue = queue, phaseStartedAt = now,
             ),
         )
         SessionService.start(context)
+        PhoneLink.publishStatus(context)
     }
 
     /** « Série faite » : la valeur prévue, ou la saisie si c'est la série à fond. */
@@ -80,7 +81,7 @@ object SessionFlow {
         if (!run.demo) {
             Store.send(
                 WatchLog(
-                    id = Store.newId(), date = run.date, session = run.session, exercise = ex.i,
+                    id = Store.newId(), date = run.date, session = run.session, programId = run.programId, exercise = ex.i,
                     values = if (skipped) emptyList() else run.values, seconds = ex.timed, skipped = skipped,
                     at = System.currentTimeMillis(),
                 ),
@@ -121,7 +122,7 @@ object SessionFlow {
         if (!run.demo) {
             Store.send(
                 WatchLog(
-                    id = Store.newId(), date = run.date, session = run.session, feeling = value,
+                    id = Store.newId(), date = run.date, session = run.session, programId = run.programId, feeling = value,
                     minutes = ended.minutes, battery = ended.batteryUsed, at = end,
                 ),
             )
@@ -134,5 +135,6 @@ object SessionFlow {
     fun close(context: Context) {
         Store.setRun(null)
         SessionService.stop(context)
+        PhoneLink.publishStatus(context)
     }
 }

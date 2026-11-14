@@ -4,3 +4,10 @@
     *** Companion;
     kotlinx.serialization.KSerializer serializer(...);
 }
+
+# Échanges avec l'app montre (JSON).
+-keep,includedescriptorclasses class com.spacelenin.flemmefit.watch.**$$serializer { *; }
+-keepclassmembers class com.spacelenin.flemmefit.watch.** {
+    *** Companion;
+    kotlinx.serialization.KSerializer serializer(...);
+}

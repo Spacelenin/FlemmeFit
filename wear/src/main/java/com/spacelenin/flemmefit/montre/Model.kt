@@ -20,6 +20,8 @@ data class WatchToday(
     /** Jour concerné, « 2026-11-14 ». */
     val date: String,
     val program: String = "",
+    /** Programme concerné, renvoyé dans les [WatchLog]. */
+    val programId: String = "",
     /** normal, boss, burst, deload, chill, form, rest (repos), none (pas de programme en cours). */
     val mode: String = MODE_NORMAL,
     /** Titre de la séance (« Pompes et Beat Saber »), null un jour de repos. */
@@ -39,6 +41,10 @@ data class WatchToday(
     val friends: List<WatchFriend> = emptyList(),
     val friendNews: String? = null,
     val stats: List<WatchStat> = emptyList(),
+    /** Les ressentis du téléphone, dans l'ordre de leurs indices. */
+    val feelings: List<String> = emptyList(),
+    /** Version montre minimale pour suivre ce téléphone : en dessous, mise à jour requise. */
+    val minWatch: Int = 0,
     /** Heure d'envoi par le téléphone (ms). */
     val sentAt: Long = 0,
 ) {
@@ -85,6 +91,8 @@ data class WatchExercise(
     val done: Boolean = false,
 ) {
     val timed get() = seconds != null && reps == null
+    /** Rien de chiffré : un simple « Série faite ». */
+    val plain get() = reps == null && seconds == null
     /** La valeur prévue d'une série. */
     val planned get() = reps ?: seconds ?: 0
 }
@@ -120,6 +128,7 @@ data class WatchLog(
     val id: String,
     val date: String,
     val session: Int,
+    val programId: String = "",
     /** Exercice fini (indice [WatchExercise.i]), ou null pour la fin de séance. */
     val exercise: Int? = null,
     /** Valeur de chaque série, dans l'ordre (reps ou secondes). */
@@ -132,6 +141,17 @@ data class WatchLog(
     val minutes: Int? = null,
     /** Batterie consommée pendant la séance, en points de %. */
     val battery: Int? = null,
+    val at: Long,
+)
+
+/** État de la montre, publié pour l'encart « Montre » des réglages du téléphone. */
+@Serializable
+data class WatchStatus(
+    val version: Int,
+    val battery: Int? = null,
+    val pending: Int = 0,
+    val inSession: Boolean = false,
+    val todayDate: String? = null,
     val at: Long,
 )
 
