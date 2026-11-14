@@ -111,7 +111,7 @@ fun SessionScreen(run: Run, today: WatchToday, ambient: Boolean) {
                     Meta("Ce qui est fait reste fait.")
                     Row2 {
                         FitButton("Non", { askStop = false }, plain = true)
-                        FitButton("Oui", { askStop = false; SessionFlow.stopEarly() })
+                        FitButton("Oui", { askStop = false; SessionFlow.stopEarly(context) })
                     }
                 }
             }
@@ -151,10 +151,24 @@ fun SessionScreen(run: Run, today: WatchToday, ambient: Boolean) {
         run.phase == Phase.NEXT && ex != null -> Themed(LocalPalette.current.night, Sky) {
             Dial(progress) {
                 Stack {
-                    Kicker("Exo suivant · ${run.pos + 1}/${run.queue.size}")
-                    Title(ex.name)
-                    Big(if (ex.timed) formatSeconds(ex.planned) else "${ex.sets} × ${ex.planned}", size = 40)
-                    Meta(listOfNotNull(ex.restSec.takeIf { it > 0 }?.let { "repos $it s" }, "dernière à fond".takeIf { ex.allOut }, ex.tag).joinToString(" · "))
+                    // Ressenti de l'exo qui vient de finir : facultatif, un appui.
+                    Kicker("Ressenti de l'exo ?")
+                    val feelings = today.feelings.ifEmpty { listOf("😮‍💨", "👌", "💪") }
+                    Row2 {
+                        feelings.forEachIndexed { i, emoji ->
+                            FitFeeling(emoji, selected = run.lastFeeling == i) { SessionFlow.exerciseFeeling(context, today, i) }
+                        }
+                    }
+                    Kicker("Ensuite · ${run.pos + 1}/${run.queue.size}")
+                    Title(ex.name, 16.sp)
+                    Meta(
+                        listOfNotNull(
+                            if (ex.timed) formatSeconds(ex.planned) else if (ex.plain) "${ex.sets} série(s)" else "${ex.sets} × ${ex.planned}",
+                            ex.restSec.takeIf { it > 0 }?.let { "repos $it s" },
+                            "dernière à fond".takeIf { ex.allOut },
+                            ex.tag,
+                        ).joinToString(" · "),
+                    )
                     FitButton("On y va", { SessionFlow.go() })
                 }
             }

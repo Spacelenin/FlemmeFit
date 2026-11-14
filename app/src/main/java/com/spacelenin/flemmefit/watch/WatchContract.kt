@@ -21,6 +21,8 @@ object WatchPaths {
     const val STATUS = "/flemmefit/watch"
     const val SYNC = "/flemmefit/sync"
     const val APK = "/flemmefit/apk"
+    /** Message envoyé juste avant l'APK : sa taille en octets, pour la progression côté montre. */
+    const val APK_SIZE = "/flemmefit/apk-size"
     const val KEY_JSON = "json"
 }
 
@@ -95,7 +97,17 @@ data class WatchWeek(
 data class WatchDay(val letter: String, val state: String)
 
 @Serializable
-data class WatchFriend(val name: String, val points: Int, val me: Boolean = false)
+data class WatchFriend(
+    val name: String,
+    val points: Int,
+    val me: Boolean = false,
+    /** Mini-fiche : le jour (« Séance faite », « 2/3 exos », « Repos »), la série, les Boss, les exploits. */
+    val today: String? = null,
+    val streak: Int = 0,
+    val boss: Int = 0,
+    val exploits: Int = 0,
+    val lastExploit: String? = null,
+)
 
 @Serializable
 data class WatchStat(val label: String, val value: String)
@@ -113,6 +125,10 @@ data class WatchLog(
     val feeling: Int? = null,
     val minutes: Int? = null,
     val battery: Int? = null,
+    /** Seulement le ressenti de l'exo [exercise] (choisi sur l'écran « Exo suivant »). */
+    val onlyFeeling: Boolean = false,
+    /** Case cochée (true) ou décochée (false) depuis la liste des exos de la montre. */
+    val check: Boolean? = null,
     val at: Long,
 )
 

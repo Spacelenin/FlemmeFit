@@ -13,6 +13,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -90,7 +92,7 @@ fun WatchSection(link: WatchLink) {
             if (s.inSession) Info("En ce moment", "séance en cours sur la montre")
 
             when (val p = push) {
-                is WatchLink.Push.Running -> Info("Mise à jour", "version ${p.version} : ${p.step}…")
+                is WatchLink.Push.Running -> Info("Mise à jour", pushLabel(p))
                 is WatchLink.Push.Done -> Info("Mise à jour", "version ${p.version} envoyée, la montre l'installe")
                 is WatchLink.Push.Failed -> Info("Mise à jour", "❌ ${p.message}")
                 WatchLink.Push.Idle -> Unit
@@ -111,4 +113,57 @@ private fun Info(label: String, value: String) {
         Text(label, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(value, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
     }
+}
+
+/** « version 29 : envoi à la montre · 45 % · 210 Ko/s ». */
+fun pushLabel(p: WatchLink.Push.Running): String =
+    "version ${p.version} : ${p.step}" +
+        (p.percent?.let { " · $it %" } ?: "…") +
+        (p.kbPerSecond?.let { " · ${if (it >= 1024) "%.1f Mo/s".format(it / 1024f) else "$it Ko/s"}" } ?: "")
+
+/**
+ * Montre connectée en retard d'une version : fenêtre bloquante le temps que le téléphone lui envoie la mise à jour.
+ * Elle se ferme quand la montre est à jour, ou avec « Plus tard » si l'envoi échoue (jamais coincé).
+ */
+@Composable
+fun WatchUpdateGate(link: WatchLink) {
+    val status by link.status.collectAsStateWithLifecycle()
+    val connected by link.connected.collectAsStateWithLifecycle()
+    val latest by link.latest.collectAsStateWithLifecycle()
+    val push by link.push.collectAsStateWithLifecycle()
+    var later by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf<Int?>(null) }
+    val version = status?.version ?: return
+    val target = latest ?: return
+    if (!connected || version >= target || later == target) return
+
+    LaunchedEffect(target) { if (link.push.value !is WatchLink.Push.Running) link.pushUpdate() }
+
+    val p = push
+    PanelDialog(
+        onDismissRequest = { if (p is WatchLink.Push.Failed) later = target },
+        properties = androidx.compose.ui.window.DialogProperties(dismissOnBackPress = p is WatchLink.Push.Failed, dismissOnClickOutside = false),
+        title = { Text("Mise à jour de ta montre") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Ta montre est en version $version, la $target est disponible. Le téléphone la lui envoie en Bluetooth : garde-la à côté.")
+                when (p) {
+                    is WatchLink.Push.Running -> {
+                        Text(pushLabel(p), fontWeight = FontWeight.Bold)
+                        FitProgress(progress = { (p.percent ?: 0) / 100f }, color = LocalFitRoom.current, modifier = Modifier.fillMaxWidth())
+                    }
+                    is WatchLink.Push.Done -> Text("Envoyée ✓ La montre l'installe, ça prend quelques secondes.", fontWeight = FontWeight.Bold)
+                    is WatchLink.Push.Failed -> Text("❌ ${p.message}", fontWeight = FontWeight.Bold)
+                    WatchLink.Push.Idle -> Text("Préparation…")
+                }
+            }
+        },
+        confirmButton = {
+            when (p) {
+                is WatchLink.Push.Failed -> TextButton(onClick = { link.pushUpdate() }) { Text("Réessayer") }
+                is WatchLink.Push.Done -> TextButton(onClick = { later = target }) { Text("OK") }
+                else -> Unit
+            }
+        },
+        dismissButton = if (p is WatchLink.Push.Failed) ({ TextButton(onClick = { later = target }) { Text("Plus tard") } }) else null,
+    )
 }

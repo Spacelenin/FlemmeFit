@@ -10,6 +10,7 @@ import com.spacelenin.flemmefit.model.Social
 import com.spacelenin.flemmefit.model.Stats
 import com.spacelenin.flemmefit.model.StoredProgram
 import com.spacelenin.flemmefit.ui.formatTotalSeconds
+import com.spacelenin.flemmefit.ui.levelStars
 import com.spacelenin.flemmefit.ui.position
 import com.spacelenin.flemmefit.ui.shortLabel
 import com.spacelenin.flemmefit.ui.title
@@ -98,8 +99,9 @@ object WatchBuilder {
             restSec = g.restSeconds ?: 0,
             allOut = pr.allOut,
             target = pr.target,
-            level = pr.palier?.plus(1)?.takeIf { pr.levelCount > 0 },
-            levelCount = pr.levelCount.takeIf { it > 0 },
+            // Même échelle que le téléphone : les paliers ramenés sur 4 étoiles.
+            level = levelStars(pr.palier, pr.levelCount),
+            levelCount = levelStars(pr.palier, pr.levelCount)?.let { 4 },
             optional = pr.exercise.optional,
             sided = g.sided != null,
             tag = when {
@@ -145,7 +147,23 @@ object WatchBuilder {
     private fun friendsOf(friends: List<FriendCard>, me: FriendCard?, myId: String, today: LocalDate): List<WatchFriend> =
         Social.ranking(friends.filter { it.id != myId } + listOfNotNull(me), today)
             .take(10)
-            .map { WatchFriend(if (it.id == myId) "Toi" else it.pseudo, it.score, me = it.id == myId) }
+            .map {
+                WatchFriend(
+                    name = if (it.id == myId) "Toi" else it.pseudo,
+                    points = it.score,
+                    me = it.id == myId,
+                    today = when {
+                        !it.isToday(today) -> "Pas de nouvelles aujourd'hui"
+                        it.todayTotal == 0 -> "Repos aujourd'hui"
+                        it.todayDone >= it.todayTotal -> "Séance faite ✅"
+                        else -> "Aujourd'hui : ${it.todayDone}/${it.todayTotal} exos"
+                    },
+                    streak = it.streak,
+                    boss = it.bossDefeated,
+                    exploits = it.exploits,
+                    lastExploit = it.lastExploit,
+                )
+            }
 
     private fun newsOf(friends: List<FriendCard>, myId: String, today: LocalDate): String? =
         friends.filter { it.id != myId && it.isToday(today) && it.todayTotal > 0 && it.todayDone >= it.todayTotal }
@@ -171,6 +189,9 @@ object WatchBuilder {
     sealed interface Applied {
         data class Exercise(val programId: String, val dayIndex: Int, val exerciseIndex: Int, val log: ExerciseLog, val complete: Boolean) : Applied
         data class Feeling(val programId: String, val dayIndex: Int, val feeling: Int) : Applied
+        data class ExerciseFeeling(val programId: String, val dayIndex: Int, val exerciseIndex: Int, val feeling: Int) : Applied
+        /** Case de la liste des exos : l'exo doit être fait ([done]) ou non. */
+        data class Check(val programId: String, val dayIndex: Int, val exerciseIndex: Int, val done: Boolean) : Applied
     }
 
     /** La saisie à enregistrer pour [log], ou null si elle ne correspond plus à rien (programme supprimé, exo passé). */
@@ -180,6 +201,11 @@ object WatchBuilder {
         if (log.exercise == null) {
             return log.feeling?.takeIf { it in StoredProgram.FEELINGS.indices }?.let { Applied.Feeling(program.id, log.session, it) }
         }
+        if (log.onlyFeeling) {
+            return log.feeling?.takeIf { it in StoredProgram.FEELINGS.indices }
+                ?.let { Applied.ExerciseFeeling(program.id, log.session, log.exercise, it) }
+        }
+        log.check?.let { return Applied.Check(program.id, log.session, log.exercise, it) }
         if (log.skipped) return null
         val session = ProgramSchedule(program, date).sessionAt(log.session) ?: return null
         val pr = session.prescriptions.getOrNull(log.exercise) ?: return null

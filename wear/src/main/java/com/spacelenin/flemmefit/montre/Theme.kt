@@ -307,3 +307,18 @@ fun Modifier.vertical(clockwise: Boolean): Modifier = this
         layout(p.height, p.width) { p.place((p.height - p.width) / 2, (p.width - p.height) / 2) }
     }
     .rotate(if (clockwise) 90f else -90f)
+
+/** Pastille de ressenti (plus petite qu'un bouton), entourée de la couleur du contexte une fois choisie. */
+@Composable
+fun FitFeeling(emoji: String, selected: Boolean, onClick: () -> Unit) {
+    val pal = LocalPalette.current
+    val ctx = LocalCtx.current
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(42.dp)
+            .then(if (selected) Modifier.border(3.dp, ctx.c, CircleShape) else Modifier)
+            .glossy(pal.plain, pal.plainRing, pal.plainStep, CircleShape, edge = if (pal.night) Color(0xFF1C1C1C) else Color.White)
+            .clickable(role = Role.Button, onClickLabel = emoji, onClick = onClick),
+    ) { Text(emoji, style = text(18.sp, FontWeight.Black)) }
+}

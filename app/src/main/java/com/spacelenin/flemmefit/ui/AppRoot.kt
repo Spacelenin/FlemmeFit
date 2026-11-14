@@ -398,6 +398,8 @@ fun AppRoot(
     // En dernier : passe par-dessus tout le reste.
     // Pas en pleine séance : la mise à jour s'affiche dès que le mode séance est fermé et le minuteur arrêté.
     if (!guard.active) UpdateGate(updater)
+    // Montre en retard d'une version : le téléphone lui envoie la mise à jour (fenêtre bloquante).
+    if (!guard.active) WatchUpdateGate((androidx.compose.ui.platform.LocalContext.current.applicationContext as com.spacelenin.flemmefit.FlemmeFitApp).watch)
 }
 
 private suspend fun readSource(context: Context, source: ImportSource): String = when (source) {

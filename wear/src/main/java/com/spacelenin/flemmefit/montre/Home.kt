@@ -18,6 +18,27 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import kotlinx.coroutines.launch
+import androidx.compose.ui.input.rotary.onRotaryScrollEvent
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
@@ -69,7 +90,7 @@ fun HomePager(
         val page = Math.floorMod(index, PAGES)
         Box(Modifier.fillMaxSize()) {
             when (page) {
-                HOME -> HomePage(today, update, updating, onStart, onDemo, onUpdate)
+                HOME -> HomeWithList(today, update, updating, onStart, onDemo, onUpdate)
                 FRIENDS -> FriendsPage(today)
                 STATS -> StatsPage(today)
                 SETTINGS -> SettingsPage(update, updating, onUpdate, onCheck)
@@ -122,7 +143,6 @@ private fun HomePage(today: WatchToday?, update: Updater.Found?, updating: Updat
             Band("FlemmeFit")
             Centered(top = 40.dp) {
                 Meta("En attente du téléphone.\nOuvre FlemmeFit sur ton téléphone, à portée en Bluetooth.")
-                FitButton("Essayer la démo", onDemo, plain = true)
                 UpdateLine(update, updating, onUpdate)
             }
         }
@@ -142,8 +162,10 @@ private fun HomePage(today: WatchToday?, update: Updater.Found?, updating: Updat
         }
         return
     }
-    val done = today.exercises.count { it.done }
-    val total = today.exercises.size
+    // Comme sur le téléphone : seuls les exos obligatoires comptent (pas l'échauffement ni les étirements).
+    val required = today.exercises.filterNot { it.optional }.ifEmpty { today.exercises }
+    val done = required.count { it.done }
+    val total = required.size
     val progress = if (total == 0) 0f else done.toFloat() / total
     Dial(progress) {
         val band = when (today.mode) {
@@ -182,6 +204,10 @@ private fun UpdateLine(update: Updater.Found?, updating: Updater.State, onUpdate
     when (updating) {
         is Updater.State.Downloading -> Kicker(
             "Maj ${updating.version} : " + (updating.percent?.let { "$it %" } ?: "connexion…") +
+                (updating.kbPerSecond?.let { " · ${if (it >= 1024) "%.1f Mo/s".format(it / 1024f) else "$it Ko/s"}" } ?: ""),
+        )
+        is Updater.State.Receiving -> Kicker(
+            "Réception de la maj : " + (updating.percent?.let { "$it %" } ?: "…") +
                 (updating.kbPerSecond?.let { " · ${if (it >= 1024) "%.1f Mo/s".format(it / 1024f) else "$it Ko/s"}" } ?: ""),
         )
         is Updater.State.Installing -> Kicker(if (updating.version == 0) "Installation de la maj envoyée par le téléphone…" else "Installation de la maj ${updating.version}…")
@@ -239,6 +265,13 @@ private fun DayDot(day: WatchDay) {
 @Composable
 private fun FriendsPage(today: WatchToday?) {
     val pal = LocalPalette.current
+    // Toucher un pote : sa mini-fiche.
+    var open by remember { mutableStateOf<Pair<Int, WatchFriend>?>(null) }
+    val shown = open
+    if (shown != null) {
+        FriendSheet(shown.first, shown.second) { open = null }
+        return
+    }
     Dial(1f, Orange) {
         Band("Les potes", ctx = Orange)
         Centered(top = 44.dp) {
@@ -254,6 +287,7 @@ private fun FriendsPage(today: WatchToday?) {
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(if (f.me) Color(0xFFFFF4D6) else pal.chip)
+                                .clickable(role = androidx.compose.ui.semantics.Role.Button, onClickLabel = "Fiche de ${f.name}") { open = i to f }
                                 .padding(horizontal = 10.dp, vertical = 3.dp),
                         ) {
                             Text(
@@ -326,7 +360,153 @@ private fun SettingsPage(update: Updater.Found?, updating: Updater.State, onUpda
                 }
                 else -> FitButton("Chercher une maj", onCheck, plain = true)
             }
+            // La démo, pour essayer sans téléphone : rangée ici, l'accueil ne parle que du téléphone.
             if (demo) FitButton("Quitter la démo", { Store.setDemo(false) }, plain = true)
+            else FitButton("Essayer la démo", { Store.setDemo(true) }, plain = true)
+        }
+    }
+}
+
+/** Mini-fiche d'un pote : son jour, sa série, ses Boss et exploits, son dernier exploit. */
+@Composable
+private fun FriendSheet(rank: Int, f: WatchFriend, onBack: () -> Unit) {
+    val pal = LocalPalette.current
+    Dial(1f, Orange) {
+        Band((if (rank == 0) "👑 " else "${rank + 1}e · ") + f.name, ctx = Orange)
+        Centered(top = 44.dp) {
+            f.today?.let { Kicker(it, pal.ink) }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                listOf("🔥" to "${f.streak}", "💀" to "${f.boss}", "🏆" to "${f.exploits}", "pts" to "${f.points}").forEach { (k, v) ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(k, style = text(11.sp, FontWeight.SemiBold), color = pal.soft)
+                        Text(v, style = text(14.sp, FontWeight.Black), color = pal.ink)
+                    }
+                }
+            }
+            f.lastExploit?.let { Meta("Dernier exploit : $it") }
+            FitButton("Retour", onBack, plain = true)
+        }
+    }
+}
+
+/*
+ * L'accueil en vertical : ↓ ouvre la liste des exos du jour, ↓ encore ramène à l'accueil (boucle) ;
+ * ↑ depuis la liste ramène aussi à l'accueil, ↑ sur l'accueil ne fait rien.
+ */
+@Composable
+private fun HomeWithList(
+    today: WatchToday?,
+    update: Updater.Found?,
+    updating: Updater.State,
+    onStart: () -> Unit,
+    onDemo: () -> Unit,
+    onUpdate: () -> Unit,
+) {
+    var showList by remember { mutableStateOf(false) }
+    val canList = today?.isSessionDay == true
+    if (showList && canList && today != null) {
+        SessionList(today) { showList = false }
+        return
+    }
+    val threshold = with(androidx.compose.ui.platform.LocalDensity.current) { 60.dp.toPx() }
+    Box(
+        Modifier
+            .fillMaxSize()
+            .pointerInput(canList) {
+                var total = 0f
+                detectVerticalDragGestures(
+                    onDragStart = { total = 0f },
+                    onDragEnd = { if (canList && total > threshold) showList = true },
+                    onVerticalDrag = { _, dy -> total += dy },
+                )
+            },
+    ) { HomePage(today, update, updating, onStart, onDemo, onUpdate) }
+}
+
+/** Les exos du jour, à cocher ou décocher comme sur la page du jour du téléphone. */
+@Composable
+private fun SessionList(today: WatchToday, onClose: () -> Unit) {
+    val pal = LocalPalette.current
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val list = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val threshold = with(density) { 70.dp.toPx() }
+    // Cochés depuis la montre, en attendant que le téléphone renvoie la séance à jour.
+    val local = remember(today) { mutableStateMapOf<Int, Boolean>() }
+    // Arrivé au bout de la liste : un balayage de plus ramène à l'accueil.
+    val edges = remember {
+        object : NestedScrollConnection {
+            var pull = 0f
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                if (source == NestedScrollSource.UserInput) {
+                    if (consumed.y != 0f) pull = 0f
+                    pull += available.y
+                    if (kotlin.math.abs(pull) > threshold) {
+                        pull = 0f
+                        onClose()
+                    }
+                }
+                return Offset.Zero
+            }
+        }
+    }
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
+    Dial(today.exercises.filterNot { it.optional }.let { r -> if (r.isEmpty()) 0f else r.count { local[it.i] ?: it.done }.toFloat() / r.size }) {
+        LazyColumn(
+            state = list,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            contentPadding = PaddingValues(start = 26.dp, end = 26.dp, top = 36.dp, bottom = 40.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(edges)
+                .onRotaryScrollEvent { e ->
+                    scope.launch { list.scrollBy(e.verticalScrollPixels) }
+                    true
+                }
+                .focusRequester(focus)
+                .focusable(),
+        ) {
+            item { Kicker(today.title ?: "Séance du jour") }
+            items(today.exercises, key = { it.i }) { ex ->
+                val done = local[ex.i] ?: ex.done
+                // Une série à fond se fait en séance (il faut le max) : on peut la décocher, pas la cocher ici.
+                val canToggle = done || !ex.allOut
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(pal.chip)
+                        .then(
+                            if (canToggle) Modifier.clickable(role = androidx.compose.ui.semantics.Role.Checkbox, onClickLabel = ex.name) {
+                                local[ex.i] = !done
+                                Store.check(context, today, ex, !done)
+                            } else Modifier,
+                        )
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.size(22.dp).clip(CircleShape).background(if (done) Green.c else Color(0xFFD9E1E6)),
+                    ) { if (done) Text("✓", style = text(12.sp, FontWeight.Black), color = Color.White) }
+                    Column(Modifier.weight(1f)) {
+                        Text(ex.name, style = text(13.sp, FontWeight.ExtraBold).copy(textAlign = TextAlign.Start), color = if (ex.optional) pal.soft else pal.ink, maxLines = 2)
+                        Text(
+                            listOfNotNull(
+                                if (ex.timed) formatSeconds(ex.planned) else if (ex.plain) "${ex.sets} série(s)" else "${ex.sets} × ${ex.planned}",
+                                "facultatif".takeIf { ex.optional },
+                                "à fond, en séance".takeIf { ex.allOut && !done },
+                            ).joinToString(" · "),
+                            style = text(11.sp, FontWeight.SemiBold).copy(textAlign = TextAlign.Start),
+                            color = pal.soft,
+                        )
+                    }
+                }
+            }
         }
     }
 }

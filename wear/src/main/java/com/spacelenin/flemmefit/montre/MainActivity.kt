@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
             val night = battery < NIGHT_BELOW
 
             // Écran gardé allumé tant qu'une séance tourne, ou qu'une mise à jour se télécharge (luminosité au minimum).
-            val busyUpdate = updating is Updater.State.Downloading || updating is Updater.State.Installing
+            val busyUpdate = updating is Updater.State.Downloading || updating is Updater.State.Installing || updating is Updater.State.Receiving
             LaunchedEffect(run?.phase, busyUpdate) {
                 if ((run != null && run?.phase != Phase.RECAP) || busyUpdate) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)

@@ -117,7 +117,17 @@ data class WatchDay(
 )
 
 @Serializable
-data class WatchFriend(val name: String, val points: Int, val me: Boolean = false)
+data class WatchFriend(
+    val name: String,
+    val points: Int,
+    val me: Boolean = false,
+    /** Mini-fiche : le jour (« Séance faite », « 2/3 exos », « Repos »), la série, les Boss, les exploits. */
+    val today: String? = null,
+    val streak: Int = 0,
+    val boss: Int = 0,
+    val exploits: Int = 0,
+    val lastExploit: String? = null,
+)
 
 @Serializable
 data class WatchStat(val label: String, val value: String)
@@ -141,6 +151,10 @@ data class WatchLog(
     val minutes: Int? = null,
     /** Batterie consommée pendant la séance, en points de %. */
     val battery: Int? = null,
+    /** Seulement le ressenti de l'exo [exercise] (choisi sur l'écran « Exo suivant »). */
+    val onlyFeeling: Boolean = false,
+    /** Case cochée (true) ou décochée (false) depuis la liste des exos de la montre. */
+    val check: Boolean? = null,
     val at: Long,
 )
 
