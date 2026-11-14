@@ -3,7 +3,8 @@ name: Montre
 # App montre (Wear OS), construite à part de l'app du téléphone.
 on:
   push:
-    paths: ["wear/**", ".github/workflows/montre.yml"]
+    # Les notes (*.md) ne publient pas de nouvelle version.
+    paths: ["wear/**", "!wear/**/*.md", ".github/workflows/montre.yml"]
   workflow_dispatch:
 
 permissions:

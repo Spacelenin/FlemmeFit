@@ -1,5 +1,11 @@
 # App montre : idées gardées pour plus tard
 
+## Résultat du test de mise à jour (14/11/2026)
+
+✅ La montre (Galaxy Watch 5 Pro) se met à jour TOUTE SEULE : l'app de test installée à la main en version 3
+a trouvé et installé la version 10 depuis le repo public des releases (installeur du système, sans PC).
+→ Mode de maj retenu : la montre se met à jour elle-même, comme le téléphone.
+
 ## Installation de l'app montre depuis l'app du téléphone
 
 Aujourd'hui, la première installation sur la montre passe par Wear Installer 2 (débogage sans fil).
