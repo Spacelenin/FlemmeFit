@@ -29,6 +29,8 @@ import kotlinx.coroutines.launch
 class SessionService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var loop: Job? = null
+    /** Dernière vibration de fin de repos : elle se répète tant qu'on n'a pas repris. */
+    private var lastBuzz = 0L
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -79,7 +81,12 @@ class SessionService : Service() {
                 val left = run.restEndsAt - now
                 if (left <= 0 && !run.rang) {
                     vibrate(long = true)
+                    lastBuzz = now
                     Store.updateRun { it.copy(rang = true, warned = true) }
+                } else if (left <= 0 && -left < REPEAT_FOR_MS && now - lastBuzz >= REPEAT_EVERY_MS) {
+                    // Repos fini mais pas encore repris : on insiste (2 minutes au plus, pour la batterie).
+                    vibrate(long = true)
+                    lastBuzz = now
                 } else if (left in 1..10_000 && !run.warned) {
                     vibrate(long = false)
                     Store.updateRun { it.copy(warned = true) }
@@ -111,6 +118,8 @@ class SessionService : Service() {
     companion object {
         private const val CHANNEL = "seance"
         private const val NOTIFICATION_ID = 7
+        private const val REPEAT_EVERY_MS = 4_000L
+        private const val REPEAT_FOR_MS = 120_000L
 
         fun start(context: Context) {
             context.startForegroundService(Intent(context, SessionService::class.java))

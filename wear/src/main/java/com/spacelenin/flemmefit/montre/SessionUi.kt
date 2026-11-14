@@ -47,7 +47,7 @@ private fun clock(): Long {
     val now by produceState(System.currentTimeMillis()) {
         while (true) {
             value = System.currentTimeMillis()
-            delay(250)
+            delay(1000 - value % 1000 + 5)
         }
     }
     return now
@@ -85,7 +85,6 @@ private fun Stack(top: Int = 0, content: @Composable () -> Unit) {
 @Composable
 fun SessionScreen(run: Run, today: WatchToday, ambient: Boolean) {
     val context = LocalContext.current
-    val now = clock()
     val ex = SessionFlow.current(run, today)
     val progress = SessionFlow.progress(run, today)
     val dayCtx = ctxFor(today.mode)
@@ -93,7 +92,7 @@ fun SessionScreen(run: Run, today: WatchToday, ambient: Boolean) {
     var askStop by remember { mutableStateOf(false) }
 
     if (ambient) {
-        AmbientScreen(run, today, ex, now)
+        AmbientScreen(run, today, ex)
         return
     }
 
@@ -126,7 +125,8 @@ fun SessionScreen(run: Run, today: WatchToday, ambient: Boolean) {
         }
 
         run.phase == Phase.REST -> Themed(LocalPalette.current.night, Sky) {
-            val left = ((run.restEndsAt - now + 999) / 1000).toInt()
+            // Seul cet écran se redessine chaque seconde.
+            val left = ((run.restEndsAt - clock() + 999) / 1000).toInt()
             val restTotal = (ex?.restSec ?: 60).coerceAtLeast(1)
             Dial((left.toFloat() / restTotal).coerceIn(0f, 1f)) {
                 Stack {
@@ -158,20 +158,22 @@ fun SessionScreen(run: Run, today: WatchToday, ambient: Boolean) {
                 InputScreen(run, today, ex, progress, onHow = { showHow = true }, onStop = { askStop = true })
             }
 
-        run.phase == Phase.EXERCISE && ex != null -> Themed(LocalPalette.current.night, if (ex.timed) Orange else dayCtx) {
-            val elapsed = ((now - run.phaseStartedAt) / 1000).toInt()
-            Dial(if (ex.timed) (elapsed.toFloat() / ex.planned.coerceAtLeast(1)).coerceIn(0f, 1f) else progress) {
-                if (ex.timed) {
-                    Stack {
+        run.phase == Phase.EXERCISE && ex != null && ex.timed -> Themed(LocalPalette.current.night, Orange) {
+            val elapsed = ((clock() - run.phaseStartedAt) / 1000).toInt()
+            Dial((elapsed.toFloat() / ex.planned.coerceAtLeast(1)).coerceIn(0f, 1f)) {
+                Stack {
                         Header(run, ex, onHow = { showHow = true })
                         Big(formatSeconds(elapsed), size = 44)
                         Meta("objectif ${formatSeconds(ex.planned)}")
                         FitButton("Terminé", { SessionFlow.setDone(context, today) })
                         SkipLink { SessionFlow.skipExercise(context, today) }
-                    }
-                } else {
-                    SeriesScreen(run, today, ex, onHow = { showHow = true }, onStop = { askStop = true })
                 }
+            }
+        }
+
+        run.phase == Phase.EXERCISE && ex != null -> Themed(LocalPalette.current.night, dayCtx) {
+            Dial(progress) {
+                SeriesScreen(run, today, ex, onHow = { showHow = true }, onStop = { askStop = true })
             }
         }
 
@@ -299,7 +301,14 @@ private fun SeriesScreen(run: Run, today: WatchToday, ex: WatchExercise, onHow: 
             Header(run, ex, onHow)
             Row2 {
                 FitRound("−") { value = (value - 1).coerceAtLeast(0) }
-                Text("$value", style = text(46.sp, FontWeight.Black), color = if (value > ex.planned) Green.c else pal.ink)
+                Text(
+                    "$value", style = text(46.sp, FontWeight.Black),
+                    color = when {
+                        value > ex.planned -> Green.c
+                        value < ex.planned -> Red.c
+                        else -> pal.ink
+                    },
+                )
                 FitRound("+") { value = (value + 1).coerceAtMost(999) }
             }
             when {
@@ -353,7 +362,8 @@ private fun RecapStat(label: String, value: String) {
 
 /** Poignet baissé : noir, traits fins, l'essentiel seulement (écran basse consommation). */
 @Composable
-private fun AmbientScreen(run: Run, today: WatchToday, ex: WatchExercise?, now: Long) {
+private fun AmbientScreen(run: Run, today: WatchToday, ex: WatchExercise?) {
+    val now = clock()
     val grey = Color(0xFF8A8A8A)
     Box(Modifier.fillMaxSize().background(Color.Black).border(2.dp, Color(0xFF333333), CircleShape), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {

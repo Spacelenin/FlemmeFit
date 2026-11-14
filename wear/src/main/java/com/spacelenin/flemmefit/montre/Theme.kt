@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -117,14 +118,19 @@ fun Themed(night: Boolean, ctx: Ctx, content: @Composable () -> Unit) {
 
 private fun Color.deeper() = lerp(this, Color.Black, 0.18f)
 
-/** Fines rayures horizontales, la matière des bandeaux et des boutons. */
-fun Modifier.stripes(color: Color = Color.White, alpha: Float = 0.16f, spacing: Dp = 3.dp): Modifier = drawBehind {
+/** Fines rayures horizontales, la matière des bandeaux et des boutons. Calculées une fois par taille, pas à chaque image. */
+fun Modifier.stripes(color: Color = Color.White, alpha: Float = 0.16f, spacing: Dp = 3.dp): Modifier = drawWithCache {
     val step = spacing.toPx()
+    val lines = Path()
     var y = step / 2
     while (y < size.height) {
-        drawLine(color.copy(alpha = alpha), Offset(0f, y), Offset(size.width, y), strokeWidth = 1f)
+        lines.moveTo(0f, y)
+        lines.lineTo(size.width, y)
         y += step
     }
+    val stroke = Stroke(1f)
+    val tint = color.copy(alpha = alpha)
+    onDrawBehind { drawPath(lines, tint, style = stroke) }
 }
 
 /** Le bouton bombé : marche dessous, liseré fin, bord blanc, dégradé, rayures, reflet. */
@@ -218,31 +224,40 @@ fun Dial(progress: Float, ctx: Ctx = LocalCtx.current, content: @Composable BoxS
 @Composable
 fun Ring(progress: Float, ctx: Ctx) {
     val pal = LocalPalette.current
-    Canvas(Modifier.fillMaxSize()) {
-        val thick = 9.dp.toPx()
-        val inset = 3.dp.toPx() + thick / 2
-        val topLeft = Offset(inset, inset)
-        val arc = Size(size.width - inset * 2, size.height - inset * 2)
-        drawArc(pal.track, 0f, 360f, false, topLeft, arc, style = Stroke(thick))
-        val p = progress.coerceIn(0f, 1f)
-        if (p > 0f) {
-            drawArc(Brush.verticalGradient(listOf(ctx.light, ctx.c, ctx.dark)), -90f, 360f * p, false, topLeft, arc, style = Stroke(thick))
-            val c = center
+    val p = progress.coerceIn(0f, 1f)
+    Box(
+        Modifier.fillMaxSize().drawWithCache {
+            // Tout ce qui ne dépend que de la taille est préparé une fois.
+            val thick = 9.dp.toPx()
+            val inset = 3.dp.toPx() + thick / 2
+            val topLeft = Offset(inset, inset)
+            val arc = Size(size.width - inset * 2, size.height - inset * 2)
+            val stroke = Stroke(thick)
+            val brush = Brush.verticalGradient(listOf(ctx.light, ctx.c, ctx.dark))
             val outer = size.minDimension / 2 - 3.dp.toPx()
             val band = Path().apply {
                 fillType = PathFillType.EvenOdd
-                addOval(Rect(c, outer))
-                addOval(Rect(c, outer - thick))
+                addOval(Rect(center, outer))
+                addOval(Rect(center, outer - thick))
             }
-            clipPath(band) {
-                var x = -size.height
-                while (x < size.width) {
-                    drawLine(Color.White.copy(alpha = 0.32f), Offset(x, size.height), Offset(x + size.height, 0f), strokeWidth = 1.dp.toPx())
-                    x += 4.dp.toPx()
+            val hatch = Path()
+            var x = -size.height
+            while (x < size.width) {
+                hatch.moveTo(x, size.height)
+                hatch.lineTo(x + size.height, 0f)
+                x += 4.dp.toPx()
+            }
+            val hatchStroke = Stroke(1.dp.toPx())
+            val hatchColor = Color.White.copy(alpha = 0.32f)
+            onDrawBehind {
+                drawArc(pal.track, 0f, 360f, false, topLeft, arc, style = stroke)
+                if (p > 0f) {
+                    drawArc(brush, -90f, 360f * p, false, topLeft, arc, style = stroke)
+                    clipPath(band) { drawPath(hatch, hatchColor, style = hatchStroke) }
                 }
             }
-        }
-    }
+        },
+    )
 }
 
 /** Bandeau rayé du haut, de la couleur du contexte. */
