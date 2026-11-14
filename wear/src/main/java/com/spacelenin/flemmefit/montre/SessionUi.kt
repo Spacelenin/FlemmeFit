@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -88,6 +90,7 @@ fun SessionScreen(run: Run, today: WatchToday, ambient: Boolean) {
     val progress = SessionFlow.progress(run, today)
     val dayCtx = ctxFor(today.mode)
     var showHow by remember(run.pos) { mutableStateOf(false) }
+    var askStop by remember { mutableStateOf(false) }
 
     if (ambient) {
         AmbientScreen(run, today, ex, now)
@@ -95,6 +98,19 @@ fun SessionScreen(run: Run, today: WatchToday, ambient: Boolean) {
     }
 
     when {
+        askStop -> Themed(LocalPalette.current.night, Red) {
+            Dial(progress) {
+                Stack {
+                    Title("Arrêter la séance ?", 17.sp)
+                    Meta("Ce qui est fait reste fait.")
+                    Row2 {
+                        FitButton("Non", { askStop = false }, plain = true)
+                        FitButton("Oui", { askStop = false; SessionFlow.stopEarly() })
+                    }
+                }
+            }
+        }
+
         showHow && ex != null -> Themed(LocalPalette.current.night, dayCtx) {
             Dial(progress) {
                 Column(
@@ -105,8 +121,6 @@ fun SessionScreen(run: Run, today: WatchToday, ambient: Boolean) {
                     Kicker(ex.name)
                     Text(ex.how ?: "Pas de consigne pour cet exo.", style = text(13.sp, FontWeight.SemiBold), color = LocalPalette.current.ink)
                     FitButton("Retour", { showHow = false }, plain = true)
-                    FitButton("Passer l'exo", { showHow = false; SessionFlow.skipExercise(context, today) }, plain = true)
-                    FitButton("Arrêter la séance", { showHow = false; SessionFlow.stopEarly() }, plain = true, ctx = Red)
                 }
             }
         }
@@ -139,33 +153,24 @@ fun SessionScreen(run: Run, today: WatchToday, ambient: Boolean) {
             }
         }
 
-        run.phase == Phase.INPUT && ex != null -> Themed(LocalPalette.current.night, if (today.mode == WatchToday.MODE_BOSS) Red else dayCtx) {
-            InputScreen(run, today, ex, progress)
-        }
+        ex != null && (run.phase == Phase.INPUT || (run.phase == Phase.EXERCISE && SessionFlow.needsInput(run, ex))) ->
+            Themed(LocalPalette.current.night, if (today.mode == WatchToday.MODE_BOSS) Red else dayCtx) {
+                InputScreen(run, today, ex, progress, onHow = { showHow = true }, onStop = { askStop = true })
+            }
 
         run.phase == Phase.EXERCISE && ex != null -> Themed(LocalPalette.current.night, if (ex.timed) Orange else dayCtx) {
             val elapsed = ((now - run.phaseStartedAt) / 1000).toInt()
             Dial(if (ex.timed) (elapsed.toFloat() / ex.planned.coerceAtLeast(1)).coerceIn(0f, 1f) else progress) {
-                Stack {
-                    Kicker(
-                        "Exo ${run.pos + 1}/${run.queue.size} · série ${run.set + 1}/${ex.sets}" +
-                            (SessionFlow.side(run, ex)?.let { " · $it" } ?: ""),
-                    )
-                    // Toucher le nom : la consigne.
-                    Box(Modifier.clickable(role = Role.Button, onClickLabel = "Consigne") { showHow = true }) { Title(ex.name, 17.sp) }
-                    if (ex.timed) {
+                if (ex.timed) {
+                    Stack {
+                        Header(run, ex, onHow = { showHow = true })
                         Big(formatSeconds(elapsed), size = 44)
                         Meta("objectif ${formatSeconds(ex.planned)}")
                         FitButton("Terminé", { SessionFlow.setDone(context, today) })
-                    } else {
-                        Big("${ex.planned}", "reps")
-                        when {
-                            SessionFlow.needsInput(run, ex) -> Chip("à fond" + (ex.target?.let { " · objectif $it" } ?: ""), if (today.mode == WatchToday.MODE_BOSS) Red else LocalCtx.current)
-                            ex.level != null && ex.levelCount != null -> Stars(ex.level, ex.levelCount)
-                            ex.tag != null -> Meta(ex.tag)
-                        }
-                        FitButton("✓ Série faite", { SessionFlow.setDone(context, today) })
+                        SkipLink { SessionFlow.skipExercise(context, today) }
                     }
+                } else {
+                    SeriesScreen(run, today, ex, onHow = { showHow = true }, onStop = { askStop = true })
                 }
             }
         }
@@ -194,7 +199,7 @@ fun SessionScreen(run: Run, today: WatchToday, ambient: Boolean) {
 }
 
 @Composable
-private fun InputScreen(run: Run, today: WatchToday, ex: WatchExercise, progress: Float) {
+private fun InputScreen(run: Run, today: WatchToday, ex: WatchExercise, progress: Float, onHow: () -> Unit, onStop: () -> Unit) {
     val context = LocalContext.current
     var value by remember(run.pos, run.set) { mutableIntStateOf(ex.target ?: ex.planned) }
     var scroll by remember { mutableFloatStateOf(0f) }
@@ -216,19 +221,94 @@ private fun InputScreen(run: Run, today: WatchToday, ex: WatchExercise, progress
                     true
                 }
                 .focusRequester(focus)
-                .focusable(),
+                .focusable()
+                .pointerInput(Unit) { detectTapGestures(onLongPress = { onStop() }) },
         ) {
             Stack {
                 ex.target?.let { Chip("💀 objectif $it") }
-                Kicker("Dernière série · à fond")
+                Box(Modifier.clickable(role = Role.Button, onClickLabel = "Consigne") { onHow() }) { Kicker(ex.name + " · à fond") }
                 Row2 {
                     FitRound("−") { value = (value - 1).coerceAtLeast(0) }
                     Text("$value", style = text(52.sp, FontWeight.Black), color = if (reached) Green.c else LocalPalette.current.ink)
                     FitRound("+") { value = (value + 1).coerceAtMost(999) }
                 }
-                Meta("Tourne la lunette")
                 FitButton("Valider", { SessionFlow.record(context, today, value) })
+                SkipLink { SessionFlow.skipExercise(context, today) }
             }
+        }
+    }
+}
+
+/** Haut de l'écran de série : où on en est, et le nom de l'exo (le toucher ouvre la consigne). */
+@Composable
+private fun Header(run: Run, ex: WatchExercise, onHow: () -> Unit) {
+    Kicker(
+        "Exo ${run.pos + 1}/${run.queue.size} · série ${run.set + 1}/${ex.sets}" +
+            (SessionFlow.side(run, ex)?.let { " · $it" } ?: ""),
+    )
+    Box(Modifier.clickable(role = Role.Button, onClickLabel = "Consigne") { onHow() }) { Title(ex.name, 17.sp) }
+}
+
+/** Petit lien « Passer » : un seul appui, sans gêner le gros bouton. */
+@Composable
+private fun SkipLink(onSkip: () -> Unit) {
+    Text(
+        "Passer l'exo ›",
+        style = text(12.sp, FontWeight.ExtraBold),
+        color = LocalPalette.current.soft,
+        modifier = Modifier.clickable(role = Role.Button, onClickLabel = "Passer l'exo", onClick = onSkip).padding(4.dp),
+    )
+}
+
+/** Lunette (tactile sur la Watch 5 Pro) : un cran = une répétition. */
+@Composable
+private fun Modifier.bezel(onStep: (Int) -> Unit): Modifier {
+    var scroll by remember { mutableFloatStateOf(0f) }
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
+    return this
+        .onRotaryScrollEvent { e ->
+            scroll += e.verticalScrollPixels
+            val steps = (scroll / 40f).toInt()
+            if (steps != 0) {
+                onStep(steps)
+                scroll -= steps * 40f
+            }
+            true
+        }
+        .focusRequester(focus)
+        .focusable()
+}
+
+/**
+ * Série normale : le prévu est déjà affiché, « Série faite » l'enregistre tel quel. Fait plus (ou moins) :
+ * − / + ou la lunette avant de valider, le chiffre passe en vert au-dessus du prévu. Appui long : arrêter.
+ */
+@Composable
+private fun SeriesScreen(run: Run, today: WatchToday, ex: WatchExercise, onHow: () -> Unit, onStop: () -> Unit) {
+    val context = LocalContext.current
+    val pal = LocalPalette.current
+    var value by remember(run.pos, run.set) { mutableIntStateOf(ex.planned) }
+    Box(
+        Modifier
+            .fillMaxSize()
+            .bezel { value = (value + it).coerceIn(0, 999) }
+            .pointerInput(Unit) { detectTapGestures(onLongPress = { onStop() }) },
+    ) {
+        Stack {
+            Header(run, ex, onHow)
+            Row2 {
+                FitRound("−") { value = (value - 1).coerceAtLeast(0) }
+                Text("$value", style = text(46.sp, FontWeight.Black), color = if (value > ex.planned) Green.c else pal.ink)
+                FitRound("+") { value = (value + 1).coerceAtMost(999) }
+            }
+            when {
+                ex.level != null && ex.levelCount != null -> Stars(ex.level, ex.levelCount)
+                ex.tag != null -> Meta(ex.tag)
+                value != ex.planned -> Meta("prévu ${ex.planned}")
+            }
+            FitButton("✓ Série faite", { SessionFlow.record(context, today, value) })
+            SkipLink { SessionFlow.skipExercise(context, today) }
         }
     }
 }
