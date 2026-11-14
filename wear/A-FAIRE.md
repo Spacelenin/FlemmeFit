@@ -41,4 +41,4 @@ But : ne jamais perdre le fil (minuteur, exo en cours) quand l'écran s'éteint 
 - Accueil : option C, pages à balayer. Accueil au centre, boucle infinie :
   Stats ⇄ Semaine ⇄ ACCUEIL ⇄ Potes ⇄ Stats (stats en face, 2 balayages max pour revenir).
   Noms des pages voisines sur les bords, indicateur 3 points. Sortie par le bouton physique (balayage = navigation).
-- Fond : à choisir (blanc Wii Fit ou nuit).
+- Fond : blanc Wii Fit par défaut, passage automatique en version nuit sous 15 % de batterie.
