@@ -54,6 +54,8 @@ object Updater {
         /** [percent] de 0 à 100, null tant que la taille est inconnue. */
         data class Downloading(val version: Int, val percent: Int?, val kbPerSecond: Int? = null) : State
         data class Installing(val version: Int) : State
+        /** Maj envoyée par le téléphone en cours de réception. */
+        data class Receiving(val percent: Int?, val kbPerSecond: Int?) : State
         data class Failed(val message: String) : State
     }
 
@@ -220,8 +222,45 @@ object Updater {
         }
     }
 
+    /** Taille annoncée par le téléphone juste avant l'envoi (0 : inconnue). */
+    @Volatile var expectedSize: Long = 0
+
     /** Une mise à jour arrive du téléphone (Bluetooth). */
     fun received() {
+        _state.value = State.Receiving(0.takeIf { expectedSize > 0 }, null)
+    }
+
+    /** Copie la maj reçue en annonçant pourcentage et débit. */
+    internal fun receive(input: java.io.InputStream, file: File) {
+        val total = expectedSize
+        file.outputStream().use { out ->
+            val buffer = ByteArray(16 * 1024)
+            var done = 0L
+            var windowStart = System.currentTimeMillis()
+            var windowBytes = 0L
+            var speed: Int? = null
+            var lastPercent = -1
+            while (true) {
+                val n = input.read(buffer)
+                if (n < 0) break
+                out.write(buffer, 0, n)
+                done += n
+                windowBytes += n
+                val now = System.currentTimeMillis()
+                val tick = now - windowStart >= 1000
+                if (tick) {
+                    speed = (windowBytes * 1000 / (now - windowStart) / 1024).toInt()
+                    windowStart = now
+                    windowBytes = 0
+                }
+                val percent = if (total > 0) (done * 100 / total).toInt().coerceAtMost(100) else null
+                if (percent != lastPercent || tick) {
+                    lastPercent = percent ?: -1
+                    _state.value = State.Receiving(percent, speed)
+                }
+            }
+        }
+        expectedSize = 0
         _state.value = State.Installing(0)
     }
 

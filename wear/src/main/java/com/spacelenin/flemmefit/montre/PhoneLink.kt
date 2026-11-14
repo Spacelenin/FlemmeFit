@@ -24,6 +24,7 @@ object PhoneLink {
     const val PATH_SYNC = "/flemmefit/sync"
     const val PATH_STATUS = "/flemmefit/watch"
     const val PATH_APK = "/flemmefit/apk"
+    const val PATH_APK_SIZE = "/flemmefit/apk-size"
     const val KEY_JSON = "json"
 
     private val lock = Mutex()
@@ -110,6 +111,12 @@ object PhoneLink {
  * et la mise à jour de l'app envoyée par le téléphone en Bluetooth.
  */
 class PhoneListenerService : WearableListenerService() {
+    override fun onMessageReceived(messageEvent: com.google.android.gms.wearable.MessageEvent) {
+        if (messageEvent.path == PhoneLink.PATH_APK_SIZE) {
+            Updater.expectedSize = String(messageEvent.data).toLongOrNull() ?: 0
+        }
+    }
+
     override fun onChannelOpened(channel: com.google.android.gms.wearable.ChannelClient.Channel) {
         if (channel.path != PhoneLink.PATH_APK) return
         Store.init(this)
@@ -119,7 +126,7 @@ class PhoneListenerService : WearableListenerService() {
             try {
                 Updater.received()
                 val file = java.io.File(app.cacheDir, "from-phone.apk")
-                client.getInputStream(channel).await().use { input -> file.outputStream().use { input.copyTo(it) } }
+                client.getInputStream(channel).await().use { input -> Updater.receive(input, file) }
                 Updater.installReceived(app, file)
             } catch (e: Exception) {
                 Updater.note("❌ Maj du téléphone : ${e.message ?: e.javaClass.simpleName}")

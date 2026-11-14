@@ -54,7 +54,8 @@ class WatchLink(private val app: FlemmeFitApp) {
 
     sealed interface Push {
         data object Idle : Push
-        data class Running(val version: Int, val step: String) : Push
+        /** [percent] de l'étape en cours, [kbPerSecond] son débit. */
+        data class Running(val version: Int, val step: String, val percent: Int? = null, val kbPerSecond: Int? = null) : Push
         data class Done(val version: Int) : Push
         data class Failed(val message: String) : Push
     }
@@ -106,6 +107,15 @@ class WatchLink(private val app: FlemmeFitApp) {
             when (val applied = WatchBuilder.apply(log, repo.state.value.programs, app.settings.restBonus.value)) {
                 is WatchBuilder.Applied.Exercise -> repo.saveLog(applied.programId, applied.dayIndex, applied.exerciseIndex, applied.log, applied.complete)
                 is WatchBuilder.Applied.Feeling -> repo.setFeeling(applied.programId, applied.dayIndex, applied.feeling)
+                is WatchBuilder.Applied.ExerciseFeeling ->
+                    repo.setExerciseFeeling(applied.programId, applied.dayIndex, applied.exerciseIndex, applied.feeling)
+                is WatchBuilder.Applied.Check -> {
+                    // Ne bascule que si l'état diffère : un message reçu deux fois ne décoche pas.
+                    val p = repo.state.value.programs.firstOrNull { it.id == applied.programId }
+                    if (p != null && p.isDone(applied.dayIndex, applied.exerciseIndex) != applied.done) {
+                        repo.toggleExercise(applied.programId, applied.dayIndex, applied.exerciseIndex)
+                    }
+                }
                 null -> Unit
             }
             val now = System.currentTimeMillis()
@@ -183,16 +193,25 @@ class WatchLink(private val app: FlemmeFitApp) {
                 val apk = open(url).let { c ->
                     try {
                         if (c.responseCode != HttpURLConnection.HTTP_OK) throw IOException("HTTP ${c.responseCode}")
-                        c.inputStream.use { it.readBytes() }
+                        val total = c.contentLengthLong
+                        val out = java.io.ByteArrayOutputStream()
+                        c.inputStream.use { input -> copyWithProgress(input, out, total) { p, k -> _push.value = Push.Running(version, "téléchargement", p, k) } }
+                        out.toByteArray()
                     } finally {
                         c.disconnect()
                     }
                 }
-                _push.value = Push.Running(version, "envoi à la montre")
+                // La taille d'abord : la montre affiche sa progression pendant la réception.
+                runCatching {
+                    Wearable.getMessageClient(app).sendMessage(node, WatchPaths.APK_SIZE, apk.size.toString().toByteArray()).await()
+                }
+                _push.value = Push.Running(version, "envoi à la montre", 0)
                 val channels = Wearable.getChannelClient(app)
                 val channel = channels.openChannel(node, WatchPaths.APK).await()
                 try {
-                    channels.getOutputStream(channel).await().use { it.write(apk) }
+                    channels.getOutputStream(channel).await().use { output ->
+                        copyWithProgress(apk.inputStream(), output, apk.size.toLong()) { p, k -> _push.value = Push.Running(version, "envoi à la montre", p, k) }
+                    }
                 } finally {
                     runCatching { channels.close(channel).await() }
                 }
@@ -202,6 +221,36 @@ class WatchLink(private val app: FlemmeFitApp) {
                 _push.value = Push.Failed(e.message ?: e.javaClass.simpleName)
             }
         }
+    }
+
+    /** Copie par blocs en annonçant le pourcentage et le débit (mesuré à peu près chaque seconde). */
+    private fun copyWithProgress(input: java.io.InputStream, output: java.io.OutputStream, total: Long, onProgress: (Int?, Int?) -> Unit) {
+        val buffer = ByteArray(16 * 1024)
+        var done = 0L
+        var windowStart = System.currentTimeMillis()
+        var windowBytes = 0L
+        var speed: Int? = null
+        var lastPercent = -1
+        while (true) {
+            val n = input.read(buffer)
+            if (n < 0) break
+            output.write(buffer, 0, n)
+            done += n
+            windowBytes += n
+            val now = System.currentTimeMillis()
+            val tick = now - windowStart >= 1000
+            if (tick) {
+                speed = (windowBytes * 1000 / (now - windowStart) / 1024).toInt()
+                windowStart = now
+                windowBytes = 0
+            }
+            val percent = if (total > 0) (done * 100 / total).toInt() else null
+            if (percent != lastPercent || tick) {
+                lastPercent = percent ?: -1
+                onProgress(percent, speed)
+            }
+        }
+        output.flush()
     }
 
     private fun get(url: String): String {

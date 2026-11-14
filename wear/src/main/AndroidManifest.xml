@@ -67,6 +67,14 @@
                     android:pathPrefix="/flemmefit"
                     android:scheme="wear" />
             </intent-filter>
+            <!-- Taille de la mise à jour annoncée par le téléphone. -->
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/flemmefit"
+                    android:scheme="wear" />
+            </intent-filter>
             <!-- Mise à jour envoyée par le téléphone. -->
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.CHANNEL_EVENT" />
@@ -80,5 +88,14 @@
         <receiver
             android:name=".InstallResultReceiver"
             android:exported="false" />
+
+        <!-- Juste après une mise à jour : la montre annonce sa nouvelle version au téléphone. -->
+        <receiver
+            android:name=".UpdatedReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

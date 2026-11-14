@@ -89,7 +89,7 @@ object SessionFlow {
         }
         val counted = (if (skipped) run.copy(skipped = run.skipped + 1) else run.copy(done = run.done + 1)).copy(draft = null)
         Store.setRun(
-            if (run.pos + 1 < run.queue.size) counted.copy(pos = run.pos + 1, set = 0, values = emptyList(), phase = Phase.NEXT)
+            if (run.pos + 1 < run.queue.size) counted.copy(pos = run.pos + 1, set = 0, values = emptyList(), phase = Phase.NEXT, lastFeeling = null)
             else counted.copy(phase = Phase.FEELING),
         )
         PhoneLink.flush(context)
@@ -111,8 +111,36 @@ object SessionFlow {
     fun endRest() = go()
 
     /** Arrêter avant la fin : on passe au ressenti, ce qui est fait reste fait. */
-    fun stopEarly() {
-        Store.updateRun { it.copy(phase = Phase.FEELING) }
+    /** Arrêter avant la fin : pas de ressenti, récap direct ; ce qui est fait reste fait. */
+    fun stopEarly(context: Context) {
+        val run = Store.run.value ?: return
+        val end = System.currentTimeMillis()
+        val ended = run.copy(phase = Phase.RECAP, endedAt = end, endBattery = Store.readBattery())
+        if (!run.demo && run.done > 0) {
+            Store.send(
+                WatchLog(
+                    id = Store.newId(), date = run.date, session = run.session, programId = run.programId,
+                    minutes = ended.minutes, battery = ended.batteryUsed, at = end,
+                ),
+            )
+        }
+        Store.setRun(ended)
+        SessionService.stop(context)
+        PhoneLink.flush(context)
+    }
+
+    /** Ressenti de l'exo qui vient d'être fini (écran « Exo suivant »). */
+    fun exerciseFeeling(context: Context, today: WatchToday, value: Int) {
+        val run = Store.run.value ?: return
+        val ex = run.queue.getOrNull(run.pos - 1)?.let { today.exercises.getOrNull(it) } ?: return
+        Store.updateRun { it.copy(lastFeeling = value) }
+        if (run.demo) return
+        Store.send(
+            WatchLog(
+                id = Store.newId(), date = run.date, session = run.session, programId = run.programId,
+                exercise = ex.i, feeling = value, onlyFeeling = true, at = System.currentTimeMillis(),
+            ),
+        )
     }
 
     fun feeling(context: Context, value: Int?) {

@@ -58,6 +58,8 @@ data class Run(
     val values: List<Int> = emptyList(),
     /** Valeur réglée (− / +, lunette) pour la série en cours, pas encore validée. */
     val draft: Int? = null,
+    /** Ressenti donné à l'exo précédent sur l'écran « Exo suivant ». */
+    val lastFeeling: Int? = null,
     val phase: String = Phase.EXERCISE,
     /** Début de la série en cours (chrono des exos en durée). */
     val phaseStartedAt: Long = startedAt,
@@ -174,6 +176,19 @@ object Store {
     }
 
     fun newId(): String = UUID.randomUUID().toString()
+
+    /** Case cochée ou décochée depuis la liste des exos : envoyée au téléphone (rien en démo). */
+    fun check(context: Context, today: WatchToday, ex: WatchExercise, done: Boolean) {
+        val current = _today.value
+        if (current != null && current.date == today.date && current.session == today.session) {
+            val updated = current.copy(exercises = current.exercises.map { if (it.i == ex.i) it.copy(done = done) else it })
+            _today.value = updated
+            prefs.edit().putString(KEY_TODAY, WatchJson.encodeToString(WatchToday.serializer(), updated)).apply()
+        } else {
+            return
+        }
+        send(WatchLog(id = newId(), date = today.date, session = today.session, programId = today.programId, exercise = ex.i, check = done, at = System.currentTimeMillis()))
+    }
 
     /** Ajoute un envoi à la file et tente de l'envoyer tout de suite (Bluetooth seulement). */
     fun send(log: WatchLog) {
