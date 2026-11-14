@@ -52,7 +52,7 @@ object Updater {
     sealed interface State {
         data object Idle : State
         /** [percent] de 0 à 100, null tant que la taille est inconnue. */
-        data class Downloading(val version: Int, val percent: Int?) : State
+        data class Downloading(val version: Int, val percent: Int?, val kbPerSecond: Int? = null) : State
         data class Installing(val version: Int) : State
         data class Failed(val message: String) : State
     }
@@ -189,15 +189,27 @@ object Updater {
                 FileOutputStream(file, resumed).use { out ->
                     val buffer = ByteArray(32 * 1024)
                     var lastPercent = -1
+                    // Débit mesuré sur la dernière seconde environ.
+                    var windowStart = System.currentTimeMillis()
+                    var windowBytes = 0L
+                    var speed: Int? = null
                     while (true) {
                         val n = input.read(buffer)
                         if (n < 0) break
                         out.write(buffer, 0, n)
                         done += n
+                        windowBytes += n
+                        val now = System.currentTimeMillis()
+                        val speedChanged = now - windowStart >= 1000
+                        if (speedChanged) {
+                            speed = (windowBytes * 1000 / (now - windowStart) / 1024).toInt()
+                            windowStart = now
+                            windowBytes = 0
+                        }
                         val percent = if (total > 0) (done * 100 / total).toInt() else null
-                        if (percent != lastPercent) {
+                        if (percent != lastPercent || speedChanged) {
                             lastPercent = percent ?: -1
-                            _state.value = State.Downloading(found.version, percent)
+                            _state.value = State.Downloading(found.version, percent, speed)
                         }
                     }
                 }

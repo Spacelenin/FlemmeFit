@@ -166,7 +166,10 @@ private fun HomePage(today: WatchToday?, update: Updater.Found?, updating: Updat
 @Composable
 private fun UpdateLine(update: Updater.Found?, updating: Updater.State, onUpdate: () -> Unit) {
     when (updating) {
-        is Updater.State.Downloading -> Kicker("Maj ${updating.version} : " + (updating.percent?.let { "$it %" } ?: "connexion…"))
+        is Updater.State.Downloading -> Kicker(
+            "Maj ${updating.version} : " + (updating.percent?.let { "$it %" } ?: "connexion…") +
+                (updating.kbPerSecond?.let { " · ${if (it >= 1024) "%.1f Mo/s".format(it / 1024f) else "$it Ko/s"}" } ?: ""),
+        )
         is Updater.State.Installing -> Kicker("Installation de la maj ${updating.version}…")
         is Updater.State.Failed -> {
             Kicker("❌ ${updating.message}", Red.c)
