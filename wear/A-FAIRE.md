@@ -34,3 +34,9 @@ But : ne jamais perdre le fil (minuteur, exo en cours) quand l'écran s'éteint 
 
 - Garde-fou sous 15 % : cardio coupé, écran éteint poignet baissé (seulement le mode basse conso).
 - Récap de fin de séance : % de batterie consommé pendant la séance.
+
+## Choix de design validés
+
+- Maquettes : https://claude.ai/artifact/HZ5rNYmR3HKUt95FPCnPpw
+- Accueil : option C, pages à balayer (séance du jour, ma semaine, les potes, mes stats). Cohérent avec Wear OS.
+- Fond : à choisir (blanc Wii Fit ou nuit).
