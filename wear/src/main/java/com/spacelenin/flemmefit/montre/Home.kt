@@ -122,7 +122,6 @@ private fun HomePage(today: WatchToday?, update: Updater.Found?, updating: Updat
             Band("FlemmeFit")
             Centered(top = 40.dp) {
                 Meta("En attente du téléphone.\nOuvre FlemmeFit sur ton téléphone, à portée en Bluetooth.")
-                FitButton("Essayer la démo", onDemo, plain = true)
                 UpdateLine(update, updating, onUpdate)
             }
         }
@@ -326,7 +325,9 @@ private fun SettingsPage(update: Updater.Found?, updating: Updater.State, onUpda
                 }
                 else -> FitButton("Chercher une maj", onCheck, plain = true)
             }
+            // La démo, pour essayer sans téléphone : rangée ici, l'accueil ne parle que du téléphone.
             if (demo) FitButton("Quitter la démo", { Store.setDemo(false) }, plain = true)
+            else FitButton("Essayer la démo", { Store.setDemo(true) }, plain = true)
         }
     }
 }
