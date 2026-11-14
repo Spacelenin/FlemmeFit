@@ -10,3 +10,12 @@ Plus tard : l'app FlemmeFit du téléphone installerait elle-même l'app montre.
 - Un bouton dans les Réglages : « Installer / mettre à jour l'app montre ».
 
 À décider selon le résultat du test de mise à jour autonome de la montre.
+
+## Écran pendant la séance (app montre)
+
+But : ne jamais perdre le fil (minuteur, exo en cours) quand l'écran s'éteint ou que le poignet baisse.
+- Minuteurs calculés à partir d'heures de départ enregistrées, pas d'un compteur qui tourne : rien ne se perd.
+- Pendant la séance : écran gardé allumé (option, actif par défaut).
+- Poignet baissé : mode toujours allumé basse conso (ambient), minuteur simplifié en blanc sur noir.
+- « Activité en cours » Wear OS : poignet relevé = retour direct sur la séance, pas sur le cadran ; icône sur le cadran.
+- Service de premier plan pendant la séance : la vibration de fin de repos part même app en fond.
