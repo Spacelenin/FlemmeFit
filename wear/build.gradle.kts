@@ -61,6 +61,8 @@ dependencies {
     // Liaison Bluetooth avec le téléphone (Wearable Data Layer).
     implementation("com.google.android.gms:play-services-wearable:18.2.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
+    // play-services tire un vieux Fragment : la version récente pour les demandes de permission.
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
     // Écran basse conso poignet baissé, et « activité en cours ».
     implementation("androidx.wear:wear:1.3.0")
     implementation("androidx.wear:wear-ongoing:1.0.0")
