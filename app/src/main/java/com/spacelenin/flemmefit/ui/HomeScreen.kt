@@ -474,8 +474,11 @@ private fun TodayCard(
                     SoftButton(onClick = { actions.restart(program) }, small = true) { Text("Recommencer") }
                 }
                 session != null -> {
-                    PillButton(onClick = { dayActions.onGuided(session) }, colors = main, small = true) {
-                        Text(if (schedule.doneCount(session) == 0) "C'est parti" else "Continuer")
+                    // Journée bouclée : plus rien à continuer.
+                    if (!schedule.isComplete(session)) {
+                        PillButton(onClick = { dayActions.onGuided(session) }, colors = main, small = true) {
+                            Text(if (schedule.doneCount(session) == 0) "C'est parti" else "Continuer")
+                        }
                     }
                     if (schedule.canBurst(session)) {
                         SoftButton(onClick = { dayActions.onBurst(session, true) }, small = true) { Text("🚀 Burst") }

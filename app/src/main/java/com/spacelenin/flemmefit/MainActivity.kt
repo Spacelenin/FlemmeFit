@@ -92,6 +92,8 @@ class MainActivity : ComponentActivity() {
         val updater = (application as FlemmeFitApp).updater
         updater.loadChangelogIfUpdated()
         updater.autoCheck()
+        // La montre reçoit la séance du jour à jour (changement de date compris).
+        (application as FlemmeFitApp).watch.publish()
     }
 
     override fun onStop() {

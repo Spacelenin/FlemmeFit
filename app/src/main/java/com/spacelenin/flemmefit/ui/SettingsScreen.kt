@@ -206,6 +206,13 @@ fun SettingsScreen(
                 }
                 SettingRow(title = "Notes de version", subtitle = "Tout ce qui a changé, version par version", onClick = { showNotes = true })
 
+                // Encart de la montre : seulement une fois qu'une montre a été vue.
+                val watchLink = (LocalContext.current.applicationContext as com.spacelenin.flemmefit.FlemmeFitApp).watch
+                if (watchLink.status.collectAsStateWithLifecycle().value != null) {
+                    Section("MONTRE")
+                    WatchSection(watchLink)
+                }
+
                 Section("LES POTES")
                 SettingRow(title = "Pseudo et canal", subtitle = pseudo ?: "Pas encore choisi", onClick = onSocial)
                 Row(

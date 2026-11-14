@@ -67,6 +67,11 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.compose.material.icons.core)
     implementation(libs.kotlinx.serialization.json)
+    // Liaison Bluetooth avec l'app montre (Wearable Data Layer).
+    implementation("com.google.android.gms:play-services-wearable:18.2.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
+    // play-services tire un vieux Fragment : la version récente (lint).
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
     debugImplementation(libs.compose.ui.tooling)
 
     testImplementation(libs.junit)
