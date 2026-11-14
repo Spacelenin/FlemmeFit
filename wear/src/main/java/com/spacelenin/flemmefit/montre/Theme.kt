@@ -237,8 +237,8 @@ fun Ring(progress: Float, ctx: Ctx) {
             val outer = size.minDimension / 2 - 3.dp.toPx()
             val band = Path().apply {
                 fillType = PathFillType.EvenOdd
-                addOval(Rect(center, outer))
-                addOval(Rect(center, outer - thick))
+                addOval(Rect(Offset(size.width / 2, size.height / 2), outer))
+                addOval(Rect(Offset(size.width / 2, size.height / 2), outer - thick))
             }
             val hatch = Path()
             var x = -size.height
