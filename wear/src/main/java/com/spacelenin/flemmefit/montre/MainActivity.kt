@@ -47,14 +47,19 @@ class MainActivity : ComponentActivity() {
             val demo by Store.demo.collectAsState()
             val run by Store.run.collectAsState()
             val battery by Store.battery.collectAsState()
+            val updating by Updater.state.collectAsState()
             val scope = rememberCoroutineScope()
             val shown = Store.shown(today, demo || run?.demo == true)
             val night = battery < NIGHT_BELOW
 
-            // Écran gardé allumé tant qu'une séance tourne.
-            LaunchedEffect(run?.phase) {
-                if (run != null && run?.phase != Phase.RECAP) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            // Écran gardé allumé tant qu'une séance tourne, ou qu'une mise à jour se télécharge (luminosité au minimum).
+            val busyUpdate = updating is Updater.State.Downloading || updating is Updater.State.Installing
+            LaunchedEffect(run?.phase, busyUpdate) {
+                if ((run != null && run?.phase != Phase.RECAP) || busyUpdate) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                window.attributes = window.attributes.apply {
+                    screenBrightness = if (busyUpdate) 0.01f else WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+                }
             }
 
             Themed(night, ctxFor(shown?.mode ?: WatchToday.MODE_NORMAL)) {
@@ -65,6 +70,7 @@ class MainActivity : ComponentActivity() {
                     HomePager(
                         today = shown,
                         update = update,
+                        updating = updating,
                         onStart = {
                             if (shown != null) {
                                 askNotificationsOnce()
@@ -73,7 +79,7 @@ class MainActivity : ComponentActivity() {
                         },
                         onDemo = { Store.setDemo(true) },
                         onUpdate = {
-                            update?.let { found -> scope.launch { runCatching { Updater.install(this@MainActivity, found) } } }
+                            update?.let { found -> Updater.install(this@MainActivity, found) }
                         },
                     )
                 }

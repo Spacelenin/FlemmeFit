@@ -32,7 +32,10 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // APK réduit : il se télécharge par l'Internet Bluetooth du téléphone, qui est lent.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("debug")
         }
     }

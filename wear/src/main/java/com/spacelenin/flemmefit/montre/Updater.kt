@@ -1,49 +1,112 @@
 package com.spacelenin.flemmefit.montre
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
+import android.content.pm.ServiceInfo
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.Build
+import android.os.IBinder
+import androidx.core.app.NotificationCompat
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import org.json.JSONArray
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlin.coroutines.resume
 
 /**
- * Test de mise à jour autonome : la montre cherche elle-même la dernière version publiée (tag `montre-N`)
- * dans le repo public des releases, la télécharge et l'installe avec l'installeur du système.
+ * Mises à jour de l'app montre : elle cherche elle-même la dernière version (tag `montre-N`) dans le repo public
+ * des releases, la télécharge et l'installe avec l'installeur du système.
+ *
+ * Jamais en 4G : uniquement l'Internet partagé par le téléphone en Bluetooth, ou le Wi-Fi. Le réseau est
+ * demandé explicitement et gardé pendant tout le téléchargement (sinon Wear OS le coupe dès que l'écran
+ * s'éteint), le téléchargement tourne dans un service, et il reprend où il s'était arrêté.
  */
 object Updater {
     private const val LIST_URL = "https://api.github.com/repos/Spacelenin/FlemmeFit-releases/releases?per_page=30"
     private val tag = Regex("""^montre-(\d+)$""")
+    private const val RETRIES = 5
 
-    /** Journal affiché à l'écran : chaque étape du test, pour savoir précisément où ça bloque. */
+    data class Found(val version: Int, val url: String, val size: Long = 0)
+
+    sealed interface State {
+        data object Idle : State
+        /** [percent] de 0 à 100, null tant que la taille est inconnue. */
+        data class Downloading(val version: Int, val percent: Int?) : State
+        data class Installing(val version: Int) : State
+        data class Failed(val message: String) : State
+    }
+
+    private val _state = MutableStateFlow<State>(State.Idle)
+    val state: StateFlow<State> = _state
+
+    /** Journal (écran de test et diagnostic). */
     val log = MutableStateFlow(listOf<String>())
 
     fun note(line: String) {
         log.value = (log.value + line).takeLast(30)
+        if (line.startsWith("❌")) _state.value = State.Failed(line.removePrefix("❌ "))
+        if (line.startsWith("✅")) _state.value = State.Idle
     }
 
-    data class Found(val version: Int, val url: String)
+    fun reset() {
+        _state.value = State.Idle
+    }
 
     /**
-     * Réseau autorisé : tout sauf la 4G de la montre. En pratique l'Internet partagé par le téléphone en Bluetooth,
-     * ou le Wi-Fi. Null si seule la 4G est disponible : on ne télécharge rien.
+     * Demande un réseau hors 4G et le garde tant que [block] tourne : Bluetooth (Internet du téléphone)
+     * d'abord, sinon Wi-Fi.
      */
-    private fun network(context: Context): Network? {
+    private suspend fun <T> withNetwork(context: Context, block: suspend (Network) -> T): T {
         val cm = context.getSystemService(ConnectivityManager::class.java)
-        return cm.allNetworks.firstOrNull { n ->
-            val caps = cm.getNetworkCapabilities(n) ?: return@firstOrNull false
-            caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) && !caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+        for (transport in listOf(NetworkCapabilities.TRANSPORT_BLUETOOTH, NetworkCapabilities.TRANSPORT_WIFI)) {
+            val request = NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .addTransportType(transport)
+                .build()
+            var callback: ConnectivityManager.NetworkCallback? = null
+            val network = withTimeoutOrNull(10_000) {
+                suspendCancellableCoroutine { cont ->
+                    val cb = object : ConnectivityManager.NetworkCallback() {
+                        override fun onAvailable(network: Network) {
+                            if (cont.isActive) cont.resume(network)
+                        }
+                    }
+                    callback = cb
+                    cm.requestNetwork(request, cb)
+                }
+            }
+            if (network == null) {
+                callback?.let { runCatching { cm.unregisterNetworkCallback(it) } }
+                continue
+            }
+            try {
+                return block(network)
+            } finally {
+                callback?.let { runCatching { cm.unregisterNetworkCallback(it) } }
+            }
         }
+        throw IOException("Pas de réseau hors 4G : rapproche le téléphone ou passe en Wi-Fi.")
     }
 
     /** Version plus récente que celle installée, ou null. Silencieux en cas d'erreur. */
@@ -55,56 +118,109 @@ object Updater {
     }
 
     suspend fun latest(context: Context): Found? = withContext(Dispatchers.IO) {
-        val net = network(context) ?: throw IOException("Pas de réseau hors 4G (téléphone ou Wi-Fi)")
-        val releases = JSONArray(get(net, LIST_URL))
-        var best: Found? = null
-        for (i in 0 until releases.length()) {
-            val r = releases.getJSONObject(i)
-            if (r.optBoolean("draft")) continue
-            val v = tag.matchEntire(r.optString("tag_name"))?.groupValues?.get(1)?.toIntOrNull() ?: continue
-            val assets = r.optJSONArray("assets") ?: continue
-            for (j in 0 until assets.length()) {
-                val a = assets.getJSONObject(j)
-                if (a.optString("name").endsWith(".apk") && (best == null || v > best.version)) {
-                    best = Found(v, a.optString("browser_download_url"))
-                }
-            }
-        }
-        best
-    }
-
-    /** Télécharge et lance l'installation ; le résultat arrive dans [InstallResultReceiver]. */
-    suspend fun install(context: Context, found: Found) {
-        val file = File(context.cacheDir, "update.apk")
-        withContext(Dispatchers.IO) {
-            val net = network(context) ?: throw IOException("Pas de réseau hors 4G (téléphone ou Wi-Fi)")
-            val connection = open(net, found.url)
-            try {
-                if (connection.responseCode != HttpURLConnection.HTTP_OK) throw IOException("HTTP ${connection.responseCode}")
-                connection.inputStream.use { input -> file.outputStream().use { input.copyTo(it) } }
-            } finally {
-                connection.disconnect()
-            }
-        }
-        note("Téléchargé : ${file.length() / 1024} Ko")
-        withContext(Dispatchers.IO) {
-            val installer = context.packageManager.packageInstaller
-            val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL).apply {
-                setAppPackageName(context.packageName)
-                if (Build.VERSION.SDK_INT >= 31) setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED)
-            }
-            val id = installer.createSession(params)
-            installer.openSession(id).use { session ->
-                file.inputStream().use { input ->
-                    session.openWrite("update.apk", 0, file.length()).use { out ->
-                        input.copyTo(out)
-                        session.fsync(out)
+        withNetwork(context) { net ->
+            val releases = JSONArray(get(net, LIST_URL))
+            var best: Found? = null
+            for (i in 0 until releases.length()) {
+                val r = releases.getJSONObject(i)
+                if (r.optBoolean("draft")) continue
+                val v = tag.matchEntire(r.optString("tag_name"))?.groupValues?.get(1)?.toIntOrNull() ?: continue
+                val assets = r.optJSONArray("assets") ?: continue
+                for (j in 0 until assets.length()) {
+                    val a = assets.getJSONObject(j)
+                    if (a.optString("name").endsWith(".apk") && (best == null || v > best.version)) {
+                        best = Found(v, a.optString("browser_download_url"), a.optLong("size"))
                     }
                 }
-                val intent = Intent(context, InstallResultReceiver::class.java)
-                val pending = PendingIntent.getBroadcast(context, id, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
-                session.commit(pending.intentSender)
             }
+            best
+        }
+    }
+
+    /** Lance la mise à jour dans un service : elle continue même écran éteint. */
+    fun install(context: Context, found: Found) {
+        _state.value = State.Downloading(found.version, null)
+        context.startForegroundService(
+            Intent(context, UpdateService::class.java)
+                .putExtra(UpdateService.EXTRA_VERSION, found.version)
+                .putExtra(UpdateService.EXTRA_URL, found.url)
+                .putExtra(UpdateService.EXTRA_SIZE, found.size),
+        )
+    }
+
+    /** Téléchargement avec reprise (en-tête Range) et quelques nouvelles tentatives, puis installation. */
+    internal suspend fun download(context: Context, found: Found) = withContext(Dispatchers.IO) {
+        val file = File(context.cacheDir, "update-${found.version}.apk")
+        // Les restes d'une autre version ne servent à rien.
+        context.cacheDir.listFiles { f -> f.name.startsWith("update") && f.name != file.name }?.forEach { it.delete() }
+        var attempt = 0
+        while (true) {
+            try {
+                withNetwork(context) { net -> fetch(net, found, file) }
+                break
+            } catch (e: IOException) {
+                attempt++
+                note("Coupure (${e.message.orEmpty()}), reprise ${attempt}/$RETRIES…")
+                if (attempt >= RETRIES) throw e
+                delay(3000L * attempt)
+            }
+        }
+        _state.value = State.Installing(found.version)
+        note("Téléchargé : ${file.length() / 1024} Ko")
+        installFile(context, file)
+    }
+
+    private fun fetch(net: Network, found: Found, file: File) {
+        val already = if (file.exists()) file.length() else 0L
+        if (found.size > 0 && already >= found.size) return
+        val connection = open(net, found.url, accept = "application/octet-stream")
+        if (already > 0) connection.setRequestProperty("Range", "bytes=$already-")
+        try {
+            val code = connection.responseCode
+            val resumed = code == HttpURLConnection.HTTP_PARTIAL
+            if (code != HttpURLConnection.HTTP_OK && !resumed) throw IOException("HTTP $code")
+            val total = if (found.size > 0) found.size else (if (resumed) already else 0L) + connection.contentLengthLong
+            var done = if (resumed) already else 0L
+            connection.inputStream.use { input ->
+                FileOutputStream(file, resumed).use { out ->
+                    val buffer = ByteArray(32 * 1024)
+                    var lastPercent = -1
+                    while (true) {
+                        val n = input.read(buffer)
+                        if (n < 0) break
+                        out.write(buffer, 0, n)
+                        done += n
+                        val percent = if (total > 0) (done * 100 / total).toInt() else null
+                        if (percent != lastPercent) {
+                            lastPercent = percent ?: -1
+                            _state.value = State.Downloading(found.version, percent)
+                        }
+                    }
+                }
+            }
+            if (total > 0 && done < total) throw IOException("téléchargement incomplet")
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    private fun installFile(context: Context, file: File) {
+        val installer = context.packageManager.packageInstaller
+        val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL).apply {
+            setAppPackageName(context.packageName)
+            if (Build.VERSION.SDK_INT >= 31) setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED)
+        }
+        val id = installer.createSession(params)
+        installer.openSession(id).use { session ->
+            file.inputStream().use { input ->
+                session.openWrite("update.apk", 0, file.length()).use { out ->
+                    input.copyTo(out)
+                    session.fsync(out)
+                }
+            }
+            val intent = Intent(context, InstallResultReceiver::class.java)
+            val pending = PendingIntent.getBroadcast(context, id, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
+            session.commit(pending.intentSender)
         }
         note("Installation envoyée au système…")
     }
@@ -119,12 +235,60 @@ object Updater {
         }
     }
 
-    private fun open(net: Network, url: String): HttpURLConnection =
+    private fun open(net: Network, url: String, accept: String = "application/vnd.github+json"): HttpURLConnection =
         (net.openConnection(URL(url)) as HttpURLConnection).apply {
-            connectTimeout = 20_000
+            connectTimeout = 30_000
             readTimeout = 60_000
             instanceFollowRedirects = true
-            setRequestProperty("Accept", "application/vnd.github+json")
+            setRequestProperty("Accept", accept)
             setRequestProperty("User-Agent", "FlemmeFitMontre")
-        }.also { it.instanceFollowRedirects = true }
+        }
+}
+
+/** Fait tourner le téléchargement et l'installation au premier plan : rien ne coupe quand l'écran s'éteint. */
+class UpdateService : Service() {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private var running = false
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val version = intent?.getIntExtra(EXTRA_VERSION, 0) ?: 0
+        val url = intent?.getStringExtra(EXTRA_URL)
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(NotificationChannel(CHANNEL, "Mise à jour", NotificationManager.IMPORTANCE_LOW))
+        val notification = NotificationCompat.Builder(this, CHANNEL)
+            .setSmallIcon(R.drawable.ic_stat)
+            .setContentTitle("FlemmeFit")
+            .setContentText("Mise à jour $version en cours")
+            .setOngoing(true)
+            .build()
+        startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        if (url == null || running) return START_NOT_STICKY
+        running = true
+        scope.launch {
+            try {
+                Updater.download(applicationContext, Updater.Found(version, url, intent.getLongExtra(EXTRA_SIZE, 0)))
+            } catch (e: Exception) {
+                Updater.note("❌ ${e.message ?: e.javaClass.simpleName}")
+            } finally {
+                running = false
+                stopSelf()
+            }
+        }
+        return START_NOT_STICKY
+    }
+
+    override fun onDestroy() {
+        scope.cancel()
+        super.onDestroy()
+    }
+
+    companion object {
+        const val EXTRA_VERSION = "version"
+        const val EXTRA_URL = "url"
+        const val EXTRA_SIZE = "size"
+        private const val CHANNEL = "maj"
+        private const val NOTIFICATION_ID = 8
+    }
 }

@@ -51,6 +51,7 @@ private fun pageName(page: Int) = when (page) {
 fun HomePager(
     today: WatchToday?,
     update: Updater.Found?,
+    updating: Updater.State,
     onStart: () -> Unit,
     onDemo: () -> Unit,
     onUpdate: () -> Unit,
@@ -60,7 +61,7 @@ fun HomePager(
         val page = Math.floorMod(index, PAGES)
         Box(Modifier.fillMaxSize()) {
             when (page) {
-                HOME -> HomePage(today, update, onStart, onDemo, onUpdate)
+                HOME -> HomePage(today, update, updating, onStart, onDemo, onUpdate)
                 FRIENDS -> FriendsPage(today)
                 STATS -> StatsPage(today)
                 else -> WeekPage(today)
@@ -109,14 +110,14 @@ private fun Centered(top: Dp = 0.dp, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun HomePage(today: WatchToday?, update: Updater.Found?, onStart: () -> Unit, onDemo: () -> Unit, onUpdate: () -> Unit) {
+private fun HomePage(today: WatchToday?, update: Updater.Found?, updating: Updater.State, onStart: () -> Unit, onDemo: () -> Unit, onUpdate: () -> Unit) {
     if (today == null) {
         Dial(0f) {
             Band("FlemmeFit")
             Centered(top = 40.dp) {
                 Meta("En attente du téléphone.\nOuvre FlemmeFit sur ton téléphone, à portée en Bluetooth.")
                 FitButton("Essayer la démo", onDemo, plain = true)
-                if (update != null) FitButton("Maj ${update.version}", onUpdate)
+                UpdateLine(update, updating, onUpdate)
             }
         }
         return
@@ -150,8 +151,22 @@ private fun HomePage(today: WatchToday?, update: Updater.Found?, onStart: () -> 
                 today.next?.let { Meta(it) }
                 if (today.bossTomorrow) Kicker("💀 Boss demain", Red.c)
             }
-            if (update != null) FitButton("Maj ${update.version} dispo", onUpdate, plain = true)
+            UpdateLine(update, updating, onUpdate)
         }
+    }
+}
+
+/** Maj disponible : le bouton, puis l'avancement du téléchargement (l'écran reste allumé, luminosité au minimum). */
+@Composable
+private fun UpdateLine(update: Updater.Found?, updating: Updater.State, onUpdate: () -> Unit) {
+    when (updating) {
+        is Updater.State.Downloading -> Kicker("Maj ${updating.version} : " + (updating.percent?.let { "$it %" } ?: "connexion…"))
+        is Updater.State.Installing -> Kicker("Installation de la maj ${updating.version}…")
+        is Updater.State.Failed -> {
+            Kicker("❌ ${updating.message}", Red.c)
+            if (update != null) FitButton("Réessayer", onUpdate, plain = true)
+        }
+        Updater.State.Idle -> if (update != null) FitButton("Maj ${update.version} dispo", onUpdate, plain = true)
     }
 }
 
