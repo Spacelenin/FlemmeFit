@@ -48,3 +48,5 @@ But : ne jamais perdre le fil (minuteur, exo en cours) quand l'écran s'éteint 
   Stats ⇄ Semaine ⇄ ACCUEIL ⇄ Potes ⇄ Stats (stats en face, 2 balayages max pour revenir).
   Noms des pages voisines sur les bords, indicateur 3 points. Sortie par le bouton physique (balayage = navigation).
 - Fond : blanc Wii Fit par défaut, passage automatique en version nuit sous 15 % de batterie.
+- Écran pendant la séance : forcé allumé (option A). Pour l'éteindre (Beat Saber…), on quitte l'app : la séance
+  continue en arrière-plan (activité en cours, vibrations).
