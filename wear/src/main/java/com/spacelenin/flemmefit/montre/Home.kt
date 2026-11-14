@@ -18,6 +18,10 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +59,7 @@ fun HomePager(
     onStart: () -> Unit,
     onDemo: () -> Unit,
     onUpdate: () -> Unit,
+    onCheck: () -> Unit,
 ) {
     val state = rememberPagerState(initialPage = LAPS * PAGES / 2) { LAPS * PAGES }
     HorizontalPager(state = state, modifier = Modifier.fillMaxSize()) { index ->
@@ -63,7 +68,7 @@ fun HomePager(
             when (page) {
                 HOME -> HomePage(today, update, updating, onStart, onDemo, onUpdate)
                 FRIENDS -> FriendsPage(today)
-                STATS -> StatsPage(today)
+                STATS -> StatsPage(today, onCheck)
                 else -> WeekPage(today)
             }
             // Où mène chaque balayage : la page de gauche et celle de droite.
@@ -251,8 +256,11 @@ private fun FriendsPage(today: WatchToday?) {
 }
 
 @Composable
-private fun StatsPage(today: WatchToday?) {
+private fun StatsPage(today: WatchToday?, onCheck: () -> Unit) {
     val pal = LocalPalette.current
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val version = remember { context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode }
+    val manual by Updater.manual.collectAsState()
     Dial(1f, Sky) {
         Band("Mes stats", ctx = Sky)
         Centered(top = 44.dp) {
@@ -260,7 +268,7 @@ private fun StatsPage(today: WatchToday?) {
             if (stats.isEmpty()) {
                 Meta("Tes stats arrivent avec le téléphone.")
             } else {
-                stats.take(6).chunked(2).forEach { pair ->
+                stats.take(4).chunked(2).forEach { pair ->
                     Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                         pair.forEach { s ->
                             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(70.dp)) {
@@ -271,6 +279,21 @@ private fun StatsPage(today: WatchToday?) {
                     }
                 }
             }
+            // Version de l'app et vérification des mises à jour à la demande.
+            Text(
+                "version $version · " + when (val m = manual) {
+                    Updater.Check.Running -> "recherche…"
+                    Updater.Check.UpToDate -> "à jour ✓"
+                    is Updater.Check.Error -> "❌ ${m.message}"
+                    null -> "chercher une maj ›"
+                },
+                style = text(11.sp, FontWeight.ExtraBold),
+                color = if (manual is Updater.Check.Error) Red.c else pal.soft,
+                maxLines = 2,
+                modifier = Modifier
+                    .clickable(role = androidx.compose.ui.semantics.Role.Button, onClickLabel = "Chercher une maj", onClick = onCheck)
+                    .padding(4.dp),
+            )
         }
     }
 }

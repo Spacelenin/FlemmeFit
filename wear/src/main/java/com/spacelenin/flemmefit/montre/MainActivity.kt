@@ -81,6 +81,7 @@ class MainActivity : ComponentActivity() {
                         onUpdate = {
                             update?.let { found -> Updater.install(this@MainActivity, found) }
                         },
+                        onCheck = { lifecycleScope.launch { update = Updater.checkNow(this@MainActivity) } },
                     )
                 }
             }
