@@ -106,7 +106,7 @@ class SessionService : Service() {
     private fun vibrate(long: Boolean) {
         val vibrator = getSystemService(VibratorManager::class.java).defaultVibrator
         val effect = if (long) VibrationEffect.createWaveform(longArrayOf(0, 400, 150, 400, 150, 600), -1)
-        else VibrationEffect.createOneShot(150, VibrationEffect.DEFAULT_AMPLITUDE)
+        else VibrationEffect.createWaveform(longArrayOf(0, 300, 120, 300), intArrayOf(0, 255, 0, 255), -1)
         vibrator.vibrate(effect)
     }
 

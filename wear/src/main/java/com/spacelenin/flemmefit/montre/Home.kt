@@ -62,13 +62,14 @@ fun HomePager(
     onCheck: () -> Unit,
 ) {
     val state = rememberPagerState(initialPage = LAPS * PAGES / 2) { LAPS * PAGES }
-    HorizontalPager(state = state, modifier = Modifier.fillMaxSize()) { index ->
+    // Les pages voisines sont prêtes à l'avance : le balayage n'a plus à les construire en route.
+    HorizontalPager(state = state, beyondViewportPageCount = 1, modifier = Modifier.fillMaxSize()) { index ->
         val page = Math.floorMod(index, PAGES)
         Box(Modifier.fillMaxSize()) {
             when (page) {
                 HOME -> HomePage(today, update, updating, onStart, onDemo, onUpdate)
                 FRIENDS -> FriendsPage(today)
-                STATS -> StatsPage(today, onCheck)
+                STATS -> StatsPage(today, update, updating, onUpdate, onCheck)
                 else -> WeekPage(today)
             }
             // Où mène chaque balayage : la page de gauche et celle de droite.
@@ -256,7 +257,7 @@ private fun FriendsPage(today: WatchToday?) {
 }
 
 @Composable
-private fun StatsPage(today: WatchToday?, onCheck: () -> Unit) {
+private fun StatsPage(today: WatchToday?, update: Updater.Found?, updating: Updater.State, onUpdate: () -> Unit, onCheck: () -> Unit) {
     val pal = LocalPalette.current
     val context = androidx.compose.ui.platform.LocalContext.current
     val version = remember { context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode }
@@ -279,21 +280,18 @@ private fun StatsPage(today: WatchToday?, onCheck: () -> Unit) {
                     }
                 }
             }
-            // Version de l'app et vérification des mises à jour à la demande.
-            Text(
-                "version $version · " + when (val m = manual) {
-                    Updater.Check.Running -> "recherche…"
-                    Updater.Check.UpToDate -> "à jour ✓"
-                    is Updater.Check.Error -> "❌ ${m.message}"
-                    null -> "chercher une maj ›"
-                },
-                style = text(11.sp, FontWeight.ExtraBold),
-                color = if (manual is Updater.Check.Error) Red.c else pal.soft,
-                maxLines = 2,
-                modifier = Modifier
-                    .clickable(role = androidx.compose.ui.semantics.Role.Button, onClickLabel = "Chercher une maj", onClick = onCheck)
-                    .padding(4.dp),
-            )
+            // Version de l'app et mises à jour : chaque état est écrit en clair.
+            Meta("Version $version")
+            when {
+                update != null || updating !is Updater.State.Idle -> UpdateLine(update, updating, onUpdate)
+                manual == Updater.Check.Running -> Kicker("Recherche d'une maj…")
+                manual == Updater.Check.UpToDate -> Kicker("✓ Dernière version installée")
+                manual is Updater.Check.Error -> {
+                    Kicker("❌ ${(manual as Updater.Check.Error).message}", Red.c)
+                    FitButton("Réessayer", onCheck, plain = true)
+                }
+                else -> FitButton("Chercher une maj", onCheck, plain = true)
+            }
         }
     }
 }
