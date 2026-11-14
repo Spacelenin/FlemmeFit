@@ -11,6 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
@@ -49,7 +50,9 @@ class MainActivity : ComponentActivity() {
             val battery by Store.battery.collectAsState()
             val updating by Updater.state.collectAsState()
             val scope = rememberCoroutineScope()
-            val shown = Store.shown(today, demo || run?.demo == true)
+            // Gardée d'une image à l'autre : la démo n'est pas recréée à chaque rafraîchissement.
+            val demoShown = demo || run?.demo == true
+            val shown = remember(today, demoShown) { Store.shown(today, demoShown) }
             val night = battery < NIGHT_BELOW
 
             // Écran gardé allumé tant qu'une séance tourne, ou qu'une mise à jour se télécharge (luminosité au minimum).

@@ -78,40 +78,14 @@ object Updater {
      * d'abord, sinon Wi-Fi.
      */
     private suspend fun <T> withNetwork(context: Context, block: suspend (Network) -> T): T {
+        // On prend le réseau déjà en place (Internet du téléphone en Bluetooth, ou Wi-Fi), jamais la 4G.
+        // Pas de demande de réseau : elle allumait le Wi-Fi de la montre. Le service au premier plan garde
+        // la connexion ouverte pendant le téléchargement.
         val cm = context.getSystemService(ConnectivityManager::class.java)
         fun allowed(n: Network): Boolean {
             val caps = cm.getNetworkCapabilities(n) ?: return false
             return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) && !caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
         }
-        // 1. Réseau demandé et réservé (Bluetooth du téléphone, sinon Wi-Fi) : il reste là pendant tout le téléchargement.
-        for (transport in listOf(NetworkCapabilities.TRANSPORT_BLUETOOTH, NetworkCapabilities.TRANSPORT_WIFI)) {
-            val request = NetworkRequest.Builder()
-                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                .addTransportType(transport)
-                .build()
-            var callback: ConnectivityManager.NetworkCallback? = null
-            val network = withTimeoutOrNull(5_000) {
-                suspendCancellableCoroutine<Network?> { cont ->
-                    val cb = object : ConnectivityManager.NetworkCallback() {
-                        override fun onAvailable(network: Network) {
-                            if (cont.isActive) cont.resume(network)
-                        }
-                    }
-                    callback = cb
-                    runCatching { cm.requestNetwork(request, cb) }.onFailure { if (cont.isActive) cont.resume(null) }
-                }
-            }
-            if (network == null) {
-                callback?.let { runCatching { cm.unregisterNetworkCallback(it) } }
-                continue
-            }
-            try {
-                return block(network)
-            } finally {
-                callback?.let { runCatching { cm.unregisterNetworkCallback(it) } }
-            }
-        }
-        // 2. Sinon le réseau déjà en place, s'il n'est pas la 4G (le service au premier plan le garde ouvert).
         val existing = cm.activeNetwork?.takeIf(::allowed) ?: cm.allNetworks.firstOrNull(::allowed)
             ?: throw IOException("Pas de réseau hors 4G : rapproche le téléphone ou passe en Wi-Fi.")
         return block(existing)

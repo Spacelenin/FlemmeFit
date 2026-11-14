@@ -118,7 +118,7 @@ class SessionService : Service() {
     companion object {
         private const val CHANNEL = "seance"
         private const val NOTIFICATION_ID = 7
-        private const val REPEAT_EVERY_MS = 4_000L
+        private const val REPEAT_EVERY_MS = 3_000L
         private const val REPEAT_FOR_MS = 120_000L
 
         fun start(context: Context) {

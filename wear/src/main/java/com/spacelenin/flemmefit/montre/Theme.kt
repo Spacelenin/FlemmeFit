@@ -234,27 +234,10 @@ fun Ring(progress: Float, ctx: Ctx) {
             val arc = Size(size.width - inset * 2, size.height - inset * 2)
             val stroke = Stroke(thick)
             val brush = Brush.verticalGradient(listOf(ctx.light, ctx.c, ctx.dark))
-            val outer = size.minDimension / 2 - 3.dp.toPx()
-            val band = Path().apply {
-                fillType = PathFillType.EvenOdd
-                addOval(Rect(Offset(size.width / 2, size.height / 2), outer))
-                addOval(Rect(Offset(size.width / 2, size.height / 2), outer - thick))
-            }
-            val hatch = Path()
-            var x = -size.height
-            while (x < size.width) {
-                hatch.moveTo(x, size.height)
-                hatch.lineTo(x + size.height, 0f)
-                x += 4.dp.toPx()
-            }
-            val hatchStroke = Stroke(1.dp.toPx())
-            val hatchColor = Color.White.copy(alpha = 0.32f)
             onDrawBehind {
                 drawArc(pal.track, 0f, 360f, false, topLeft, arc, style = stroke)
-                if (p > 0f) {
-                    drawArc(brush, -90f, 360f * p, false, topLeft, arc, style = stroke)
-                    clipPath(band) { drawPath(hatch, hatchColor, style = hatchStroke) }
-                }
+                // Sans les stries découpées en anneau : coûteuses à chaque image sur la montre.
+                if (p > 0f) drawArc(brush, -90f, 360f * p, false, topLeft, arc, style = stroke)
             }
         },
     )
