@@ -26,7 +26,9 @@ But : ne jamais perdre le fil (minuteur, exo en cours) quand l'écran s'éteint 
 - Data Layer : n'envoyer qu'au téléphone « à portée » (nœud nearby), sinon mettre en file d'attente sur la montre
   et tout envoyer au retour du Bluetooth (identifiants uniques, jamais compté deux fois).
 - La montre ne parle jamais à Internet pendant une séance.
-- Mises à jour de l'app montre : seulement en Wi-Fi (ou via le téléphone), jamais en 4G.
+- Mises à jour de l'app montre : la montre télécharge elle-même via l'Internet partagé par le téléphone
+  en Bluetooth (requête liée au transport Bluetooth, jamais la 4G). Lent mais suffisant pour quelques Mo.
+  Plan B : le téléphone télécharge et transfère l'APK à la montre en Bluetooth (ChannelClient).
 
 ## Batterie
 
