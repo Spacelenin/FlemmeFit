@@ -70,7 +70,8 @@ if (newKeystore != null) {
                 writeBytes(Base64.getMimeDecoder().decode(newKeystore))
             }
             val lineage = File(work, "lineage.bin")
-            val apk = layout.buildDirectory.file("outputs/apk/release/wear-release.apk").get().asFile
+            // Le nom suit celui du projet : on prend l'APK qui est là.
+            val apk = layout.buildDirectory.dir("outputs/apk/release").get().asFile.listFiles { f -> f.name.endsWith(".apk") }!!.single()
             val apksigner = File(android.sdkDirectory, "build-tools/${android.buildToolsVersion}/apksigner")
             val oldKs = file("../app/debug.keystore")
             val oldSigner = listOf("--ks", oldKs.path, "--ks-pass", "pass:android", "--ks-key-alias", "androiddebugkey", "--key-pass", "pass:android")

@@ -31,7 +31,7 @@ jobs:
           FLEMMEFIT_KEY_ALIAS: flemmefit
 
       - name: Renommer l'APK
-        run: cp wear/build/outputs/apk/release/wear-release.apk FlemmeFit-montre-${{ github.run_number }}.apk
+        run: cp wear/build/outputs/apk/release/*.apk FlemmeFit-montre-${{ github.run_number }}.apk
 
       - uses: actions/upload-artifact@v4
         with:
