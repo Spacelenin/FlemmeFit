@@ -64,8 +64,8 @@ fun HomePager(
     onCheck: () -> Unit,
 ) {
     val state = rememberPagerState(initialPage = LAPS * PAGES / 2) { LAPS * PAGES }
-    // Les pages voisines sont prêtes à l'avance : le balayage n'a plus à les construire en route.
-    HorizontalPager(state = state, beyondViewportPageCount = 1, modifier = Modifier.fillMaxSize()) { index ->
+    // Toutes les pages restent construites en mémoire (2 de chaque côté = les 5) : le balayage ne fait que les afficher.
+    HorizontalPager(state = state, beyondViewportPageCount = 2, modifier = Modifier.fillMaxSize()) { index ->
         val page = Math.floorMod(index, PAGES)
         Box(Modifier.fillMaxSize()) {
             when (page) {
