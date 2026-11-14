@@ -50,3 +50,13 @@ But : ne jamais perdre le fil (minuteur, exo en cours) quand l'écran s'éteint 
 - Fond : blanc Wii Fit par défaut, passage automatique en version nuit sous 15 % de batterie.
 - Écran pendant la séance : forcé allumé (option A). Pour l'éteindre (Beat Saber…), on quitte l'app : la séance
   continue en arrière-plan (activité en cours, vibrations).
+
+## Maj de la montre forcée par le téléphone (avec la maj « liaison » de l'app téléphone)
+
+- Le téléphone annonce dans la séance du jour la version montre minimale (`minWatch`) et la dernière disponible.
+- Montre trop ancienne : elle n'affiche plus que « Mise à jour requise » (pas de séance), pour éviter les décalages
+  de format entre les deux apps.
+- Le téléphone télécharge lui-même l'APK montre et l'envoie à la montre en Bluetooth (ChannelClient) ; la montre
+  l'installe avec son installeur. Plus besoin que la montre trouve la maj seule ni d'avoir Internet sur la montre.
+- Bouton côté téléphone : Réglages › Montre › « Mettre à jour la montre » + mise à jour automatique quand la montre
+  se connecte.
