@@ -75,9 +75,6 @@ fun HomePager(
                 SETTINGS -> SettingsPage(update, updating, onUpdate, onCheck)
                 else -> WeekPage(today)
             }
-            // Où mène chaque balayage : la page de gauche et celle de droite.
-            EdgeLabel(pageName(Math.floorMod(page - 1, PAGES)), left = true)
-            EdgeLabel(pageName(Math.floorMod(page + 1, PAGES)), left = false)
             if (page == HOME) PagerDots()
         }
     }
