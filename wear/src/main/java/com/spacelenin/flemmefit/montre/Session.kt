@@ -62,12 +62,12 @@ object SessionFlow {
         val now = System.currentTimeMillis()
         if (!isLastSet(run, ex)) {
             Store.setRun(
-                if (ex.restSec > 0) run.copy(values = values, set = run.set + 1, phase = Phase.REST, restEndsAt = now + ex.restSec * 1000L, warned = false, rang = false)
-                else run.copy(values = values, set = run.set + 1, phase = Phase.EXERCISE, phaseStartedAt = now),
+                if (ex.restSec > 0) run.copy(draft = null, values = values, set = run.set + 1, phase = Phase.REST, restEndsAt = now + ex.restSec * 1000L, warned = false, rang = false)
+                else run.copy(draft = null, values = values, set = run.set + 1, phase = Phase.EXERCISE, phaseStartedAt = now),
             )
             return
         }
-        finishExercise(context, today, run.copy(values = values), skipped = false)
+        finishExercise(context, today, run.copy(draft = null, values = values), skipped = false)
     }
 
     fun skipExercise(context: Context, today: WatchToday) {
@@ -86,12 +86,17 @@ object SessionFlow {
                 ),
             )
         }
-        val counted = if (skipped) run.copy(skipped = run.skipped + 1) else run.copy(done = run.done + 1)
+        val counted = (if (skipped) run.copy(skipped = run.skipped + 1) else run.copy(done = run.done + 1)).copy(draft = null)
         Store.setRun(
             if (run.pos + 1 < run.queue.size) counted.copy(pos = run.pos + 1, set = 0, values = emptyList(), phase = Phase.NEXT)
             else counted.copy(phase = Phase.FEELING),
         )
         PhoneLink.flush(context)
+    }
+
+    /** Mémorise la valeur réglée de la série en cours (rien n'est perdu en ouvrant la consigne). */
+    fun setDraft(value: Int) {
+        Store.updateRun { it.copy(draft = value) }
     }
 
     fun go() {

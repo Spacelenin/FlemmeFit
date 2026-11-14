@@ -299,7 +299,10 @@ private fun SettingsPage(update: Updater.Found?, updating: Updater.State, onUpda
             when {
                 update != null || updating !is Updater.State.Idle -> UpdateLine(update, updating, onUpdate)
                 manual == Updater.Check.Running -> Kicker("Recherche d'une maj…")
-                manual == Updater.Check.UpToDate -> Kicker("✓ Dernière version installée")
+                manual == Updater.Check.UpToDate -> {
+                    Kicker("✓ Dernière version installée")
+                    FitButton("Chercher à nouveau", onCheck, plain = true)
+                }
                 manual is Updater.Check.Error -> {
                     Kicker("❌ ${(manual as Updater.Check.Error).message}", Red.c)
                     FitButton("Réessayer", onCheck, plain = true)

@@ -55,6 +55,8 @@ data class Run(
     val set: Int = 0,
     /** Valeurs des séries déjà faites de l'exo en cours. */
     val values: List<Int> = emptyList(),
+    /** Valeur réglée (− / +, lunette) pour la série en cours, pas encore validée. */
+    val draft: Int? = null,
     val phase: String = Phase.EXERCISE,
     /** Début de la série en cours (chrono des exos en durée). */
     val phaseStartedAt: Long = startedAt,

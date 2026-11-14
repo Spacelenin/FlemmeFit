@@ -96,6 +96,13 @@ fun SessionScreen(run: Run, today: WatchToday, ambient: Boolean) {
         return
     }
 
+    // Appui long n'importe où (hors ressenti et récap) : « Arrêter la séance ? ».
+    val stoppable = run.phase != Phase.FEELING && run.phase != Phase.RECAP && !askStop
+    Box(
+        Modifier.fillMaxSize().then(
+            if (stoppable) Modifier.pointerInput(run.phase) { detectTapGestures(onLongPress = { askStop = true }) } else Modifier,
+        ),
+    ) {
     when {
         askStop -> Themed(LocalPalette.current.night, Red) {
             Dial(progress) {
@@ -198,12 +205,14 @@ fun SessionScreen(run: Run, today: WatchToday, ambient: Boolean) {
 
         else -> Themed(LocalPalette.current.night, dayCtx) { RecapScreen(run, today) }
     }
+    }
 }
 
 @Composable
 private fun InputScreen(run: Run, today: WatchToday, ex: WatchExercise, progress: Float, onHow: () -> Unit, onStop: () -> Unit) {
     val context = LocalContext.current
-    var value by remember(run.pos, run.set) { mutableIntStateOf(ex.target ?: ex.planned) }
+    var value by remember(run.pos, run.set) { mutableIntStateOf(run.draft ?: ex.target ?: ex.planned) }
+    LaunchedEffect(value) { if (value != (run.draft ?: ex.target ?: ex.planned)) SessionFlow.setDraft(value) }
     var scroll by remember { mutableFloatStateOf(0f) }
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
@@ -290,7 +299,8 @@ private fun Modifier.bezel(onStep: (Int) -> Unit): Modifier {
 private fun SeriesScreen(run: Run, today: WatchToday, ex: WatchExercise, onHow: () -> Unit, onStop: () -> Unit) {
     val context = LocalContext.current
     val pal = LocalPalette.current
-    var value by remember(run.pos, run.set) { mutableIntStateOf(ex.planned) }
+    var value by remember(run.pos, run.set) { mutableIntStateOf(run.draft ?: ex.planned) }
+    LaunchedEffect(value) { if (value != (run.draft ?: ex.planned)) SessionFlow.setDraft(value) }
     Box(
         Modifier
             .fillMaxSize()
